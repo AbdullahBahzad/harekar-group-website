@@ -1,0 +1,386 @@
+{
+  "brand": {
+    "name": "Harekar Group"
+  },
+  "nav": {
+    "home": "Home",
+    "intelligence": "Intelligence",
+    "services": "Services",
+    "about": "About",
+    "careers": "Careers",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "menu": "Menu",
+    "close": "Close",
+    "language": "Language",
+    "clients": "Clients",
+    "signIn": "Sign in",
+    "account": "Account"
+  },
+  "cta": {
+    "primary": "Request a Quote",
+    "secondary": "Contact the Team",
+    "upgradePro": "Upgrade to Pro"
+  },
+  "hero": {
+    "eyebrow": "Security & Operational Services",
+    "title": "Protection built on discipline.",
+    "subtitle": "Harekar Group delivers security, emergency response, and operational support for organizations that cannot afford uncertainty.",
+    "scroll": "Scroll"
+  },
+  "proof": {
+    "stats": {
+      "experience": {
+        "value": "15+",
+        "label": "Years operating"
+      },
+      "personnel": {
+        "value": "800+",
+        "label": "Vetted personnel"
+      },
+      "sites": {
+        "value": "120+",
+        "label": "Sites protected"
+      },
+      "coverage": {
+        "value": "24/7",
+        "label": "Operations centre"
+      }
+    }
+  },
+  "intelligence": {
+    "eyebrow": "Regional Intelligence",
+    "title": "Situational awareness across Iraq.",
+    "subtitle": "Our teams maintain continuous operational picture across the region. Select a flagged location to review the associated report.",
+    "markerLabel": "Flagged location",
+    "legendLocked": "Restricted report",
+    "severity": {
+      "clear": "Clear",
+      "elevated": "Elevated",
+      "critical": "Critical"
+    },
+    "modal": {
+      "badge": "Restricted",
+      "title": "This report is Pro-only",
+      "body": "This report is only available with the Pro version. Please upgrade your plan to access full details.",
+      "upgrade": "Upgrade to Pro",
+      "dismiss": "Close",
+      "close": "Close",
+      "badgePro": "Pro access",
+      "titlePro": "{city} — report unlocked",
+      "bodyPro": "Your Pro access covers this report. The full assessment is being prepared for publication and will appear here.",
+      "createAccount": "Create an account"
+    }
+  },
+  "services": {
+    "eyebrow": "Capabilities",
+    "title": "A full operational spectrum.",
+    "subtitle": "Thirteen service lines, delivered under one command structure and one standard of accountability.",
+    "ctaTitle": "Tell us what you need to protect.",
+    "orbitHint": "Scroll to rotate",
+    "groups": {
+      "all": "All services",
+      "protection": "Protection & guarding",
+      "response": "Emergency & crisis",
+      "logistics": "Transport & logistics"
+    },
+    "items": {
+      "facility": {
+        "title": "Facility Security Services",
+        "description": "End-to-end protection programs for corporate, industrial, and institutional sites."
+      },
+      "static": {
+        "title": "Static Security Services",
+        "description": "Vetted, uniformed guarding at fixed posts, with defined escalation procedures."
+      },
+      "surveillance": {
+        "title": "Access Control & Surveillance",
+        "description": "Entry management, CCTV coverage, and monitored perimeters with audited access logs."
+      },
+      "mobile": {
+        "title": "Mobile Security Operations",
+        "description": "Patrol units and rapid repositioning across dispersed or high-movement sites."
+      },
+      "k9": {
+        "title": "K9 Security Dog Units",
+        "description": "Handler-led detection and deterrence teams for screening and area sweeps."
+      },
+      "cit": {
+        "title": "Cash in Transit",
+        "description": "Secured valuables movement with route planning, escort, and chain-of-custody control."
+      },
+      "armored": {
+        "title": "Armored Vehicle Deployments",
+        "description": "Protected transport for personnel and assets in elevated-risk environments."
+      },
+      "erp": {
+        "title": "Emergency Response Planning",
+        "description": "Documented response frameworks, drills, and readiness assessments before incidents occur."
+      },
+      "crisis": {
+        "title": "Crisis Management Services",
+        "description": "Command support, coordination, and containment when a situation escalates."
+      },
+      "medevac": {
+        "title": "Medical Evacuation",
+        "description": "Coordinated casualty movement to appropriate medical facilities."
+      },
+      "camp": {
+        "title": "Construction & Camp Security Design",
+        "description": "Security architecture for sites and camps, designed in at the planning stage."
+      },
+      "supply": {
+        "title": "Fuel & Water Supply and Transport",
+        "description": "Reliable delivery of essential consumables to remote and secured locations."
+      },
+      "equipment": {
+        "title": "Heavy Equipment Rental",
+        "description": "Machinery and operational plant supplied to project and camp sites."
+      }
+    },
+    "orbitSelect": "Show details"
+  },
+  "about": {
+    "eyebrow": "About Us",
+    "title": "Unparalleled security across the Kurdistan Region.",
+    "body": {
+      "p1": "At Harekar Group, we provide unparalleled security solutions throughout the Kurdistan Region of Iraq (KRI). Our extensive expertise covers a comprehensive range of security domains, including static security, mobile security, K9 units, armored vehicles and more. We are relentlessly dedicated to ensuring the absolute safety and security of our clients through cutting-edge, dependable solutions.",
+      "p2": "Our security services are backed by rigorous training, advanced technology and a proactive approach to threat management. We anticipate risks before they become threats, ensuring our clients can operate with complete peace of mind.",
+      "p3": "In addition to our security services, we excel in civil works, offering specialized knowledge in construction and infrastructure development. Our projects are characterized by quality and adherence to the highest standards, ensuring successful outcomes."
+    },
+    "pillars": {
+      "mission": {
+        "title": "Mission",
+        "body": "Our mission is to safeguard lives, assets and infrastructure with unwavering dedication and accountability. We view security challenges as opportunities for innovation and advancement, setting new standards in industry. By consistently delivering value and quality, we aim to become a symbol of reliability and excellence in security services, civil work, fuel transport and other scopes of work."
+      },
+      "vision": {
+        "title": "Vision",
+        "body": "At Harekar Group, our vision is to lead the security industry with integrity and innovative methods. We envision a future where advanced technology and human expertise blend seamlessly to provide top-notch security solutions. Our goal is to be recognized for our excellence in security, construction and fuel logistics, ensuring the safety and success of our clients."
+      }
+    }
+  },
+  "careers": {
+    "eyebrow": "Careers",
+    "title": "Why join Harekar Group?",
+    "benefits": {
+      "environment": {
+        "title": "Dynamic Work Environment",
+        "body": "Develop your skills and grow in an environment that encourages professional advancement with various opportunities."
+      },
+      "development": {
+        "title": "Professional Development",
+        "body": "Benefit from training programs, workshops, and mentorship to achieve your career goals."
+      },
+      "collaboration": {
+        "title": "Team Collaboration",
+        "body": "Work alongside experienced professionals who are dedicated to excellence in their fields."
+      },
+      "projects": {
+        "title": "Innovative Projects",
+        "body": "Contribute to impactful projects in the Kurdistan Region of Iraq (KRI), from security solutions to infrastructure development."
+      },
+      "excellence": {
+        "title": "Commitment to Excellence",
+        "body": "Strive for the highest standards of professionalism and expertise."
+      }
+    },
+    "apply": {
+      "eyebrow": "Open applications",
+      "title": "Apply for jobs",
+      "aboutYouLegend": "About you",
+      "roleLegend": "The role",
+      "requiredHint": "Fields marked * are required.",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone Number",
+      "city": "City",
+      "address": "Address",
+      "position": "Position",
+      "coverLetter": "Cover Letter",
+      "coverLetterHint": "Tell us why you are a fit for this role.",
+      "cv": "Upload CV",
+      "cvHint": "PDF, DOC or DOCX · 5MB maximum",
+      "cvChoose": "Choose a file",
+      "cvReplace": "Replace file",
+      "cvRemove": "Remove file",
+      "cvNone": "No file selected",
+      "submit": "Submit",
+      "sending": "Submitting…",
+      "successTitle": "Application received",
+      "success": "Thank you. Our team will review your application and be in touch if there is a match.",
+      "again": "Submit another application",
+      "errorRequired": "Please complete the required fields.",
+      "errorEmail": "Please enter a valid email address.",
+      "errorCvRequired": "Please attach your CV.",
+      "errorCvType": "Your CV must be a PDF, DOC or DOCX file.",
+      "errorCvSize": "Your CV must be 5MB or smaller.",
+      "errorGeneric": "Something went wrong. Please try again."
+    }
+  },
+  "clients": {
+    "eyebrow": "Our Clients",
+    "title": "Trusted where it counts.",
+    "subtitle": "Humanitarian agencies, energy operators, diplomatic missions and local enterprise across the Kurdistan Region rely on Harekar to keep their people and assets secure.",
+    "filterLabel": "Filter clients by sector",
+    "countLabel": "{count} organisations",
+    "logoAlt": "{category} client logo",
+    "groups": {
+      "all": "All clients",
+      "ngos": "NGOs",
+      "energy": "Oil & Gas",
+      "consulates": "Consulates",
+      "locals": "Local Companies"
+    }
+  },
+  "faq": {
+    "eyebrow": "Frequently Asked Questions",
+    "title": "Answers, before you ask.",
+    "subtitle": "The questions we field most often about coverage, personnel and response. If yours is not here, our team will answer it directly.",
+    "expandAll": "Expand all",
+    "collapseAll": "Collapse all",
+    "toggleLabel": "Toggle answer",
+    "ctaTitle": "Still have a question?",
+    "ctaBody": "Tell us what you need to protect and a member of our team will respond directly.",
+    "cta": "Send Message",
+    "items": {
+      "types": {
+        "q": "What types of security services do you offer?",
+        "a": "We offer a comprehensive range of security services, including:",
+        "list": [
+          "Facility Security Assessments",
+          "Static Security Services",
+          "Cutting-Edge Technology",
+          "Mobile Security Operations",
+          "City Security Solution",
+          "Cash in Transit (CIT)",
+          "Training (Indoor and Outdoor)",
+          "Heavy Equipment and Vehicles Rental",
+          "Fuel and Water Supply and Transport",
+          "Medical Evacuation Services",
+          "Armored Vehicles Deployment",
+          "Security Consultancy Services",
+          "K9 Security Dog Units",
+          "Shooting Range",
+          "Construction and Camp Security Design"
+        ]
+      },
+      "hours": {
+        "q": "Do you offer 24/7 security services?",
+        "a": "Yes, we do provide 24/7 security services with fully in-house facilities and equipment."
+      },
+      "response": {
+        "q": "What are your emergency response times?",
+        "a": "We have offices in Erbil, Duhok and Sulaymaniyah, which allows us to be very responsive. For other cities our Quick Reaction Force (QRF) team is always on standby."
+      },
+      "licensed": {
+        "q": "Are your guards licensed and trained?",
+        "a": "Yes, our guards are licensed and trained according to international standards by accredited trainers."
+      },
+      "vetting": {
+        "q": "What is the process for hiring and vetting your security personnel?",
+        "a": "Personnel are being assessed on all personal and functional aspects and then accepted ones will be forwarded to training departments so as to be readily deployed to their task."
+      },
+      "specialized": {
+        "q": "Can I request specialized security personnel for my needs?",
+        "a": "Yes, certainly, we do provide specialized security personnel that suits our clients' needs."
+      }
+    }
+  },
+  "contact": {
+    "eyebrow": "Start a conversation",
+    "title": "Request a quote.",
+    "subtitle": "Tell us about the site, the risk, and the timeline. A member of our team will respond directly.",
+    "locationLabel": "Our offices",
+    "offices": {
+      "tablistLabel": "Choose an office",
+      "mapTitle": "Map of {city}",
+      "duhok": "Duhok",
+      "erbil": "Erbil",
+      "sulaymaniyah": "Sulaymaniyah",
+      "emailLabel": "Email"
+    },
+    "form": {
+      "name": "Full name",
+      "organization": "Organization",
+      "email": "Email",
+      "phone": "Phone",
+      "message": "How can we help?",
+      "sending": "Sending…",
+      "success": "Thank you. Our team will be in touch shortly.",
+      "errorRequired": "Please complete the required fields.",
+      "errorGeneric": "Something went wrong. Please try again."
+    }
+  },
+  "footer": {
+    "tagline": "Security and operational services.",
+    "rights": "All rights reserved."
+  },
+  "auth": {
+    "signInTitle": "Sign in",
+    "signInSubtitle": "Access your Harekar Group account and your intelligence reports.",
+    "registerTitle": "Create an account",
+    "registerSubtitle": "Register to follow our intelligence picture. Pro access unlocks the restricted reports.",
+    "name": "Full name",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "confirmPassword": "Confirm password",
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "haveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?",
+    "errorRequired": "Please fill in all required fields.",
+    "errorEmail": "Enter a valid email address.",
+    "errorPasswordShort": "Password must be at least 8 characters.",
+    "errorPasswordMismatch": "Passwords do not match.",
+    "errorEmailTaken": "An account with this email already exists.",
+    "errorCredentials": "Incorrect email or password.",
+    "errorGeneric": "Something went wrong. Please try again."
+  },
+  "account": {
+    "title": "Your account",
+    "eyebrow": "Account",
+    "greeting": "Welcome, {name}.",
+    "emailLabel": "Email",
+    "planLabel": "Plan",
+    "planFree": "Standard",
+    "planPro": "Pro",
+    "upgrade": "Upgrade to Pro",
+    "freeBlurb": "Your account covers the open intelligence picture. Restricted reports require Pro access.",
+    "proBlurb": "Your account has Pro access. Restricted reports are unlocked across the intelligence map.",
+    "goToIntelligence": "Go to intelligence",
+    "signOut": "Sign out"
+  },
+  "pro": {
+    "title": "Pro intelligence access",
+    "eyebrow": "Pro",
+    "subtitle": "Unlock the restricted assessments across the intelligence map, with the full operational picture behind every marker.",
+    "bestValue": "Best value",
+    "payByCard": "Pay by card",
+    "createAccountFirst": "Create an account",
+    "alreadyPro": "Your account already has Pro access.",
+    "goToIntelligence": "Go to intelligence",
+    "renewalNote": "Access is granted for the period purchased and does not renew automatically. We will remind you before it ends so you can extend it.",
+    "plans": {
+      "monthly": {
+        "name": "Monthly",
+        "period": "/ month",
+        "blurb": "Full access to restricted reports, billed each month."
+      },
+      "yearly": {
+        "name": "Yearly",
+        "period": "/ year",
+        "blurb": "Full access for twelve months — two months free against monthly."
+      }
+    },
+    "result": {
+      "title": "Payment result",
+      "successTitle": "Payment received.",
+      "successBody": "Your Pro access is active. Restricted reports are now unlocked across the intelligence map.",
+      "pendingTitle": "Payment not completed.",
+      "pendingBody": "We have not received confirmation for this payment. If money has left your account, contact us and we will resolve it.",
+      "tryAgain": "Back to plans",
+      "viewAccount": "View account"
+    }
+  }
+}

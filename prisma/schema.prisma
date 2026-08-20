@@ -1,0 +1,269 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ContactSubmission {
+  id           String   @id @default(cuid())
+  name         String
+  email        String
+  organization String?
+  phone        String?
+  message      String
+  createdAt    DateTime @default(now())
+}
+
+/// A careers application. The CV is held inline rather than in object storage
+/// because these arrive at a few a day and are capped at 5MB — a bucket plus
+/// signed-URL plumbing would be more moving parts than the volume justifies.
+model JobApplication {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String
+  city        String
+  address     String
+  position    String
+  coverLetter String
+  cvName      String
+  cvType      String
+  cvSize      Int
+  cvData      Bytes
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+/**
+ * ---- accounts ------------------------------------------------------------
+ */
+
+/**
+ * A portal account.
+ * `passwordHash` is nullable so an OAuth provider can be added later without a
+ * migration that has to invent passwords for existing rows — a credentials
+ * user has one, a future Google user would not.
+ * `isPro` is set by hand in the database once a subscription is agreed. It
+ * lives on the user rather than in a separate entitlements table because there
+ * is exactly one tier to express; splitting it out before a second tier exists
+ * would be structure without purpose.
+ */
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  /// Permanent Pro, granted by hand — comped accounts, staff, the client's own
+  /// team. Independent of anything purchased, so revoking a payment never
+  /// removes access that was never paid for.
+  isPro         Boolean   @default(false)
+  /// Console access. Granted by hand — there is no self-serve path to it.
+  isAdmin       Boolean   @default(false)
+  /// Expiry of *purchased* Pro. Null means nothing has been bought.
+  proUntil      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  orders   Order[]
+  edits    IntelMarker[]
+
+  @@index([email])
+}
+
+/**
+ * A purchase of Pro access.
+ * Rows are created *before* the customer is sent to the gateway, in `PENDING`,
+ * so an abandoned or failed payment leaves a trace that can be reconciled.
+ * Creating the record only on success would mean a payment that succeeded at
+ * the bank but failed to call back leaves no evidence it ever happened.
+ * `provider` and `providerRef` are deliberately loose strings: the gateway is
+ * not chosen yet, and every candidate names its transaction identifier
+ * differently.
+ */
+model Order {
+  id          String      @id @default(cuid())
+  userId      String
+  plan        String
+  /// Charged amount in the currency's smallest unit, to avoid float rounding.
+  amountMinor Int
+  currency    String
+  /// Days of Pro this order grants once paid.
+  periodDays  Int
+  status      OrderStatus @default(PENDING)
+  provider    String
+  /// The gateway's own transaction id, once it issues one.
+  providerRef String?
+  createdAt   DateTime    @default(now())
+  paidAt      DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([providerRef])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+/// OAuth provider links. Unused today; required by the Auth.js Prisma adapter.
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+/// Database sessions. Credentials sign-in uses JWTs, but the adapter expects
+/// this table to exist and a future OAuth provider would populate it.
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Single-use tokens for email verification and password reset.
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+/**
+ * ---- intelligence --------------------------------------------------------
+ */
+
+/**
+ * A location on the intelligence map.
+ * This used to be a hardcoded array in `src/data/iraq.ts`, which meant the
+ * operational picture could only be changed by editing source and redeploying.
+ * Moving it here is what makes the console real: the map the public sees is
+ * this table.
+ * Coordinates are stored as separate floats rather than a tuple because a
+ * relational column cannot be a pair, and because it lets the console query by
+ * bounding box later without parsing anything.
+ */
+model IntelMarker {
+  id        String   @id @default(cuid())
+  /// City or site name, shown on the map pin.
+  label     String
+  longitude Float
+  latitude  Float
+  severity  Severity @default(CLEAR)
+  access    Access   @default(OPEN)
+
+  /// One-line assessment shown in the report dialog.
+  headline String?
+  /// The full assessment. Only ever served to entitled readers.
+  body     String?
+
+  /**
+   * Whether the marker appears on the public map at all. Draft markers let an
+   * analyst stage an assessment and publish it deliberately, rather than the
+   * act of saving being the act of broadcasting.
+   */
+  published Boolean @default(false)
+
+  /// Ordering on the map and in lists; lower sorts first.
+  sortOrder Int @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([published, severity])
+}
+
+enum Severity {
+  CLEAR
+  ELEVATED
+  CRITICAL
+}
+
+enum Access {
+  OPEN
+  LOCKED
+}
+
+/**
+ * ---- services ------------------------------------------------------------
+ */
+
+/**
+ * A service line, as shown on the services page and the rotating orbit.
+ * These were a hardcoded key list in `src/data/services.ts` with copy in the
+ * message catalogues and imagery on disk — three places to edit, a rebuild,
+ * and a deploy to add one service. This table collapses all three.
+ * Copy is stored as one column per locale rather than a related translations
+ * table. There are exactly three locales, they are all mandatory in the same
+ * form, and a join to fetch three short strings would cost more than it saves.
+ * Arabic and Kurdish are nullable so a service can be published in English and
+ * translated afterwards, rather than blocking on a translator.
+ */
+model Service {
+  id    String @id @default(cuid())
+  /// Stable identifier used for the line icon and as the image URL segment.
+  slug  String @unique
+  /// Which of the three groups this belongs to: protection, response, logistics.
+  group String
+
+  titleEn String
+  titleAr String?
+  titleKu String?
+
+  descriptionEn String
+  descriptionAr String?
+  descriptionKu String?
+
+  /**
+   * Which line icon to draw, from the existing `ServiceIcon` set. Kept
+   * separate from `slug` so a new service can borrow an existing glyph
+   * instead of shipping without one.
+   */
+  icon String?
+
+  /**
+   * Imagery is held inline, matching how CVs are already stored. At a dozen
+   * services of a few hundred KB each this is far less machinery than a bucket
+   * plus signed URLs, and it keeps the console self-contained — an operator
+   * uploads a photo and it is live, with nothing else to configure.
+   */
+  imageData Bytes?
+  imageType String?
+  imageName String?
+
+  published Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, sortOrder])
+}

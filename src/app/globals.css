@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+/*
+ * Mesagni is a licensed commercial family and is not bundled.
+ * Drop the woff2 files into /public/fonts and these @font-face rules pick them
+ * up automatically; until then the Cormorant fallback (loaded in layout.tsx)
+ * carries the same editorial serif feel.
+ */
+@font-face {
+  font-family: "Mesagni";
+  src: url("/fonts/Mesagni-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Mesagni";
+  src: url("/fonts/Mesagni-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Brand palette */
+  --color-ink: #0b0b0b;
+  --color-surface: #353533;
+  --color-gold: #c59c40;
+  --color-gold-bright: #efcc6e;
+  --color-bone: #f3ece1;
+  --color-white: #ffffff;
+
+  /*
+   * Operational status colours. Gold marks premium/brand moments; severity is
+   * a separate axis so real intelligence data can encode it without competing
+   * with the brand accent. Each is tuned for contrast on #0b0b0b.
+   */
+  --color-status-clear: #4ba07a;
+  --color-status-elevated: #d9a441;
+  --color-status-critical: #d2564b;
+
+  /* Semantic roles */
+  --background: var(--color-ink);
+  --foreground: var(--color-bone);
+
+  /*
+   * shadcn/ui semantic tokens, mapped onto the brand palette.
+   *
+   * shadcn components are written against these names (bg-primary,
+   * text-muted-foreground, border-input …). Pointing them at the existing
+   * brand variables means any component pulled in from shadcn inherits gold
+   * and ink automatically, instead of arriving in default slate and needing
+   * every class rewritten by hand.
+   *
+   * The site is dark-only, so there is one set of values rather than a
+   * light/dark pair.
+   */
+  --primary: var(--color-gold);
+  --primary-foreground: var(--color-ink);
+  --secondary: color-mix(in oklab, var(--color-bone) 8%, transparent);
+  --secondary-foreground: var(--color-bone);
+  --muted: color-mix(in oklab, var(--color-bone) 6%, transparent);
+  --muted-foreground: color-mix(in oklab, var(--color-bone) 55%, transparent);
+  --accent: color-mix(in oklab, var(--color-gold) 14%, transparent);
+  --accent-foreground: var(--color-gold-bright);
+  --popover: color-mix(in oklab, var(--color-ink) 92%, transparent);
+  --popover-foreground: var(--color-bone);
+  --border: color-mix(in oklab, var(--color-bone) 12%, transparent);
+  --input: color-mix(in oklab, var(--color-bone) 15%, transparent);
+  --ring: color-mix(in oklab, var(--color-gold) 60%, transparent);
+  --destructive: var(--color-status-critical);
+  --destructive-foreground: var(--color-bone);
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* shadcn token surface — see the mapping in :root above. */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --color-ink: var(--color-ink);
+  --color-surface: var(--color-surface);
+  --color-gold: var(--color-gold);
+  --color-gold-bright: var(--color-gold-bright);
+  --color-bone: var(--color-bone);
+
+  --color-status-clear: var(--color-status-clear);
+  --color-status-elevated: var(--color-status-elevated);
+  --color-status-critical: var(--color-status-critical);
+
+  /* Mesagni first, Cormorant as the licensed-font stand-in */
+  --font-display: "Mesagni", var(--font-cormorant), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-arabic: var(--font-noto-arabic), var(--font-inter), sans-serif;
+  /* Console data face. Loaded only by the admin layout, so the public bundle
+     never pays for it. */
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+/*
+ * Radius of the hole the hero pointer opens through the lion. Registered so
+ * the browser knows it is a length and can interpolate it — an unregistered
+ * custom property is just a string and would snap between values.
+ */
+@property --hole-r {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* Arabic and Kurdish Sorani both render with the Arabic script stack. */
+:root:lang(ar) body,
+:root:lang(ckb) body {
+  font-family: var(--font-arabic);
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-ink);
+}
+
+/*
+ * A tracking readout acquiring its target in the hero sensor sweep. Lives here
+ * rather than in the component because the element is positioned by inline
+ * `left`/`top` and centred by `translate(-50%, -50%)` — the keyframe has to
+ * carry that same translate to avoid fighting it, so it needs a stable,
+ * unscoped name.
+ */
+@keyframes sensor-lock {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.35);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes sensor-lock {
+    from,
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+  }
+}
