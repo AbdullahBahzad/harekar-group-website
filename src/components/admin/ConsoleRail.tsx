@@ -19,6 +19,7 @@ const stations = [
   { href: "/admin/messages", index: "03", label: "Signals", glyph: "✉" },
   { href: "/admin/applications", index: "04", label: "Personnel", glyph: "⬒" },
   { href: "/admin/accounts", index: "05", label: "Accounts", glyph: "◐" },
+  { href: "/admin/reports", index: "06", label: "Reports", glyph: "▤" },
 ] as const;
 
 export default function ConsoleRail({ counts }: { counts: Record<string, number> }) {

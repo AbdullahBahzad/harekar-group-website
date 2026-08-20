@@ -10,6 +10,7 @@
     "grant-admin": "node scripts/grant-admin.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.120.0",
     "@auth/prisma-adapter": "^2.11.3",
     "@prisma/client": "^6.19.3",
     "@radix-ui/react-popover": "^1.1.23",

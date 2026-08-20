@@ -190,3 +190,43 @@ export const sampleServices = [
     published: false, sortOrder: 3,
   },
 ];
+
+/** Sample catalogue for the reports station. */
+export const sampleReports = [
+  {
+    id: "r1", date: ago(0), kurdistanThreat: "MODERATE" as const, iraqThreat: "HIGH" as const,
+    politicalKurdistan: "Stable", politicalIraq: "Acceptable", weather: null,
+    content: {
+      items: [
+        {
+          title: "KDP, PUK leaders to meet amid KRI government talks.",
+          body: "The two parties are preparing for a high-level meeting as negotiations over forming the Kurdistan Region's new government move closer to an agreement.",
+          url: "https://www.shafaq.com/en/Kurdistan/KDP-PUK-leaders-to-meet-amid-KRI-government-talks",
+          region: "KURDISTAN" as const,
+        },
+        {
+          title: "Fuel-smuggling network busted in Iraq's Al-Muthanna.",
+          body: "Iraq's National Security Service arrested several suspects as part of a network allegedly involved in smuggling petroleum products.",
+          url: "https://www.shafaq.com/en/Security/Fuel-smuggling-network-busted-in-Iraq-s-Al-Muthanna",
+          region: "IRAQ" as const,
+        },
+      ],
+    },
+    createdAt: ago(0), createdBy: { name: "Analyst", email: null },
+  },
+  {
+    id: "r2", date: ago(1), kurdistanThreat: "MODERATE" as const, iraqThreat: "HIGH" as const,
+    politicalKurdistan: "Stable", politicalIraq: "Acceptable", weather: "Clear, 38°C",
+    content: {
+      items: [
+        {
+          title: "Erbil security forces arrest suspect in Green Belt shooting.",
+          body: "Asayish arrested a suspect after three workers were wounded in a shooting at the city's Green Belt project in the Baharka district.",
+          url: "https://www.shafaq.com/en/Kurdistan/Erbil-security-forces-arrest-suspect-in-Green-Belt-shooting",
+          region: "KURDISTAN" as const,
+        },
+      ],
+    },
+    createdAt: ago(1), createdBy: { name: "Operations", email: null },
+  },
+];

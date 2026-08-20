@@ -74,6 +74,7 @@ model User {
   sessions Session[]
   orders   Order[]
   edits    IntelMarker[]
+  reports  DailyReport[]
 
   @@index([email])
 }
@@ -266,4 +267,51 @@ model Service {
   updatedAt DateTime @updatedAt
 
   @@index([published, sortOrder])
+}
+
+/**
+ * ---- reports --------------------------------------------------------------
+ */
+
+/**
+ * A Daily Security Report, of the kind previously assembled by hand in a
+ * document editor.
+ *
+ * Selection of what goes in stays with the analyst — an operator curates the
+ * source articles and sets the day's threat and political assessments, which
+ * are judgement calls a model should not make silently in a security
+ * bulletin. What the console automates is the writing: each item is drafted
+ * from its source by Claude and reviewed before saving, so this row always
+ * holds the approved text, never a raw model output.
+ *
+ * `content` holds the drafted items (title, body, source url, region) as a
+ * single JSON blob rather than a child table. A report is edited and read as
+ * one document, never queried item-by-item, so a join would buy nothing a
+ * flat column doesn't already give more simply.
+ */
+model DailyReport {
+  id                 String      @id @default(cuid())
+  /// The day this report covers, independent of when it was generated.
+  date               DateTime
+  kurdistanThreat    ThreatLevel @default(MODERATE)
+  iraqThreat         ThreatLevel @default(HIGH)
+  politicalKurdistan String?
+  politicalIraq      String?
+  weather            String?
+  /// Drafted, reviewed report items — see `ReportContent` in `src/lib/reports.ts`.
+  content            Json
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([date])
+}
+
+enum ThreatLevel {
+  LOW
+  MODERATE
+  HIGH
+  CRITICAL
 }
