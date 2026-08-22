@@ -161,6 +161,17 @@ export async function moveMarker(
   const operatorId = await assertAdmin();
   if (!id) throw new Error("Missing marker id");
 
+  /*
+   * The same finiteness check `readMarkerForm` applies. Arguments to a server
+   * action arrive over the wire exactly as form fields do, so "it is typed
+   * `number`" is a statement about the caller we wrote, not about the caller
+   * this endpoint will get. NaN would otherwise pass straight through
+   * `clampCoordinates`, which compares its way to NaN and stores it.
+   */
+  if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
+    throw new Error("Coordinates must be numbers");
+  }
+
   await prisma.intelMarker.update({
     where: { id },
     data: { ...clampCoordinates(longitude, latitude), updatedById: operatorId },

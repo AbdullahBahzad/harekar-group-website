@@ -27,10 +27,10 @@ export default async function AccountPage({
   setRequestLocale(locale);
 
   /*
-   * The gate. Checked here in the server component rather than in middleware:
-   * this project has no middleware, and next-intl owns routing through the
-   * `[locale]` segment — adding one purely for auth would put a second router
-   * in front of it for the sake of a check that belongs on the page anyway.
+   * The gate. Checked here in the server component rather than in the proxy:
+   * `src/proxy.ts` exists only to hand routing to next-intl, and putting an
+   * auth check in front of that would mean a second router deciding who gets
+   * in, for the sake of a check that belongs on the page anyway.
    */
   const session = await auth();
   if (!session?.user) redirect(`/${locale}/login`);

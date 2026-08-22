@@ -68,9 +68,25 @@ export async function generateReportDraft(
   return draftReportItems(raw);
 }
 
+/**
+ * The day a report covers, with the time of day discarded.
+ *
+ * `<input type="date">` already yields UTC midnight, but an omitted field falls
+ * back to `new Date()` and would carry the hour it happened to be saved. Two
+ * saves of the same day would then differ by minutes and read as two different
+ * days — which is precisely what the unique constraint on `date` cannot see.
+ * Normalising here is what makes "one report per day" a fact the database can
+ * enforce rather than a convention.
+ */
+function startOfUtcDay(value: Date): Date {
+  const day = new Date(value);
+  day.setUTCHours(0, 0, 0, 0);
+  return day;
+}
+
 function readMeta(formData: FormData) {
   const dateValue = String(formData.get("date") ?? "");
-  const date = dateValue ? new Date(dateValue) : new Date();
+  const date = startOfUtcDay(dateValue ? new Date(dateValue) : new Date());
   const kurdistanThreat = String(
     formData.get("kurdistanThreat") ?? "MODERATE",
   ) as ThreatLevel;
@@ -99,6 +115,33 @@ function readMeta(formData: FormData) {
   };
 }
 
+/**
+ * A source link, or nothing at all.
+ *
+ * Held in the report's JSON as the item's provenance, so the only two useful
+ * forms are an ordinary web address and an honest absence. `javascript:` is
+ * neither, and the day this stops being plain text and becomes an anchor is the
+ * day that would matter — cheaper to refuse it on the way in than to remember
+ * on the way out.
+ */
+function readSourceUrl(value: string | undefined, index: number): string | null {
+  const raw = (value ?? "").trim();
+  if (!raw) return null;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    throw new Error(`Item ${index + 1}: "${raw}" is not a valid URL`);
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error(`Item ${index + 1}: a source must be an http or https URL`);
+  }
+
+  return parsed.toString();
+}
+
 /** Persists a report the admin has reviewed and approved. */
 export async function saveReport(formData: FormData) {
   const operatorId = await assertAdmin();
@@ -107,21 +150,53 @@ export async function saveReport(formData: FormData) {
   const titles = formData.getAll("finalTitle").map(String);
   const bodies = formData.getAll("finalBody").map(String);
   const urls = formData.getAll("finalUrl").map(String);
-  const regions = formData.getAll("finalRegion").map(String) as Region[];
+  const regions = formData.getAll("finalRegion").map(String);
 
-  const items: ReportNewsItem[] = titles.map((title, i) => ({
-    title,
-    body: bodies[i] ?? "",
-    url: urls[i] || null,
-    region: regions[i],
-  }));
+  if (titles.length === 0) throw new Error("Nothing to save");
 
-  if (items.length === 0) throw new Error("Nothing to save");
+  /*
+   * `content` is a `Json` column, so the database will accept any shape at all
+   * and whatever lands here is exactly what the bulletin renders later.
+   * `generateReportDraft` already checks regions on the way *out* to Claude;
+   * this is the path that actually persists, so it cannot be the looser of the
+   * two — which it was, casting straight to `Region[]` and asking nothing.
+   */
+  const items: ReportNewsItem[] = titles.map((rawTitle, i) => {
+    const title = rawTitle.trim();
+    const body = (bodies[i] ?? "").trim();
+    const region = regions[i];
+
+    if (!title || !body) {
+      throw new Error(`Item ${i + 1} needs both a title and a body`);
+    }
+    if (!REGIONS.includes(region as Region)) {
+      throw new Error(
+        `Item ${i + 1} has an unknown region "${region ?? ""}"`,
+      );
+    }
+
+    return {
+      title,
+      body,
+      url: readSourceUrl(urls[i], i),
+      region: region as Region,
+    };
+  });
 
   const content: ReportContent = { items };
 
-  await prisma.dailyReport.create({
-    data: { ...meta, content, createdById: operatorId },
+  /*
+   * Upsert, not create. Saving a day that already has a report is an analyst
+   * revising it — the alternative was two rows for one date and no rule for
+   * which one operations should read.
+   *
+   * Authorship is set only on create: a corrected report is still the one that
+   * analyst filed, and `updatedAt` already records that it was touched again.
+   */
+  await prisma.dailyReport.upsert({
+    where: { date: meta.date },
+    create: { ...meta, content, createdById: operatorId },
+    update: { ...meta, content },
   });
 
   revalidateReports();

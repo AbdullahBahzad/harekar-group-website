@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { hasLocale } from "next-intl";
 import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { extendProUntil } from "@/lib/entitlement";
+import { locales } from "@/i18n/routing";
 
 /**
  * Every mutation re-checks admin rights.
@@ -199,7 +201,11 @@ export async function grantAdminByEmail(
  * prefetch or image tag pointing at it.
  */
 export async function signOutOperator(formData: FormData) {
-  const locale = String(formData.get("locale") ?? "en");
+  // Validated against the known set, not trusted: it is interpolated into a
+  // redirect path, the same reason the sign-in actions check it.
+  const raw = String(formData.get("locale") ?? "");
+  const locale = hasLocale(locales, raw) ? raw : "en";
+
   await signOut({
     redirectTo: `/${locale}/login?next=${encodeURIComponent(`/${locale}/admin`)}`,
   });

@@ -1,10 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { hasLocale } from "next-intl";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getAppOrigin } from "@/lib/app-url";
 import { findPlan } from "@/data/plans";
 import { getPaymentProvider } from "@/lib/payments";
 import { locales } from "@/i18n/routing";
@@ -29,6 +29,16 @@ export async function startCheckout(formData: FormData): Promise<void> {
 
   const provider = getPaymentProvider();
 
+  /*
+   * Resolved before the order is written, not after.
+   *
+   * Both of these refuse on a misconfigured deployment, and a refusal that
+   * arrives after the insert leaves a PENDING order for a checkout that never
+   * started — a row that has to be reconciled by hand later to establish it was
+   * never a payment at all.
+   */
+  const origin = await getAppOrigin();
+
   const order = await prisma.order.create({
     data: {
       userId: session.user.id,
@@ -41,20 +51,38 @@ export async function startCheckout(formData: FormData): Promise<void> {
   });
 
   /*
-   * Gateways need an absolute return URL, and the correct host is whatever the
-   * request actually arrived on — deriving it from the request rather than a
-   * hardcoded constant keeps preview deployments and local development working
-   * without per-environment configuration.
+   * Gateways need an absolute return URL. The origin comes from configuration
+   * rather than from the request that happens to be in hand — see the note in
+   * `getAppOrigin` on why the `Host` header cannot be the source of a URL a
+   * paying customer will be sent to.
    */
-  const requestHeaders = await headers();
-  const host = requestHeaders.get("host") ?? "localhost:3000";
-  const protocol = host.startsWith("localhost") ? "http" : "https";
-  const returnUrl = `${protocol}://${host}/${locale}/pro/result?order=${order.id}`;
+  const returnUrl = `${origin}/${locale}/pro/result?order=${order.id}`;
 
-  const { redirectUrl, providerRef } = await provider.createCheckout({
-    order,
-    returnUrl,
-  });
+  /*
+   * A gateway that refuses to open a checkout leaves a row saying a purchase
+   * was begun, which is not true — nobody was ever shown a payment page. Marked
+   * CANCELLED rather than deleted, because "this was attempted and did not
+   * start" is worth more when reconciling than a gap in the sequence. The error
+   * is rethrown: the customer still needs to be told.
+   */
+  let redirectUrl: string;
+  let providerRef: string | undefined;
+  try {
+    ({ redirectUrl, providerRef } = await provider.createCheckout({
+      order,
+      returnUrl,
+    }));
+  } catch (error) {
+    await prisma.order
+      .updateMany({
+        where: { id: order.id, status: "PENDING" },
+        data: { status: "CANCELLED" },
+      })
+      .catch(() => {
+        /* The original failure is the one worth reporting. */
+      });
+    throw error;
+  }
 
   if (providerRef) {
     await prisma.order.update({

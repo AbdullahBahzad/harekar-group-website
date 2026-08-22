@@ -308,6 +308,9 @@
       "sending": "Sending…",
       "success": "Thank you. Our team will be in touch shortly.",
       "errorRequired": "Please complete the required fields.",
+      "errorEmail": "Please enter a valid email address.",
+      "errorTooLong": "One of the fields is longer than we can accept.",
+      "errorTooMany": "Too many messages sent. Please try again shortly.",
       "errorGeneric": "Something went wrong. Please try again."
     }
   },
@@ -335,6 +338,7 @@
     "errorPasswordMismatch": "Passwords do not match.",
     "errorEmailTaken": "An account with this email already exists.",
     "errorCredentials": "Incorrect email or password.",
+    "errorTooMany": "Too many attempts. Please wait a moment and try again.",
     "errorGeneric": "Something went wrong. Please try again."
   },
   "account": {

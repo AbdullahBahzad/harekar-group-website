@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getPaymentProvider } from "@/lib/payments";
+import { getPaymentProvider, type PaymentProvider } from "@/lib/payments";
 import { failOrder, fulfilOrder } from "@/lib/payments/fulfil";
 
 /**
@@ -15,8 +15,6 @@ import { failOrder, fulfilOrder } from "@/lib/payments/fulfil";
  * here, so an unverified body is treated as noise rather than as a payment.
  */
 export async function POST(request: Request) {
-  const provider = getPaymentProvider();
-
   let body: unknown = null;
   try {
     body = await request.json();
@@ -26,18 +24,45 @@ export async function POST(request: Request) {
   }
 
   const url = new URL(request.url);
-  const result = await provider.verifyCallback({
-    body,
-    searchParams: url.searchParams,
-    headers: request.headers,
-  });
+
+  /*
+   * Resolving the provider and verifying are one guarded step.
+   *
+   * Both throw on a misconfigured deployment — an unset `PAYMENT_PROVIDER`, or
+   * the stub reached in production. That has to be distinguishable from a
+   * payload this endpoint simply could not verify: a 400 reads as ordinary
+   * internet noise and would bury the one condition most worth noticing. 503
+   * says the fault is ours, and tells the gateway to deliver this notification
+   * again once it is fixed, so a real payment is not lost to a bad deploy.
+   */
+  let result: Awaited<ReturnType<PaymentProvider["verifyCallback"]>>;
+  try {
+    const provider = getPaymentProvider();
+    result = await provider.verifyCallback({
+      body,
+      searchParams: url.searchParams,
+      headers: request.headers,
+    });
+  } catch (error) {
+    console.error("Payment callback could not be processed", error);
+    return new NextResponse("Payment provider unavailable", { status: 503 });
+  }
 
   if (!result) {
     // Unverifiable: refuse it, and do not record a failure against any order.
     return new NextResponse("Invalid callback", { status: 400 });
   }
 
-  const order = await prisma.order.findFirst({
+  /*
+   * `findUnique`, on a column the schema now constrains to be unique.
+   *
+   * `findFirst` would quietly pick one row out of however many matched, which
+   * on a duplicated reference means fulfilling an arbitrary order — and the
+   * customer whose order lost the toss has paid and not been upgraded. The
+   * constraint is what makes "the order this payment belongs to" a question
+   * with one answer; this call is just the half that refuses to guess.
+   */
+  const order = await prisma.order.findUnique({
     where: { providerRef: result.providerRef },
     select: { id: true },
   });

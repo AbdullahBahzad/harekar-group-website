@@ -1,6 +1,24 @@
 import type { PaymentProvider } from "./types";
 
 /**
+ * Refuses to run outside development.
+ *
+ * Every entry point calls this, not just the one that starts a checkout.
+ * Guarding `createCheckout` alone was not enough: `verifyCallback` is the more
+ * dangerous of the two, because it is reachable from the open internet at
+ * `/api/payments/callback` without any prior journey through this application.
+ * A guard on the door nobody uses is not a guard.
+ */
+function refuseInProduction(entryPoint: string): void {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      `The stub payment provider cannot be used in production (${entryPoint}). ` +
+        "Set PAYMENT_PROVIDER to a real gateway.",
+    );
+  }
+}
+
+/**
  * Stands in until a gateway is signed.
  *
  * Instead of contacting anything, it sends the customer to an internal page
@@ -16,11 +34,7 @@ export const stubProvider: PaymentProvider = {
   id: "stub",
 
   async createCheckout({ order }) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error(
-        "The stub payment provider cannot be used in production. Set PAYMENT_PROVIDER to a real gateway.",
-      );
-    }
+    refuseInProduction("createCheckout");
 
     return {
       // Locale-free internal route; the page redirects onward after confirming.
@@ -29,7 +43,18 @@ export const stubProvider: PaymentProvider = {
     };
   },
 
+  /**
+   * Authenticates nothing, deliberately and unavoidably.
+   *
+   * There is no shared secret to check a signature against, because there is
+   * no gateway — so `?ref=…&status=paid` from anyone at all reads here as a
+   * successful payment. That is acceptable on a developer machine and is a
+   * free-Pro endpoint anywhere else, which is why the production guard runs
+   * before the query string is even looked at.
+   */
   async verifyCallback({ searchParams }) {
+    refuseInProduction("verifyCallback");
+
     const providerRef = searchParams.get("ref");
     if (!providerRef) return null;
     return { providerRef, paid: searchParams.get("status") === "paid" };

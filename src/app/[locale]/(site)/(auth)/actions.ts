@@ -8,6 +8,7 @@ import { signIn } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { locales, type Locale } from "@/i18n/routing";
 import { safeInternalPath } from "@/lib/safe-redirect";
+import { clientKey, withinRateLimit } from "@/lib/rate-limit";
 
 /** Cost factor for password hashing. 12 is the current sensible default. */
 const BCRYPT_ROUNDS = 12;
@@ -21,6 +22,22 @@ const MIN_PASSWORD_LENGTH = 8;
  * valid addresses, and the real proof of ownership is a verification email.
  */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/*
+ * Attempt ceilings, per address.
+ *
+ * Sign-in is the one that matters: `authorize` runs bcrypt at twelve rounds on
+ * every attempt, deliberately, and that cost is paid by this server. Unmetered,
+ * the same property that makes the hash expensive to attack makes the endpoint
+ * cheap to exhaust — a few hundred concurrent guesses is a CPU outage, quite
+ * apart from whether any of them are correct.
+ *
+ * Both are set well above what a person fumbling a password will hit.
+ */
+const LOGIN_LIMIT = 10;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const REGISTER_LIMIT = 5;
+const REGISTER_WINDOW_MS = 60 * 60 * 1000;
 
 export type AuthFormState = {
   status: "idle" | "error";
@@ -41,6 +58,7 @@ export type AuthFormState = {
     | "errorPasswordMismatch"
     | "errorEmailTaken"
     | "errorCredentials"
+    | "errorTooMany"
     | "errorGeneric";
 };
 
@@ -77,6 +95,17 @@ export async function registerAccount(
   }
   if (password !== confirm) {
     return { status: "error", error: "errorPasswordMismatch", values: typed };
+  }
+
+  // After validation, before the bcrypt hash below — the expensive part.
+  if (
+    !withinRateLimit(
+      await clientKey("register"),
+      REGISTER_LIMIT,
+      REGISTER_WINDOW_MS,
+    )
+  ) {
+    return { status: "error", error: "errorTooMany", values: typed };
   }
 
   try {
@@ -116,6 +145,11 @@ export async function loginAccount(
 
   if (!email || !password) {
     return { status: "error", error: "errorRequired", values: { email } };
+  }
+
+  // Before `signIn`, which is what pays for the bcrypt comparison.
+  if (!withinRateLimit(await clientKey("login"), LOGIN_LIMIT, LOGIN_WINDOW_MS)) {
+    return { status: "error", error: "errorTooMany", values: { email } };
   }
 
   return signInWithPassword(email, password, next, { email });

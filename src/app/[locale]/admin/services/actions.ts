@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -110,6 +111,25 @@ function revalidateServices() {
   revalidatePath("/[locale]/(site)", "page");
 }
 
+/**
+ * Turns the unique-constraint violation on `slug` into a sentence.
+ *
+ * Slugs are normalised hard, so two services named similarly enough collide
+ * easily — "K9 Units" and "K9 units" are the same slug. Left unhandled, Prisma's
+ * P2002 escapes the action and Next replaces the console with an error overlay,
+ * taking the half-filled form with it. `registerAccount` already catches the
+ * same code for the same reason; this is that treatment, applied here.
+ */
+function asSlugCollision(error: unknown, slug: string): Error | null {
+  const isDuplicate =
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002";
+
+  return isDuplicate
+    ? new Error(`A service with the slug "${slug}" already exists`)
+    : null;
+}
+
 export async function createService(formData: FormData) {
   await assertAdmin();
 
@@ -117,9 +137,13 @@ export async function createService(formData: FormData) {
   const copy = readCopy(formData);
   const image = await readImage(formData);
 
-  await prisma.service.create({
-    data: { slug, ...copy, ...(image ?? {}) },
-  });
+  try {
+    await prisma.service.create({
+      data: { slug, ...copy, ...(image ?? {}) },
+    });
+  } catch (error) {
+    throw asSlugCollision(error, slug) ?? error;
+  }
 
   revalidateServices();
 }
@@ -134,12 +158,17 @@ export async function updateService(formData: FormData) {
   const copy = readCopy(formData);
   const image = await readImage(formData);
 
-  await prisma.service.update({
-    where: { id },
-    // Spreading only when an image was uploaded is what preserves the existing
-    // photo on an ordinary save.
-    data: { slug, ...copy, ...(image ?? {}) },
-  });
+  try {
+    await prisma.service.update({
+      where: { id },
+      // Spreading only when an image was uploaded is what preserves the existing
+      // photo on an ordinary save.
+      data: { slug, ...copy, ...(image ?? {}) },
+    });
+  } catch (error) {
+    // Renaming a service onto another's slug collides exactly as creating does.
+    throw asSlugCollision(error, slug) ?? error;
+  }
 
   revalidateServices();
 }
