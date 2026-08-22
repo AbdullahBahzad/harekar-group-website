@@ -1,17 +1,67 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useTransform, type MotionValue } from "framer-motion";
 
 /**
- * Swap this to change the hero sequence.
+ * How the browser is being given the roar.
  *
- * The clip is a VP8 WebM carrying a real alpha channel (`alpha_mode: 1`), so
- * only the lion is painted and the golden ring's light reads straight through
- * the frame. Browsers without alpha-WebM never fire `loadedmetadata`, which
- * leaves the still in place — the fallback is self-healing.
+ * `alpha` — the VP8 WebM carrying a real alpha channel, so only the lion is
+ * painted and the golden ring's light reads straight through the frame.
+ *
+ * `matte` — the same footage flattened onto black as H.264. Safari decodes
+ * WebM but discards its alpha channel, which would put an opaque black slab
+ * inside the wreath; the caller screen-blends this variant instead, and on a
+ * near-black stage the result is very close to the alpha version.
  */
-const ROAR_VIDEO = "/lion-roar.webm";
+export type LionVideoMode = "alpha" | "matte";
+
+const ROAR_ALPHA = "/lion-roar.webm";
+const ROAR_MATTE = "/lion-roar.mp4";
+
+/** Frame is scaled into this square to check whether any pixel is see-through. */
+const SAMPLE = 32;
+
+/**
+ * Did this browser actually paint the clip's transparency?
+ *
+ * There is no honest way to ask. `canPlayType` reports on the container and
+ * codec, not on the alpha channel, and Safari 17.4+ answers "probably" for VP8
+ * WebM while still throwing the alpha away — so a capability check reads as
+ * support right up until the lion arrives in a black box. UA sniffing would
+ * work today and rot quietly.
+ *
+ * So the question is put to the renderer instead: draw the frame that is
+ * already decoded and look at it. The clip's corners are background, so a
+ * browser honouring the alpha channel produces see-through pixels there and one
+ * discarding it produces opaque ones. Returns null when the frame cannot be
+ * read at all, which is treated the same as no support.
+ */
+function paintedWithAlpha(video: HTMLVideoElement): boolean | null {
+  if (!video.videoWidth || !video.videoHeight) return null;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = SAMPLE;
+  canvas.height = SAMPLE;
+
+  const context = canvas.getContext("2d");
+  if (!context) return null;
+
+  try {
+    context.clearRect(0, 0, SAMPLE, SAMPLE);
+    context.drawImage(video, 0, 0, SAMPLE, SAMPLE);
+
+    const { data } = context.getImageData(0, 0, SAMPLE, SAMPLE);
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] !== 255) return true;
+    }
+    return false;
+  } catch {
+    // A tainted canvas should be impossible for a same-origin file, but a
+    // failed read must never be louder than the still it falls back to.
+    return null;
+  }
+}
 
 /**
  * The roaring lion, looping continuously inside the golden ring.
@@ -29,8 +79,12 @@ export default function HeroLionVideo({
 }: {
   pointerX: MotionValue<number>;
   pointerY: MotionValue<number>;
-  /** Fired once the clip can render, so the still can bow out. */
-  onReady?: () => void;
+  /**
+   * Fired once the clip can render, so the still can bow out. Carries how the
+   * footage is being delivered, because the matte variant needs the caller to
+   * blend it and the alpha one must not be blended.
+   */
+  onReady?: (mode: LionVideoMode) => void;
   /**
    * Hands the raw element up so the sensor sweep can sample its frames. The
    * sampler only ever reads — playback stays owned entirely by this component.
@@ -38,6 +92,7 @@ export default function HeroLionVideo({
   onVideoRef?: (el: HTMLVideoElement | null) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [source, setSource] = useState(ROAR_ALPHA);
 
   // Cursor parallax — restrained; the performance lives in the footage.
   const rotateY = useTransform(pointerX, [-1, 1], [-7, 7]);
@@ -58,16 +113,35 @@ export default function HeroLionVideo({
     return () => videoRefCb.current?.(null);
   }, []);
 
+  /*
+   * The alpha question is asked once, against the WebM. Whichever way it is
+   * answered the answer is final — re-running it on the matte clip would
+   * always say "no alpha" and flip the source back and forth forever.
+   */
+  const settled = useRef(false);
+  const mode = useRef<LionVideoMode>("alpha");
+
+  const fallBackToMatte = useCallback(() => {
+    if (settled.current) return;
+    settled.current = true;
+    mode.current = "matte";
+    setSource(ROAR_MATTE);
+  }, []);
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     /*
-     * Autoplay can be rejected (power saving, data saver). Reporting ready
-     * only once playback is actually running means a blocked video leaves the
-     * still in place rather than showing a frozen first frame.
+     * Ready is announced only once the source is settled and playback is
+     * genuinely running. Announcing earlier would retire the still while the
+     * wrong clip is on screen; announcing on anything but `playing` would
+     * retire it in favour of a video autoplay had refused, leaving a frozen
+     * first frame where the still used to be.
      */
-    const announce = () => readyRef.current?.();
+    const announce = () => {
+      if (settled.current) readyRef.current?.(mode.current);
+    };
     video.addEventListener("playing", announce);
 
     const start = () => {
@@ -75,8 +149,24 @@ export default function HeroLionVideo({
         /* Autoplay refused — the still stays. */
       });
     };
-    if (video.readyState >= 2) start();
-    else video.addEventListener("loadeddata", start);
+
+    const inspect = () => {
+      if (!settled.current) {
+        if (paintedWithAlpha(video) === true) {
+          settled.current = true;
+        } else {
+          fallBackToMatte();
+          return; // The new source will arrive with its own `loadeddata`.
+        }
+      }
+      start();
+    };
+
+    if (video.readyState >= 2) inspect();
+    else video.addEventListener("loadeddata", inspect);
+
+    // A browser that cannot decode the WebM at all takes the same exit.
+    video.addEventListener("error", fallBackToMatte);
 
     // Only decode while the hero is actually on screen.
     const io = new IntersectionObserver(
@@ -90,10 +180,11 @@ export default function HeroLionVideo({
 
     return () => {
       video.removeEventListener("playing", announce);
-      video.removeEventListener("loadeddata", start);
+      video.removeEventListener("loadeddata", inspect);
+      video.removeEventListener("error", fallBackToMatte);
       io.disconnect();
     };
-  }, []);
+  }, [source, fallBackToMatte]);
 
   return (
     <motion.div
@@ -104,14 +195,20 @@ export default function HeroLionVideo({
     >
       <motion.video
         ref={videoRef}
-        src={ROAR_VIDEO}
+        key={source}
+        src={source}
         autoPlay
         loop
         muted
         playsInline
         preload="auto"
         aria-label="Golden lion roaring"
-        className="h-[62%] w-auto max-w-none object-contain sm:h-[68%]"
+        /*
+         * Sized against the stage's height so the lion keeps the same footing
+         * in the ring at every width, and capped by width so a narrow phone
+         * cannot push a landscape clip past the edge of the screen.
+         */
+        className="max-h-full w-auto max-w-full object-contain [height:52%] sm:[height:62%] lg:[height:68%]"
         style={{
           rotateX,
           rotateY,

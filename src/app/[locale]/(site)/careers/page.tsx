@@ -80,7 +80,15 @@ function Careers() {
       </section>
 
       <section id="apply" className="scroll-mt-24 px-6 pt-8 pb-28">
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:gap-20">
+        {/*
+          The single-column track is spelled out rather than left implicit. A
+          grid item defaults to `min-width: auto`, so an implicit track refuses
+          to shrink below its content's minimum — here the letter-spaced
+          uppercase eyebrow — and on a 320px screen that pushed the whole page
+          three pixels wider than the viewport. `minmax(0,1fr)` is the same
+          guard the `lg` columns already carry, applied from the start.
+        */}
+        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:gap-20">
           <Reveal>
             <p className="text-gold/80 text-xs tracking-[0.35em] uppercase">
               {tApply("eyebrow")}

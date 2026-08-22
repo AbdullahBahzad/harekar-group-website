@@ -4,11 +4,9 @@
     {
       "name": "harekar",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--", "--port", "3000"],
+      "runtimeArgs": ["run", "dev"],
       "port": 3000,
-      "env": {
-        "DATABASE_URL": "postgresql://user:password@localhost:5432/harekar?schema=public"
-      }
+      "autoPort": false
     }
   ]
 }

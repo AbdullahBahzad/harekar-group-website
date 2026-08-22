@@ -15,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import LaurelWreath from "@/components/LaurelWreath";
 import SensorSweep from "@/components/ui/sensor-sweep";
+import type { LionVideoMode } from "@/components/HeroLionVideo";
 
 // Client-only: the looping Higgsfield roar footage.
 const HeroLionVideo = dynamic(() => import("@/components/HeroLionVideo"), {
@@ -59,6 +60,7 @@ export default function HeroCinematic() {
   const [finePointer, setFinePointer] = useState(false);
   const [useVideo, setUseVideo] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+  const [videoMode, setVideoMode] = useState<LionVideoMode>("alpha");
 
   // Handed to the sensor sweep so it can sample the lion's own frames.
   const lionVideo = useRef<HTMLVideoElement | null>(null);
@@ -96,11 +98,26 @@ export default function HeroCinematic() {
     return () => query.removeEventListener("change", onChange);
   }, []);
 
-  // The roar footage runs on larger screens; smaller ones keep the still.
+  /*
+   * The roar runs everywhere.
+   *
+   * It used to be gated behind `min-width: 1024px`, which meant every phone got
+   * the still — the lion simply did not move for most of the people who visit.
+   * The gate was standing in for a bandwidth decision it could not actually
+   * make: screen width says nothing about the connection, and the H.264 variant
+   * a phone receives is 0.7MB against the desktop WebM's 2.8MB.
+   *
+   * Data Saver is the signal that genuinely means "do not spend my bandwidth",
+   * so that is what is honoured instead, alongside reduced motion.
+   */
   useEffect(() => {
     if (reduceMotion) return;
     queueMicrotask(() => {
-      if (window.matchMedia("(min-width: 1024px)").matches) setUseVideo(true);
+      const connection = (
+        navigator as Navigator & { connection?: { saveData?: boolean } }
+      ).connection;
+      if (connection?.saveData) return;
+      setUseVideo(true);
     });
   }, [reduceMotion]);
 
@@ -163,7 +180,7 @@ export default function HeroCinematic() {
       >
         <LaurelWreath progress={scrollYProgress} />
 
-        {/* Looping roar — desktop path. */}
+        {/* Looping roar. */}
         {useVideo && (
           <motion.div
             className="pointer-events-none absolute inset-0 z-10"
@@ -172,12 +189,25 @@ export default function HeroCinematic() {
               WebkitMaskImage: LION_HOLE,
               opacity: reduceMotion ? 1 : lionVeil,
               scale: reduceMotion ? 1 : lionRecede,
+              /*
+               * The matte clip carries its own black background, which would
+               * otherwise sit as a slab over the wreath. Screening it drops
+               * every black pixel and keeps the bright ones, which on this
+               * near-black stage reads as the transparency the alpha clip has
+               * natively. The blend belongs here rather than on the video
+               * itself: the mask above opens a stacking context, and a blend
+               * inside it would have nothing to blend against.
+               */
+              mixBlendMode: videoMode === "matte" ? "screen" : undefined,
             }}
           >
             <HeroLionVideo
               pointerX={smoothX}
               pointerY={smoothY}
-              onReady={() => setVideoReady(true)}
+              onReady={(mode) => {
+                setVideoMode(mode);
+                setVideoReady(true);
+              }}
               onVideoRef={(el) => {
                 lionVideo.current = el;
               }}
