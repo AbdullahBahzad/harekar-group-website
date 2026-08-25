@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { locales, type Locale } from "@/i18n/routing";
@@ -48,6 +49,15 @@ export default function Sidebar({
   const locale = useLocale() as Locale;
   const reduceMotion = useReducedMotion();
   const panelRef = useRef<HTMLDivElement>(null);
+
+  /*
+   * Account and Pro CTA repeat the header's own controls: those live behind
+   * `lg:` in `SiteHeader` for lack of room in the bar, and this menu is the
+   * only place a phone visitor can reach them at all.
+   */
+  const { data: session, status } = useSession();
+  const signedIn = status === "authenticated";
+  const isPro = session?.user?.isPro;
 
   // Esc to close + lock body scroll while the panel owns the screen.
   useEffect(() => {
@@ -97,12 +107,13 @@ export default function Sidebar({
           animate="visible"
           exit="hidden"
         >
-          {/* Darkening + blurring scrim over the page. */}
+          {/* Solid black scrim over the page — no blur, no see-through. */}
           <motion.button
             type="button"
             aria-label={t("close")}
             onClick={onClose}
-            className="bg-ink/70 absolute inset-0 backdrop-blur-md"
+            className="absolute inset-0"
+            style={{ background: "#000" }}
             variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
             transition={{ duration: 0.35, ease }}
           />
@@ -122,14 +133,8 @@ export default function Sidebar({
             }}
             transition={{ duration: 0.45, ease }}
             style={{
-              /*
-               * Opaque enough that the `backdrop-blur` this used to carry was
-               * invisible — nothing shows through 96% — while still forcing the
-               * compositor to re-blur the region behind it on every frame of
-               * the slide. The scrim behind already supplies the blurred read.
-               */
-              background:
-                "linear-gradient(180deg, rgba(20,19,17,0.97) 0%, rgba(11,11,11,0.99) 100%)",
+              // Solid black — nothing behind the panel shows through it.
+              background: "#000",
               willChange: "transform",
             }}
           >
@@ -160,7 +165,38 @@ export default function Sidebar({
               </button>
             </div>
 
-            <div className="via-gold/25 mt-8 h-px bg-gradient-to-r from-transparent to-transparent" />
+            {/*
+             * Account and Pro CTA sit right under the header row — the first
+             * thing a visitor on any device sees on open, not something they
+             * have to scroll a long nav list to find.
+             */}
+            {status !== "loading" && (
+              <motion.div
+                initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.38, ease }}
+                className="mt-6 flex items-center gap-3"
+              >
+                <Link
+                  href={signedIn ? "/account" : "/login"}
+                  onClick={onClose}
+                  className="border-bone/15 text-bone/80 hover:border-gold hover:text-gold flex-1 cursor-pointer rounded-full border py-3 text-center text-sm transition-colors"
+                >
+                  {signedIn ? t("account") : t("signIn")}
+                </Link>
+                {!isPro && (
+                  <Link
+                    href={session?.user ? "/pro" : "/register"}
+                    onClick={onClose}
+                    className="bg-gold text-ink hover:bg-gold-bright flex-1 cursor-pointer rounded-full py-3 text-center text-sm font-medium transition-colors"
+                  >
+                    {tCta("upgradePro")}
+                  </Link>
+                )}
+              </motion.div>
+            )}
+
+            <div className="via-gold/25 mt-6 h-px bg-gradient-to-r from-transparent to-transparent" />
 
             {/* Large editorial navigation. */}
             <nav className="mt-10 flex flex-1 flex-col gap-1">

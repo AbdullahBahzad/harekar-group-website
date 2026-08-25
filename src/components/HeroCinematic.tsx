@@ -14,7 +14,6 @@ import {
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import LaurelWreath from "@/components/LaurelWreath";
-import SensorSweep from "@/components/ui/sensor-sweep";
 import type { LionVideoMode } from "@/components/HeroLionVideo";
 
 // Client-only: the looping Higgsfield roar footage.
@@ -33,18 +32,6 @@ const LION_SRC = "/lion-hero.webp";
 const MAX_TILT = 10;
 
 /**
- * Punches the lion transparent under the pointer, so the scanned wireframe
- * surfaces through the gap. Inverse of the lens SensorSweep draws into, driven
- * by the same stage variables — the lion gives way exactly where the scan
- * appears.
- *
- * At `--hole-r: 0px` the gradient collapses and every pixel falls past the
- * final stop, leaving the lion fully opaque. Nothing to undo when idle.
- */
-const LION_HOLE =
-  "radial-gradient(circle var(--hole-r, 0px) at var(--mx, -999px) var(--my, -999px), transparent 40%, rgba(0,0,0,0.45) 72%, #000 100%)";
-
-/**
  * The opening scene: the lion roaring on a continuous loop inside a gold LED
  * laurel wreath.
  *
@@ -61,9 +48,6 @@ export default function HeroCinematic() {
   const [useVideo, setUseVideo] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const [videoMode, setVideoMode] = useState<LionVideoMode>("alpha");
-
-  // Handed to the sensor sweep so it can sample the lion's own frames.
-  const lionVideo = useRef<HTMLVideoElement | null>(null);
 
   /* ---- the wreath closing ----------------------------------------------- */
 
@@ -165,19 +149,8 @@ export default function HeroCinematic() {
       {/* Atmospheric embers — cheap, GPU-only, hidden under reduced motion. */}
       {!reduceMotion && <Embers />}
 
-      {/*
-       * The stage: the wreath behind, looping lion in front.
-       *
-       * It also owns the pointer variables SensorSweep publishes (`--mx`,
-       * `--my`, `--hole-r`). The lion masks itself against them and the scan
-       * reveals itself against them, which is what keeps the hole and the
-       * wireframe locked together. The transition lives here because that is
-       * where `--hole-r` actually changes.
-       */}
-      <div
-        className="relative flex w-full max-w-4xl flex-1 items-center justify-center px-6 pt-16"
-        style={{ transition: "--hole-r 380ms cubic-bezier(0.22, 1, 0.36, 1)" }}
-      >
+      {/* The stage: the wreath behind, looping lion in front. */}
+      <div className="relative flex w-full max-w-4xl flex-1 items-center justify-center px-6 pt-16">
         <LaurelWreath progress={scrollYProgress} />
 
         {/* Looping roar. */}
@@ -185,8 +158,6 @@ export default function HeroCinematic() {
           <motion.div
             className="pointer-events-none absolute inset-0 z-10"
             style={{
-              maskImage: LION_HOLE,
-              WebkitMaskImage: LION_HOLE,
               opacity: reduceMotion ? 1 : lionVeil,
               scale: reduceMotion ? 1 : lionRecede,
               /*
@@ -194,9 +165,7 @@ export default function HeroCinematic() {
                * otherwise sit as a slab over the wreath. Screening it drops
                * every black pixel and keeps the bright ones, which on this
                * near-black stage reads as the transparency the alpha clip has
-               * natively. The blend belongs here rather than on the video
-               * itself: the mask above opens a stacking context, and a blend
-               * inside it would have nothing to blend against.
+               * natively.
                */
               mixBlendMode: videoMode === "matte" ? "screen" : undefined,
             }}
@@ -207,9 +176,6 @@ export default function HeroCinematic() {
               onReady={(mode) => {
                 setVideoMode(mode);
                 setVideoReady(true);
-              }}
-              onVideoRef={(el) => {
-                lionVideo.current = el;
               }}
             />
           </motion.div>
@@ -255,9 +221,6 @@ export default function HeroCinematic() {
             </motion.div>
           </motion.div>
         )}
-
-        {/* The lion resolves into a scanned wireframe under the pointer. */}
-        <SensorSweep videoRef={lionVideo} />
       </div>
 
       {/* Typography — arrives after the lion has settled. */}

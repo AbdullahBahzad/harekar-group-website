@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useTransform, type MotionValue } from "framer-motion";
+import { paintedWithAlpha } from "@/lib/video-alpha";
 
 /**
  * How the browser is being given the roar.
@@ -19,50 +20,6 @@ export type LionVideoMode = "alpha" | "matte";
 const ROAR_ALPHA = "/lion-roar.webm";
 const ROAR_MATTE = "/lion-roar.mp4";
 
-/** Frame is scaled into this square to check whether any pixel is see-through. */
-const SAMPLE = 32;
-
-/**
- * Did this browser actually paint the clip's transparency?
- *
- * There is no honest way to ask. `canPlayType` reports on the container and
- * codec, not on the alpha channel, and Safari 17.4+ answers "probably" for VP8
- * WebM while still throwing the alpha away — so a capability check reads as
- * support right up until the lion arrives in a black box. UA sniffing would
- * work today and rot quietly.
- *
- * So the question is put to the renderer instead: draw the frame that is
- * already decoded and look at it. The clip's corners are background, so a
- * browser honouring the alpha channel produces see-through pixels there and one
- * discarding it produces opaque ones. Returns null when the frame cannot be
- * read at all, which is treated the same as no support.
- */
-function paintedWithAlpha(video: HTMLVideoElement): boolean | null {
-  if (!video.videoWidth || !video.videoHeight) return null;
-
-  const canvas = document.createElement("canvas");
-  canvas.width = SAMPLE;
-  canvas.height = SAMPLE;
-
-  const context = canvas.getContext("2d");
-  if (!context) return null;
-
-  try {
-    context.clearRect(0, 0, SAMPLE, SAMPLE);
-    context.drawImage(video, 0, 0, SAMPLE, SAMPLE);
-
-    const { data } = context.getImageData(0, 0, SAMPLE, SAMPLE);
-    for (let i = 3; i < data.length; i += 4) {
-      if (data[i] !== 255) return true;
-    }
-    return false;
-  } catch {
-    // A tainted canvas should be impossible for a same-origin file, but a
-    // failed read must never be louder than the still it falls back to.
-    return null;
-  }
-}
-
 /**
  * The roaring lion, looping continuously inside the golden ring.
  *
@@ -75,7 +32,6 @@ export default function HeroLionVideo({
   pointerX,
   pointerY,
   onReady,
-  onVideoRef,
 }: {
   pointerX: MotionValue<number>;
   pointerY: MotionValue<number>;
@@ -85,11 +41,6 @@ export default function HeroLionVideo({
    * blend it and the alpha one must not be blended.
    */
   onReady?: (mode: LionVideoMode) => void;
-  /**
-   * Hands the raw element up so the sensor sweep can sample its frames. The
-   * sampler only ever reads — playback stays owned entirely by this component.
-   */
-  onVideoRef?: (el: HTMLVideoElement | null) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [source, setSource] = useState(ROAR_ALPHA);
@@ -102,16 +53,6 @@ export default function HeroLionVideo({
   useEffect(() => {
     readyRef.current = onReady;
   }, [onReady]);
-
-  // Publish the element for the dot sampler; withdraw it on unmount.
-  const videoRefCb = useRef(onVideoRef);
-  useEffect(() => {
-    videoRefCb.current = onVideoRef;
-  }, [onVideoRef]);
-  useEffect(() => {
-    videoRefCb.current?.(videoRef.current);
-    return () => videoRefCb.current?.(null);
-  }, []);
 
   /*
    * The alpha question is asked once, against the WebM. Whichever way it is

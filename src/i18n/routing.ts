@@ -1,6 +1,6 @@
 import { defineRouting } from "next-intl/routing";
 
-export const locales = ["en", "ar", "ckb"] as const;
+export const locales = ["en", "ckb", "ar"] as const;
 export type Locale = (typeof locales)[number];
 
 /** Locales written right-to-left. Kurdish Sorani uses the Arabic script. */

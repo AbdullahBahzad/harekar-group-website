@@ -54,7 +54,7 @@ export default function IraqMap({
 
   return (
     <>
-      <div className="border-bone/10 bg-surface/20 relative overflow-hidden rounded-3xl border p-4 sm:p-8">
+      <div className="border-bone/10 bg-surface/20 relative overflow-hidden rounded-3xl border p-2 sm:p-8">
         {/*
          * Iraq's outline is close to square, so width alone cannot bound this:
          * at the full column width the map stood taller than the viewport and
@@ -62,10 +62,14 @@ export default function IraqMap({
          * *height* as well keeps the whole country, its legend and its frame
          * visible at once, which is the only way this reads as a dashboard
          * rather than something to scroll through.
+         *
+         * The height term stays below 100svh on purpose — it has to leave room
+         * for the frame's own padding and the legend beneath it, or the country
+         * grows until the legend is pushed off the fold.
          */}
         <div
           className="mx-auto w-full"
-          style={{ maxWidth: "min(60rem, 76svh)" }}
+          style={{ maxWidth: "min(84rem, 84svh)" }}
         >
           <svg
             viewBox={`-20 -20 ${MAP_WIDTH + 40} ${MAP_HEIGHT + 40}`}
@@ -185,13 +189,13 @@ export default function IraqMap({
                       </>
                     )}
                     <text
-                      x={x + 10}
-                      y={y + 3.5}
+                      x={x + 11}
+                      y={y + 4}
                       // Ink on gold. The old pale bone was tuned for a dark
                       // background and would sit almost invisibly on the fill.
                       fill="var(--color-ink)"
                       fillOpacity="0.8"
-                      fontSize="9"
+                      fontSize="11.5"
                       fontWeight="500"
                     >
                       {marker.label}
@@ -287,10 +291,10 @@ export default function IraqMap({
                   </g>
 
                   <text
-                    x={x + 19}
-                    y={y + 3.5}
+                    x={x + 20}
+                    y={y + 4}
                     fill="var(--color-ink)"
-                    fontSize="9.5"
+                    fontSize="12"
                     fontWeight="600"
                     className="pointer-events-none"
                   >

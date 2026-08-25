@@ -9,6 +9,7 @@ import {
   useTransform,
   type MotionValue,
 } from "framer-motion";
+import { paintedWithAlpha } from "@/lib/video-alpha";
 
 /**
  * The lit branch: the same laurel, with the LED shimmer animated through it.
@@ -69,7 +70,12 @@ export default function LaurelWreath({
 }) {
   const reduceMotion = useReducedMotion();
 
-  // Flipped by the clip's own `error` event where alpha-WebM cannot decode.
+  /*
+   * Flipped either by the clip's own `error` event, where alpha-WebM cannot
+   * decode at all, or once a decoded frame comes back opaque — some mobile
+   * browsers accept the codec but silently discard the alpha channel, which
+   * would otherwise leave a black rectangle where the branch should be.
+   */
   const [videoFailed, setVideoFailed] = useState(false);
 
   /*
@@ -160,9 +166,11 @@ export default function LaurelWreath({
              * baked into the footage rather than faked with blurs. The clip
              * carries its own alpha, so it drops straight onto the page.
              *
-             * A browser without alpha-WebM decodes nothing and fires `error`,
-             * which swaps in the still — the fallback is self-healing rather
-             * than leaving a black plate over the hero.
+             * A browser without alpha-WebM decodes nothing and fires `error`;
+             * one that decodes it but discards the channel is caught once the
+             * first frame lands and reads back opaque. Either way the still
+             * swaps in — the fallback is self-healing rather than leaving a
+             * black plate over the hero.
              */
             <video
               src={BRANCH_VIDEO}
@@ -172,6 +180,11 @@ export default function LaurelWreath({
               playsInline
               preload="auto"
               onError={() => setVideoFailed(true)}
+              onLoadedData={(event) => {
+                if (paintedWithAlpha(event.currentTarget) === false) {
+                  setVideoFailed(true);
+                }
+              }}
               className="absolute inset-0 h-full w-full object-contain"
               style={{
                 filter: "drop-shadow(0 0 22px rgba(197,156,64,0.32))",

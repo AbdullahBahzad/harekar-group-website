@@ -16,8 +16,6 @@ import Sidebar from "@/components/Sidebar";
 import LocaleSwitcher from "@/components/ui/locale-switcher";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import AccountLink from "@/components/AccountLink";
-import UpgradeCta from "@/components/UpgradeCta";
 
 /** The one-page scroll targets used for the desktop rail + scroll-spy. */
 const sections = ["top", "intelligence", "services"] as const;
@@ -158,11 +156,12 @@ export default function SiteHeader() {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-500 ease-out ${
+      className={`sticky top-0 z-50 transition-[border-color,box-shadow] duration-500 ease-out ${
         condensed
-          ? "border-gold/15 bg-ink/60 border-b shadow-[0_8px_40px_-16px_rgba(0,0,0,0.9)] backdrop-blur-2xl backdrop-saturate-150"
-          : "border-b border-transparent bg-transparent"
+          ? "border-gold/15 border-b shadow-[0_8px_40px_-16px_rgba(0,0,0,0.9)]"
+          : "border-b border-transparent"
       }`}
+      style={{ background: "#000" }}
     >
       {/*
        * Gold light bleeding down from the top edge. Sits behind the content and
@@ -273,11 +272,12 @@ export default function SiteHeader() {
 
         <div className="flex shrink-0 items-center gap-2">
           {/* Current language on the face; the alternatives on open. */}
-          <LocaleSwitcher onSelect={switchLocale} className="hidden md:flex" />
+          <LocaleSwitcher onSelect={switchLocale} />
 
-          <AccountLink />
-
-          <UpgradeCta />
+          {/*
+           * Account and the Pro CTA live at the top of the sidebar menu now,
+           * not here — one home for both instead of a duplicate in the bar.
+           */}
 
           {/* Menu trigger — present on every breakpoint, opens the sidebar. */}
           <button

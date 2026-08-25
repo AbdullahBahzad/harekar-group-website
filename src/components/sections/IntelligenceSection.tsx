@@ -28,7 +28,7 @@ export default async function IntelligenceSection({
       {/* Live signal field behind the intelligence picture. */}
       <ParticleNetwork />
 
-      <div className="relative z-10 mx-auto max-w-6xl">
+      <div className="relative z-10 mx-auto max-w-7xl">
         <Reveal>
           <p className="text-gold/80 text-xs tracking-[0.35em] uppercase">
             {t("eyebrow")}
@@ -41,7 +41,12 @@ export default async function IntelligenceSection({
           </p>
         </Reveal>
 
-        <div className="mt-14">
+        {/*
+         * Bleeds past the section's own side padding on phones, where every
+         * pixel of width is worth more to the map than to the alignment of
+         * the heading text above it.
+         */}
+        <div className="mt-14 -mx-3 sm:mx-0">
           <MapStage>
             <IraqMap markers={markers} />
           </MapStage>
