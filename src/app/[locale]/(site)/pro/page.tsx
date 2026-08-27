@@ -3,7 +3,15 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { auth } from "@/auth";
 import { formatPrice, plans } from "@/data/plans";
 import { Link } from "@/i18n/navigation";
+import { getSiteContent, pick } from "@/lib/site-content";
+import type { Locale } from "@/i18n/routing";
 import { startCheckout } from "./actions";
+
+/** Prefixes into `SiteContent` for each plan's editable copy. */
+const planFields: Record<string, string> = {
+  monthly: "planMonthly",
+  yearly: "planYearly",
+};
 
 export async function generateMetadata({
   params,
@@ -27,17 +35,20 @@ export default async function ProPage({
   const session = await auth();
   const signedIn = Boolean(session?.user);
   const alreadyPro = Boolean(session?.user?.isPro);
+  const content = await getSiteContent();
+  const p = (field: string, fallback: string) =>
+    pick(content, field, locale as Locale, fallback);
 
   return (
     <section className="mx-auto min-h-svh max-w-4xl px-6 py-28">
       <p className="text-gold/80 text-xs tracking-[0.35em] uppercase">
-        {t("eyebrow")}
+        {p("proEyebrow", t("eyebrow"))}
       </p>
       <h1 className="font-display text-bone mt-6 max-w-2xl text-4xl leading-[1.15] font-light text-balance sm:text-5xl">
-        {t("title")}
+        {p("proTitle", t("title"))}
       </h1>
       <p className="text-bone/60 mt-6 max-w-xl text-base leading-relaxed text-pretty">
-        {t("subtitle")}
+        {p("proSubtitle", t("subtitle"))}
       </p>
 
       {alreadyPro ? (
@@ -68,18 +79,24 @@ export default async function ProPage({
               )}
 
               <h2 className="text-bone/70 text-xs tracking-[0.2em] uppercase">
-                {t(`plans.${plan.id}.name`)}
+                {p(`${planFields[plan.id]}Name`, t(`plans.${plan.id}.name`))}
               </h2>
 
               <p className="font-display text-bone mt-4 text-4xl font-light">
                 {formatPrice(plan, locale)}
                 <span className="text-bone/40 ml-2 text-base">
-                  {t(`plans.${plan.id}.period`)}
+                  {p(
+                    `${planFields[plan.id]}Period`,
+                    t(`plans.${plan.id}.period`),
+                  )}
                 </span>
               </p>
 
               <p className="text-bone/55 mt-4 text-sm leading-relaxed">
-                {t(`plans.${plan.id}.blurb`)}
+                {p(
+                  `${planFields[plan.id]}Blurb`,
+                  t(`plans.${plan.id}.blurb`),
+                )}
               </p>
 
               {/*

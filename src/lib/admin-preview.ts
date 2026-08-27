@@ -230,3 +230,120 @@ export const sampleReports = [
     createdAt: ago(1), createdBy: { name: "Operations", email: null },
   },
 ];
+
+/** Sample row for the site content station — mirrors the shipped copy. */
+export const sampleSiteContent = {
+  id: "site",
+  heroEyebrowEn: "Security & Operational Services", heroEyebrowAr: null, heroEyebrowKu: null,
+  heroTitleEn: "Protection built on discipline.", heroTitleAr: null, heroTitleKu: null,
+  heroSubtitleEn: "Harekar Group delivers security, emergency response, and operational support for organizations that cannot afford uncertainty.", heroSubtitleAr: null, heroSubtitleKu: null,
+
+  aboutEyebrowEn: "About Us", aboutEyebrowAr: null, aboutEyebrowKu: null,
+  aboutTitleEn: "Unparalleled security across the Kurdistan Region.", aboutTitleAr: null, aboutTitleKu: null,
+  aboutBody1En: "At Harekar Group, we provide unparalleled security solutions throughout the Kurdistan Region of Iraq (KRI). Our extensive expertise covers a comprehensive range of security domains, including static security, mobile security, K9 units, armored vehicles and more. We are relentlessly dedicated to ensuring the absolute safety and security of our clients through cutting-edge, dependable solutions.", aboutBody1Ar: null, aboutBody1Ku: null,
+  aboutBody2En: "Our security services are backed by rigorous training, advanced technology and a proactive approach to threat management. We anticipate risks before they become threats, ensuring our clients can operate with complete peace of mind.", aboutBody2Ar: null, aboutBody2Ku: null,
+  aboutBody3En: "In addition to our security services, we excel in civil works, offering specialized knowledge in construction and infrastructure development. Our projects are characterized by quality and adherence to the highest standards, ensuring successful outcomes.", aboutBody3Ar: null, aboutBody3Ku: null,
+
+  missionTitleEn: "Mission", missionTitleAr: null, missionTitleKu: null,
+  missionBodyEn: "Our mission is to safeguard lives, assets and infrastructure with unwavering dedication and accountability. We view security challenges as opportunities for innovation and advancement, setting new standards in industry. By consistently delivering value and quality, we aim to become a symbol of reliability and excellence in security services, civil work, fuel transport and other scopes of work.", missionBodyAr: null, missionBodyKu: null,
+
+  visionTitleEn: "Vision", visionTitleAr: null, visionTitleKu: null,
+  visionBodyEn: "At Harekar Group, our vision is to lead the security industry with integrity and innovative methods. We envision a future where advanced technology and human expertise blend seamlessly to provide top-notch security solutions. Our goal is to be recognized for our excellence in security, construction and fuel logistics, ensuring the safety and success of our clients.", visionBodyAr: null, visionBodyKu: null,
+
+  statExperienceValue: "15+", statExperienceLabelEn: "Years operating", statExperienceLabelAr: null, statExperienceLabelKu: null,
+  statPersonnelValue: "800+", statPersonnelLabelEn: "Vetted personnel", statPersonnelLabelAr: null, statPersonnelLabelKu: null,
+  statSitesValue: "120+", statSitesLabelEn: "Sites protected", statSitesLabelAr: null, statSitesLabelKu: null,
+  statCoverageValue: "24/7", statCoverageLabelEn: "Operations centre", statCoverageLabelAr: null, statCoverageLabelKu: null,
+
+  footerTaglineEn: "Security and operational services.", footerTaglineAr: null, footerTaglineKu: null,
+
+  faqEyebrowEn: "Frequently Asked Questions", faqEyebrowAr: null, faqEyebrowKu: null,
+  faqTitleEn: "Answers, before you ask.", faqTitleAr: null, faqTitleKu: null,
+  faqSubtitleEn: "The questions we hear most, answered plainly.", faqSubtitleAr: null, faqSubtitleKu: null,
+  faqCtaTitleEn: "Still have a question?", faqCtaTitleAr: null, faqCtaTitleKu: null,
+  faqCtaBodyEn: "Tell us what you need to protect and a member of our team will respond directly.", faqCtaBodyAr: null, faqCtaBodyKu: null,
+
+  contactEyebrowEn: "Start a conversation", contactEyebrowAr: null, contactEyebrowKu: null,
+  contactTitleEn: "Request a quote.", contactTitleAr: null, contactTitleKu: null,
+  contactSubtitleEn: "Tell us what you need protected and where. Our team will follow up within one business day.", contactSubtitleAr: null, contactSubtitleKu: null,
+
+  careersEyebrowEn: "Open applications", careersEyebrowAr: null, careersEyebrowKu: null,
+  careersTitleEn: "Apply for jobs", careersTitleAr: null, careersTitleKu: null,
+
+  proEyebrowEn: "Pro", proEyebrowAr: null, proEyebrowKu: null,
+  proTitleEn: "Pro intelligence access", proTitleAr: null, proTitleKu: null,
+  proSubtitleEn: "Unlock the restricted assessments behind every locked marker on the map.", proSubtitleAr: null, proSubtitleKu: null,
+
+  planMonthlyNameEn: "Monthly", planMonthlyNameAr: null, planMonthlyNameKu: null,
+  planMonthlyPeriodEn: "/ month", planMonthlyPeriodAr: null, planMonthlyPeriodKu: null,
+  planMonthlyBlurbEn: "Full access to restricted reports, billed each month.", planMonthlyBlurbAr: null, planMonthlyBlurbKu: null,
+  planYearlyNameEn: "Yearly", planYearlyNameAr: null, planYearlyNameKu: null,
+  planYearlyPeriodEn: "/ year", planYearlyPeriodAr: null, planYearlyPeriodKu: null,
+  planYearlyBlurbEn: "Full access for twelve months — two months free against monthly.", planYearlyBlurbAr: null, planYearlyBlurbKu: null,
+
+  updatedAt: ago(2),
+};
+
+/** Sample rows for the FAQ station — the six questions the site shipped with. */
+export const sampleFaqItems = [
+  {
+    id: "f1", questionEn: "What types of security services do you offer?", questionAr: null, questionKu: null,
+    answerEn: "We offer a comprehensive range of security services, including:", answerAr: null, answerKu: null,
+    listEn: [
+      "Facility security", "Static security", "Access control & surveillance", "Mobile security operations",
+      "K9 security dog units", "Emergency response planning", "Crisis management", "Medical evacuation",
+      "Cash in transit", "Armored vehicle deployments", "Construction & camp security design",
+      "Fuel & water supply and transport", "Heavy equipment rental",
+    ],
+    listAr: null, listKu: null,
+    published: true, sortOrder: 0,
+  },
+  {
+    id: "f2", questionEn: "What are your operating hours?", questionAr: null, questionKu: null,
+    answerEn: "Our operations centre runs 24 hours a day, seven days a week.", answerAr: null, answerKu: null,
+    listEn: null, listAr: null, listKu: null,
+    published: true, sortOrder: 1,
+  },
+  {
+    id: "f3", questionEn: "How quickly can you respond?", questionAr: null, questionKu: null,
+    answerEn: "Response times depend on the service and location, and are agreed with each client during onboarding.", answerAr: null, answerKu: null,
+    listEn: null, listAr: null, listKu: null,
+    published: true, sortOrder: 2,
+  },
+  {
+    id: "f4", questionEn: "Are you licensed?", questionAr: null, questionKu: null,
+    answerEn: "Yes — Harekar Group operates under the licences required by the Kurdistan Region of Iraq.", answerAr: null, answerKu: null,
+    listEn: null, listAr: null, listKu: null,
+    published: true, sortOrder: 3,
+  },
+  {
+    id: "f5", questionEn: "How are personnel vetted?", questionAr: null, questionKu: null,
+    answerEn: "Every operator goes through background checks and rigorous training before deployment.", answerAr: null, answerKu: null,
+    listEn: null, listAr: null, listKu: null,
+    published: true, sortOrder: 4,
+  },
+  {
+    id: "f6", questionEn: "Do you handle specialized requests?", questionAr: null, questionKu: null,
+    answerEn: "Yes — contact our team to discuss a scope that isn't listed above.", answerAr: null, answerKu: null,
+    listEn: null, listAr: null, listKu: null,
+    published: true, sortOrder: 5,
+  },
+];
+
+/** Sample rows for the career benefits station — the five cards the site shipped with. */
+export const sampleCareerBenefits = [
+  { id: "b1", titleEn: "Environment", titleAr: null, titleKu: null, bodyEn: "A disciplined, safety-first culture.", bodyAr: null, bodyKu: null, published: true, sortOrder: 0 },
+  { id: "b2", titleEn: "Development", titleAr: null, titleKu: null, bodyEn: "Ongoing training and clear paths to advance.", bodyAr: null, bodyKu: null, published: true, sortOrder: 1 },
+  { id: "b3", titleEn: "Collaboration", titleAr: null, titleKu: null, bodyEn: "Teams that rely on each other and deliver together.", bodyAr: null, bodyKu: null, published: true, sortOrder: 2 },
+  { id: "b4", titleEn: "Projects", titleAr: null, titleKu: null, bodyEn: "Meaningful work across security, construction and logistics.", bodyAr: null, bodyKu: null, published: true, sortOrder: 3 },
+  { id: "b5", titleEn: "Excellence", titleAr: null, titleKu: null, bodyEn: "A standard the whole company is held to.", bodyAr: null, bodyKu: null, published: true, sortOrder: 4 },
+];
+
+/** Sample rows for the clients station — a handful across each category. */
+export const sampleClients = [
+  { id: "c1", name: "Example NGO", category: "ngos", hasUpload: false, imageUrl: "/harekar-mark.png", w: 30.6, cx: 50, cy: 49.5, published: true, sortOrder: 0 },
+  { id: "c2", name: null, category: "ngos", hasUpload: false, imageUrl: "/harekar-mark.png", w: 44.6, cx: 50, cy: 52.1, published: true, sortOrder: 1 },
+  { id: "c3", name: "Example Energy Co.", category: "energy", hasUpload: false, imageUrl: "/harekar-mark.png", w: 53.3, cx: 51.6, cy: 50, published: true, sortOrder: 2 },
+  { id: "c4", name: null, category: "consulates", hasUpload: false, imageUrl: "/harekar-mark.png", w: 30.8, cx: 50.1, cy: 50, published: true, sortOrder: 3 },
+  { id: "c5", name: "Example Local Co.", category: "locals", hasUpload: false, imageUrl: "/harekar-mark.png", w: 35.6, cx: 51.7, cy: 51, published: false, sortOrder: 4 },
+];

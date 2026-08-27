@@ -34,7 +34,7 @@ async function assertAdmin(): Promise<string> {
 }
 
 function revalidateReports() {
-  revalidatePath("/[locale]/admin/reports", "page");
+  revalidatePath("/[locale]/admin/sources", "page");
 }
 
 /**

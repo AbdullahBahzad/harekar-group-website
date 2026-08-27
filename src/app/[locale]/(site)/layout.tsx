@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { SessionProvider } from "next-auth/react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import { getSiteContent } from "@/lib/site-content";
 
 /**
  * The public site's chrome.
@@ -15,7 +16,17 @@ import SiteFooter from "@/components/SiteFooter";
  * Route groups do not affect the URL, so every public path is unchanged —
  * `/en/contact` is still `/en/contact`.
  */
-export default function SiteLayout({ children }: { children: ReactNode }) {
+export default async function SiteLayout({ children }: { children: ReactNode }) {
+  /*
+   * Fetched here rather than inside `SiteFooter` itself: mixing an `await`
+   * with next-intl's `useTranslations`/`useLocale` in the same async
+   * component crashes React ("Expected a suspended thenable") — those hooks
+   * read from context via `use()`, which cannot follow an await in the same
+   * function. Fetching in this plain, hook-free layout and passing the
+   * result down keeps the footer's own hooks safely synchronous.
+   */
+  const content = await getSiteContent();
+
   return (
     /*
      * Session state is provided to the client rather than read on the server.
@@ -27,7 +38,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <div className="flex min-h-svh flex-col">
         <SiteHeader />
         <main className="flex-1">{children}</main>
-        <SiteFooter />
+        <SiteFooter content={content} />
       </div>
     </SessionProvider>
   );

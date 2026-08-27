@@ -43,7 +43,7 @@ export default async function ApplicationsStation({
   return (
     <>
       <header className="mb-6">
-        <h1 className="font-display text-bone text-3xl font-light">Personnel</h1>
+        <h1 className="font-display text-bone text-3xl font-light">Applications</h1>
         <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
           Applications received through the careers page. {applications.length}{" "}
           on file.
@@ -51,7 +51,7 @@ export default async function ApplicationsStation({
       </header>
 
       {applications.length === 0 ? (
-        <Panel label="Applications" index="03">
+        <Panel label="Applications">
           <p className="text-bone/40 px-5 py-10 text-center text-sm">
             No applications yet.
           </p>
@@ -59,25 +59,28 @@ export default async function ApplicationsStation({
       ) : (
         <div className="space-y-4">
           {applications.map((application) => (
-            <Panel key={application.id} label={application.position} index="⬒">
+            <Panel key={application.id} label={application.position}>
               <article className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_auto]">
                 <div className="min-w-0 space-y-3">
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <h2 className="text-bone text-base font-medium">
                       {application.name}
                     </h2>
-                    <span className="text-bone/35 font-mono text-[10px] tracking-[0.14em] uppercase">
+                    <span className="text-bone/35 text-xs">
                       {application.city}
                     </span>
                     <time
                       dateTime={application.createdAt.toISOString()}
-                      className="text-bone/30 font-mono text-[10px] tabular-nums"
+                      className="text-bone/30 text-xs tabular-nums"
                     >
-                      {application.createdAt.toISOString().slice(0, 10)}
+                      {application.createdAt.toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </time>
                   </div>
 
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px]">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
                     <a
                       href={`mailto:${application.email}`}
                       className="text-gold/80 hover:text-gold-bright transition-colors"
@@ -103,10 +106,10 @@ export default async function ApplicationsStation({
                   className="border-gold/35 text-gold hover:bg-gold hover:text-ink flex h-fit shrink-0 flex-col items-center gap-1 border px-5 py-4 text-center transition-colors"
                 >
                   <span aria-hidden className="text-lg leading-none">⤓</span>
-                  <span className="font-mono text-[10px] tracking-[0.16em] uppercase">
+                  <span className="text-xs">
                     CV
                   </span>
-                  <span className="font-mono text-[10px] tabular-nums opacity-70">
+                  <span className="text-xs tabular-nums opacity-70">
                     {formatSize(application.cvSize)}
                   </span>
                 </a>

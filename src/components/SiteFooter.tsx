@@ -1,11 +1,19 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { pick, type getSiteContent } from "@/lib/site-content";
+import type { Locale } from "@/i18n/routing";
 
-export default function SiteFooter() {
+export default function SiteFooter({
+  content,
+}: {
+  /** Fetched by the layout, not here — see the comment there. */
+  content: Awaited<ReturnType<typeof getSiteContent>>;
+}) {
   const t = useTranslations("footer");
   const tBrand = useTranslations("brand");
   const tCta = useTranslations("cta");
   const tNav = useTranslations("nav");
+  const locale = useLocale() as Locale;
 
   return (
     <footer className="border-bone/10 border-t">
@@ -14,7 +22,9 @@ export default function SiteFooter() {
           <p className="font-display text-bone text-lg tracking-[0.18em] uppercase">
             {tBrand("name")}
           </p>
-          <p className="text-bone/50 text-sm">{t("tagline")}</p>
+          <p className="text-bone/50 text-sm">
+            {pick(content, "footerTagline", locale, t("tagline"))}
+          </p>
         </div>
 
         <div className="flex flex-col gap-4 sm:items-end">

@@ -143,9 +143,8 @@ export default function IntelConsole({
       {/* ---- the map -------------------------------------------------- */}
       <Panel
         label="Operational picture"
-        index="01"
         action={
-          <span className="text-bone/30 font-mono text-[10px] tracking-[0.16em] uppercase">
+          <span className="text-bone/30 text-xs">
             {optimistic.length} markers
           </span>
         }
@@ -289,7 +288,7 @@ export default function IntelConsole({
             })}
           </svg>
 
-          <p className="text-bone/30 mt-3 font-mono text-[10px] tracking-[0.14em] uppercase">
+          <p className="text-bone/30 mt-3 text-xs">
             Click ground to place · drag a pin to move · select to edit
           </p>
         </div>
@@ -317,7 +316,7 @@ export default function IntelConsole({
                 onClose={() => setDraft(null)}
               />
             ) : (
-              <Panel label="Assessment" index="02">
+              <Panel label="Assessment">
                 <div className="px-5 py-10 text-center">
                   <p className="text-bone/45 text-sm">
                     Select a marker to edit its assessment, or click anywhere on
@@ -332,7 +331,7 @@ export default function IntelConsole({
                     <form action={seedFromStaticMarkers} className="mt-6">
                       <button
                         type="submit"
-                        className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors"
+                        className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-xs transition-colors"
                       >
                         Import original markers
                       </button>
@@ -344,7 +343,7 @@ export default function IntelConsole({
           </motion.div>
         </AnimatePresence>
 
-        <Panel label="Register" index="03">
+        <Panel label="Register">
           <ul className="divide-bone/6 divide-y">
             {optimistic.length === 0 && (
               <li className="text-bone/40 px-4 py-6 text-sm">
@@ -379,11 +378,11 @@ export default function IntelConsole({
                   <span className="text-bone/85 flex-1 truncate text-sm">
                     {marker.label}
                   </span>
-                  <span className="text-bone/30 font-mono text-[10px] tabular-nums">
+                  <span className="text-bone/30 text-xs tabular-nums">
                     {marker.latitude.toFixed(2)}, {marker.longitude.toFixed(2)}
                   </span>
                   {marker.access === "LOCKED" && (
-                    <span className="text-gold/70 font-mono text-[9px] tracking-[0.16em]">
+                    <span className="text-gold/70 text-xs">
                       PRO
                     </span>
                   )}
@@ -415,7 +414,6 @@ function MarkerEditor({
   return (
     <Panel
       label={editing ? "Assessment" : "New marker"}
-      index="02"
       tone={
         marker
           ? (marker.severity.toLowerCase() as "clear" | "elevated" | "critical")
@@ -425,7 +423,7 @@ function MarkerEditor({
         <button
           type="button"
           onClick={onClose}
-          className="text-bone/40 hover:text-bone cursor-pointer font-mono text-[10px] tracking-[0.2em] uppercase transition-colors"
+          className="text-bone/40 hover:text-bone cursor-pointer text-xs transition-colors"
         >
           Close
         </button>
@@ -454,7 +452,7 @@ function MarkerEditor({
             <select
               name="severity"
               defaultValue={marker?.severity ?? "CLEAR"}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 font-mono text-xs uppercase outline-none"
+              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
             >
               <option value="CLEAR">Clear</option>
               <option value="ELEVATED">Elevated</option>
@@ -466,7 +464,7 @@ function MarkerEditor({
             <select
               name="access"
               defaultValue={marker?.access ?? "OPEN"}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 font-mono text-xs uppercase outline-none"
+              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
             >
               <option value="OPEN">Open</option>
               <option value="LOCKED">Pro only</option>
@@ -499,12 +497,12 @@ function MarkerEditor({
             defaultChecked={marker?.published ?? false}
             className="accent-gold size-4 cursor-pointer"
           />
-          <span className="text-bone/70 font-mono text-[10px] tracking-[0.18em] uppercase">
+          <span className="text-bone/70 text-xs">
             Publish to the public map
           </span>
         </label>
 
-        <p className="text-bone/25 font-mono text-[10px] tabular-nums">
+        <p className="text-bone/25 text-xs tabular-nums">
           {latitude.toFixed(4)}°N · {longitude.toFixed(4)}°E
           {marker && ` · updated ${new Date(marker.updatedAt).toLocaleDateString()}`}
           {marker?.updatedByName && ` by ${marker.updatedByName}`}
@@ -513,7 +511,7 @@ function MarkerEditor({
         <div className="border-bone/8 flex flex-wrap gap-2 border-t pt-4">
           <button
             type="submit"
-            className="bg-gold text-ink hover:bg-gold-bright cursor-pointer px-5 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors"
+            className="bg-gold text-ink hover:bg-gold-bright cursor-pointer px-5 py-2 text-xs transition-colors"
           >
             {editing ? "Save" : "Place marker"}
           </button>
@@ -523,7 +521,7 @@ function MarkerEditor({
               <button
                 type="submit"
                 formAction={toggleMarkerPublished}
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors"
+                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 {marker.published ? "Withdraw" : "Publish"}
               </button>
@@ -535,7 +533,7 @@ function MarkerEditor({
               <button
                 type="submit"
                 formAction={deleteMarker}
-                className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink ms-auto cursor-pointer border px-4 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors"
+                className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink ms-auto cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 Delete
               </button>
@@ -556,7 +554,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-bone/45 mb-1.5 block font-mono text-[10px] tracking-[0.2em] uppercase">
+      <span className="text-bone/45 mb-1.5 block text-xs">
         {label}
       </span>
       {children}

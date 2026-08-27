@@ -5,7 +5,7 @@ import Panel from "@/components/admin/Panel";
 import { orPreview, sampleMessages } from "@/lib/admin-preview";
 
 /**
- * Signals — the contact form inbox.
+ * Messages — the contact form inbox.
  *
  * These are quote requests and enquiries. Presented newest-first as a log
  * rather than a table: each entry is a paragraph of prose, and prose in a
@@ -32,7 +32,7 @@ export default async function MessagesStation({
   return (
     <>
       <header className="mb-6">
-        <h1 className="font-display text-bone text-3xl font-light">Signals</h1>
+        <h1 className="font-display text-bone text-3xl font-light">Messages</h1>
         <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
           Quote requests and enquiries from the contact form. {messages.length}{" "}
           received.
@@ -40,7 +40,7 @@ export default async function MessagesStation({
       </header>
 
       {messages.length === 0 ? (
-        <Panel label="Inbox" index="02">
+        <Panel label="Inbox">
           <p className="text-bone/40 px-5 py-10 text-center text-sm">
             No messages yet.
           </p>
@@ -51,7 +51,6 @@ export default async function MessagesStation({
             <Panel
               key={message.id}
               label={message.organization ?? "Individual"}
-              index="✉"
             >
               <article className="space-y-3 p-5">
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -60,13 +59,18 @@ export default async function MessagesStation({
                   </h2>
                   <time
                     dateTime={message.createdAt.toISOString()}
-                    className="text-bone/35 font-mono text-[10px] tabular-nums"
+                    className="text-bone/35 text-xs tabular-nums"
                   >
-                    {message.createdAt.toISOString().slice(0, 16).replace("T", " ")}Z
+                    {message.createdAt.toLocaleString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
                   </time>
                 </div>
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px]">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
                   {/* Real mailto/tel links — the whole point of an inbox is replying. */}
                   <a
                     href={`mailto:${message.email}`}

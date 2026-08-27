@@ -6,23 +6,21 @@ import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import {
   clientCategories,
-  clientLogos,
   LOGO_CELL_ASPECT,
   type ClientCategory,
 } from "@/lib/client-logos";
+import type { PublicClientLogo } from "@/lib/clients";
 
 type Filter = ClientCategory | "all";
 const filters: Filter[] = ["all", ...clientCategories];
 
-export default function ClientWall() {
+export default function ClientWall({ logos }: { logos: PublicClientLogo[] }) {
   const t = useTranslations("clients");
   const reduceMotion = useReducedMotion();
   const [filter, setFilter] = useState<Filter>("all");
 
   const visible =
-    filter === "all"
-      ? clientLogos
-      : clientLogos.filter((logo) => logo.category === filter);
+    filter === "all" ? logos : logos.filter((logo) => logo.category === filter);
 
   return (
     <div>
@@ -59,7 +57,7 @@ export default function ClientWall() {
       <ul className="mt-6 grid grid-cols-2 gap-px sm:grid-cols-3 lg:grid-cols-4">
         {visible.map((logo, i) => (
           <motion.li
-            key={logo.n}
+            key={logo.id}
             layout={!reduceMotion}
             initial={reduceMotion ? false : { opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -139,7 +137,7 @@ export default function ClientWall() {
                 }}
               >
                 <Image
-                  src={`/clients/logo-${logo.n}.png`}
+                  src={logo.imageUrl}
                   alt={
                     logo.name ??
                     t("logoAlt", { category: t(`groups.${logo.category}`) })

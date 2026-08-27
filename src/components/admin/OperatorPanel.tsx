@@ -35,7 +35,7 @@ export default function OperatorPanel({
   const [state, formAction] = useActionState(grantAdminByEmail, initialState);
 
   return (
-    <Panel label="Operators" index="05" tone="critical">
+    <Panel label="Operators" tone="critical">
       <div className="space-y-5 p-5">
         <p className="text-bone/45 text-sm leading-relaxed">
           Console access is granted to accounts that already exist. Ask the
@@ -51,7 +51,7 @@ export default function OperatorPanel({
             placeholder="name@harekargroup.com"
             aria-label="Email address"
             autoComplete="off"
-            className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 font-mono text-xs outline-none transition-colors"
+            className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-xs outline-none transition-colors"
           />
           <GrantButton />
         </form>
@@ -64,7 +64,7 @@ export default function OperatorPanel({
         {state.status !== "idle" && state.message && (
           <p
             role="status"
-            className={`border px-3 py-2 font-mono text-[11px] leading-relaxed ${
+            className={`border px-3 py-2 text-xs leading-relaxed ${
               state.status === "error"
                 ? "border-status-critical/40 bg-status-critical/10 text-status-critical"
                 : "border-status-clear/40 bg-status-clear/10 text-status-clear"
@@ -83,20 +83,21 @@ export default function OperatorPanel({
                 key={operator.id}
                 className="flex flex-wrap items-center gap-3 py-2.5"
               >
-                <span aria-hidden className="text-gold/60 text-xs">
-                  ◐
-                </span>
+                <span
+                  aria-hidden
+                  className="bg-gold/60 size-1.5 shrink-0 rounded-full"
+                />
 
                 <span className="min-w-0 flex-1">
                   <span className="text-bone/90 block truncate text-sm">
                     {operator.name ?? "—"}
                     {isSelf && (
-                      <span className="text-gold/60 ms-2 font-mono text-[10px] tracking-[0.16em] uppercase">
+                      <span className="text-gold/60 ms-2 text-xs">
                         you
                       </span>
                     )}
                   </span>
-                  <span className="text-bone/40 block truncate font-mono text-[11px]">
+                  <span className="text-bone/40 block truncate text-xs">
                     {operator.email}
                   </span>
                 </span>
@@ -108,7 +109,7 @@ export default function OperatorPanel({
                  * refuses it too, so this only hides a button that would fail.
                  */}
                 {isSelf ? (
-                  <span className="text-bone/25 font-mono text-[10px] tracking-[0.16em] uppercase">
+                  <span className="text-bone/25 text-xs">
                     locked
                   </span>
                 ) : (
@@ -116,7 +117,7 @@ export default function OperatorPanel({
                     <input type="hidden" name="id" value={operator.id} />
                     <button
                       type="submit"
-                      className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink cursor-pointer border px-3 py-1 font-mono text-[10px] tracking-[0.14em] uppercase transition-colors"
+                      className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink cursor-pointer border px-3 py-1 text-xs transition-colors"
                     >
                       Revoke
                     </button>
@@ -145,7 +146,7 @@ function GrantButton() {
     <button
       type="submit"
       disabled={pending}
-      className="bg-gold text-ink hover:bg-gold-bright shrink-0 cursor-pointer px-4 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+      className="bg-gold text-ink hover:bg-gold-bright shrink-0 cursor-pointer px-4 py-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50"
     >
       {pending ? "Checking…" : "Grant access"}
     </button>

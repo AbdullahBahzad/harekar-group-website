@@ -1,73 +1,50 @@
 import type { ReactNode } from "react";
 
 /**
- * The console's one structural unit: a framed readout.
+ * The console's one structural unit: a plain bordered card.
  *
- * Every panel wears the same four corner ticks the hero's sensor lens draws
- * around a locked service. Reusing that motif is the whole idea — the console
- * should look like the instrument the public site advertises, not like a
- * generic table page bolted onto the back of it.
- *
- * The frame is drawn with four absolutely-positioned spans rather than a
- * border-image or an SVG, so it inherits `currentColor` and can be re-tinted
- * per severity by changing one class on the wrapper.
+ * Used to carry a "dossier" frame — corner ticks, a two-digit station index,
+ * a monospace all-caps title. Simplified to an ordinary card so the console
+ * reads like the rest of the product's admin tooling rather than a themed
+ * instrument panel.
  */
 export default function Panel({
   label,
-  index,
   action,
   children,
   className = "",
   tone = "gold",
 }: {
-  /** Small caps title, printed into the top rule. */
+  /** Title printed into the card header. */
   label?: string;
-  /** Two-digit station index, echoing the site's sidebar numbering. */
-  index?: string;
-  /** Optional control docked to the right of the title rule. */
+  /** Optional control docked to the right of the title. */
   action?: ReactNode;
   children: ReactNode;
   className?: string;
   tone?: "gold" | "clear" | "elevated" | "critical";
 }) {
   const toneClass = {
-    gold: "text-gold/50",
-    clear: "text-status-clear/60",
-    elevated: "text-status-elevated/60",
-    critical: "text-status-critical/70",
+    gold: "border-bone/10",
+    clear: "border-status-clear/30",
+    elevated: "border-status-elevated/30",
+    critical: "border-status-critical/30",
   }[tone];
 
   return (
     <section
-      className={`border-bone/8 bg-ink/40 relative border ${className}`}
+      className={`bg-surface/30 rounded-xl border ${toneClass} ${className}`}
     >
-      {/* Corner ticks — the console's signature. */}
-      <span aria-hidden className={`pointer-events-none absolute inset-0 ${toneClass}`}>
-        <span className="absolute -top-px -left-px size-3 border-t border-l border-current" />
-        <span className="absolute -top-px -right-px size-3 border-t border-r border-current" />
-        <span className="absolute -bottom-px -left-px size-3 border-b border-l border-current" />
-        <span className="absolute -right-px -bottom-px size-3 border-r border-b border-current" />
-      </span>
-
       {(label || action) && (
-        <header className="border-bone/8 flex items-center gap-3 border-b px-4 py-2.5">
-          {index && (
-            <span className="text-gold/70 font-mono text-[10px] tracking-[0.2em] tabular-nums">
-              {index}
-            </span>
-          )}
+        <header className="border-bone/8 flex items-center gap-3 border-b px-4 py-3">
           {label && (
-            <h2 className="text-bone/55 font-mono text-[10px] tracking-[0.28em] uppercase">
-              {label}
-            </h2>
+            <h2 className="text-bone/80 text-sm font-medium">{label}</h2>
           )}
-          {/* Rule that fills whatever space the title leaves. */}
-          <span aria-hidden className="via-bone/12 h-px flex-1 bg-gradient-to-r from-transparent to-transparent" />
+          <span className="flex-1" />
           {action}
         </header>
       )}
 
-      <div className="relative">{children}</div>
+      <div>{children}</div>
     </section>
   );
 }

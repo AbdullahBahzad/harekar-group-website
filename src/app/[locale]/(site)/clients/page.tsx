@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Reveal from "@/components/Reveal";
+import { getPublishedClients } from "@/lib/clients";
 import ClientWall from "./ClientWall";
 
 export async function generateMetadata({
@@ -22,10 +23,15 @@ export default async function ClientsPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <Clients />;
+  const logos = await getPublishedClients();
+  return <Clients logos={logos} />;
 }
 
-function Clients() {
+function Clients({
+  logos,
+}: {
+  logos: Awaited<ReturnType<typeof getPublishedClients>>;
+}) {
   const t = useTranslations("clients");
 
   return (
@@ -43,7 +49,7 @@ function Clients() {
       </Reveal>
 
       <Reveal delay={0.1} className="mt-14">
-        <ClientWall />
+        <ClientWall logos={logos} />
       </Reveal>
     </section>
   );

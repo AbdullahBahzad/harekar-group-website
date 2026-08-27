@@ -282,14 +282,12 @@ model Service {
 /**
  * A Daily Security Report, of the kind previously assembled by hand in a
  * document editor.
- *
  * Selection of what goes in stays with the analyst — an operator curates the
  * source articles and sets the day's threat and political assessments, which
  * are judgement calls a model should not make silently in a security
  * bulletin. What the console automates is the writing: each item is drafted
  * from its source by Claude and reviewed before saving, so this row always
  * holds the approved text, never a raw model output.
- *
  * `content` holds the drafted items (title, body, source url, region) as a
  * single JSON blob rather than a child table. A report is edited and read as
  * one document, never queried item-by-item, so a join would buy nothing a
@@ -323,4 +321,267 @@ enum ThreatLevel {
   MODERATE
   HIGH
   CRITICAL
+}
+
+/**
+ * ---- site content -----------------------------------------------------------
+ */
+
+/**
+ * The marketing copy that used to live only in `src/messages/*.json` — hero,
+ * about, mission/vision, the stats strip, the footer tagline, and the page
+ * intros for contact/careers/pro, plus the two Pro plan cards.
+ * One singleton row (`id` is always `"site"`), because this is prose about
+ * the company, not a list of anything — there is one hero, one mission, one
+ * footer tagline. A key-value table would let a page drift out of sync field
+ * by field with no way to see the whole page at a glance in the console; a
+ * single wide row is what one editor screen actually edits and saves at once.
+ * English is required everywhere so the site never renders blank. Arabic and
+ * Kurdish are nullable so a section can ship in English and be translated
+ * afterwards — the same convention `Service` already uses. A null falls back
+ * to the shipped copy in `src/messages/{locale}.json` at read time, not to a
+ * second column; there is nothing to duplicate.
+ */
+model SiteContent {
+  id String @id @default("site")
+
+  // ---- hero ----
+  heroEyebrowEn  String
+  heroEyebrowAr  String?
+  heroEyebrowKu  String?
+  heroTitleEn    String
+  heroTitleAr    String?
+  heroTitleKu    String?
+  heroSubtitleEn String
+  heroSubtitleAr String?
+  heroSubtitleKu String?
+
+  // ---- about ----
+  aboutEyebrowEn String
+  aboutEyebrowAr String?
+  aboutEyebrowKu String?
+  aboutTitleEn   String
+  aboutTitleAr   String?
+  aboutTitleKu   String?
+  aboutBody1En   String
+  aboutBody1Ar   String?
+  aboutBody1Ku   String?
+  aboutBody2En   String
+  aboutBody2Ar   String?
+  aboutBody2Ku   String?
+  aboutBody3En   String
+  aboutBody3Ar   String?
+  aboutBody3Ku   String?
+
+  missionTitleEn String
+  missionTitleAr String?
+  missionTitleKu String?
+  missionBodyEn  String
+  missionBodyAr  String?
+  missionBodyKu  String?
+
+  visionTitleEn String
+  visionTitleAr String?
+  visionTitleKu String?
+  visionBodyEn  String
+  visionBodyAr  String?
+  visionBodyKu  String?
+
+  // ---- stats strip ----
+  // Values (`15+`, `24/7`, …) are figures, not prose, so they carry one
+  // column each rather than one per locale — the label beside each is what
+  // needs translating.
+  statExperienceValue   String
+  statExperienceLabelEn String
+  statExperienceLabelAr String?
+  statExperienceLabelKu String?
+  statPersonnelValue    String
+  statPersonnelLabelEn  String
+  statPersonnelLabelAr  String?
+  statPersonnelLabelKu  String?
+  statSitesValue        String
+  statSitesLabelEn      String
+  statSitesLabelAr      String?
+  statSitesLabelKu      String?
+  statCoverageValue     String
+  statCoverageLabelEn   String
+  statCoverageLabelAr   String?
+  statCoverageLabelKu   String?
+
+  // ---- footer ----
+  footerTaglineEn String
+  footerTaglineAr String?
+  footerTaglineKu String?
+
+  // ---- faq page intro ----
+  faqEyebrowEn  String
+  faqEyebrowAr  String?
+  faqEyebrowKu  String?
+  faqTitleEn    String
+  faqTitleAr    String?
+  faqTitleKu    String?
+  faqSubtitleEn String
+  faqSubtitleAr String?
+  faqSubtitleKu String?
+  faqCtaTitleEn String
+  faqCtaTitleAr String?
+  faqCtaTitleKu String?
+  faqCtaBodyEn  String
+  faqCtaBodyAr  String?
+  faqCtaBodyKu  String?
+
+  // ---- contact page intro ----
+  contactEyebrowEn  String
+  contactEyebrowAr  String?
+  contactEyebrowKu  String?
+  contactTitleEn    String
+  contactTitleAr    String?
+  contactTitleKu    String?
+  contactSubtitleEn String
+  contactSubtitleAr String?
+  contactSubtitleKu String?
+
+  // ---- careers page intro ----
+  careersEyebrowEn String
+  careersEyebrowAr String?
+  careersEyebrowKu String?
+  careersTitleEn   String
+  careersTitleAr   String?
+  careersTitleKu   String?
+
+  // ---- pro page ----
+  proEyebrowEn  String
+  proEyebrowAr  String?
+  proEyebrowKu  String?
+  proTitleEn    String
+  proTitleAr    String?
+  proTitleKu    String?
+  proSubtitleEn String
+  proSubtitleAr String?
+  proSubtitleKu String?
+
+  // Plan cards. Prices and billing periods stay in `src/data/plans.ts` — those
+  // drive real payment amounts, and a typo there is a billing incident, not a
+  // copy edit. Only the name, period label and blurb are editable here.
+  planMonthlyNameEn   String
+  planMonthlyNameAr   String?
+  planMonthlyNameKu   String?
+  planMonthlyPeriodEn String
+  planMonthlyPeriodAr String?
+  planMonthlyPeriodKu String?
+  planMonthlyBlurbEn  String
+  planMonthlyBlurbAr  String?
+  planMonthlyBlurbKu  String?
+
+  planYearlyNameEn   String
+  planYearlyNameAr   String?
+  planYearlyNameKu   String?
+  planYearlyPeriodEn String
+  planYearlyPeriodAr String?
+  planYearlyPeriodKu String?
+  planYearlyBlurbEn  String
+  planYearlyBlurbAr  String?
+  planYearlyBlurbKu  String?
+
+  updatedAt DateTime @updatedAt
+}
+
+/**
+ * One FAQ entry. Was a fixed six-item list in the message catalogues; this
+ * lets the console add, reorder or retire questions without a redeploy.
+ * `listEn/Ar/Ku` back the one question ("What services do you offer?") whose
+ * answer is followed by a bullet list rather than prose — stored as a JSON
+ * string array so that shape isn't forced onto every other item, which has
+ * none.
+ */
+model FaqItem {
+  id String @id @default(cuid())
+
+  questionEn String
+  questionAr String?
+  questionKu String?
+
+  answerEn String
+  answerAr String?
+  answerKu String?
+
+  listEn Json?
+  listAr Json?
+  listKu Json?
+
+  published Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, sortOrder])
+}
+
+/**
+ * A "why work here" card on the careers page. Five today, hardcoded; this
+ * lets the console change what the company offers without a redeploy.
+ */
+model CareerBenefit {
+  id String @id @default(cuid())
+
+  titleEn String
+  titleAr String?
+  titleKu String?
+
+  bodyEn String
+  bodyAr String?
+  bodyKu String?
+
+  published Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, sortOrder])
+}
+
+/**
+ * A logo on the clients page wall.
+ * This was a hardcoded array in `src/lib/client-logos.ts`, keyed to files on
+ * disk. Imagery is held inline, matching `Service` — an operator uploads a
+ * mark and it is live, with no bucket or signed URL to configure.
+ * `w`/`cx`/`cy` are the same optical-centring numbers the original array
+ * carried per logo: the artwork inside each source file varies from a
+ * hairline wordmark to a nearly-square crest, so a uniform `object-contain`
+ * box reads as broken — one wordmark shrinks to a thread next to a crest that
+ * fills its cell. These three numbers correct that per logo. They default to
+ * a plain centred fit and are meant to be nudged by eye after a new upload,
+ * exactly as the original values were measured by eye against each file's
+ * alpha channel.
+ */
+model Client {
+  id String @id @default(cuid())
+
+  /// Client name, when known. Falls back to a generic "<category> client
+  /// logo" label on the public page when absent.
+  name String?
+
+  /// One of `clientCategories` in `src/lib/client-logos.ts` — kept as a plain
+  /// string rather than an enum so a new category never needs a migration.
+  category String
+
+  imageData Bytes?
+  imageType String?
+  imageName String?
+
+  /// Image width as a % of its cell — see the model doc above.
+  w  Float @default(60)
+  /// Content centre inside the source image, as a %.
+  cx Float @default(50)
+  cy Float @default(50)
+
+  published Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, sortOrder])
 }

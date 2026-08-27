@@ -66,7 +66,7 @@ export default async function AccountsStation({
         />
       </div>
 
-      <Panel label="Register" index="06">
+      <Panel label="Register">
         {users.length === 0 ? (
           <p className="text-bone/40 px-5 py-10 text-center text-sm">
             No accounts yet.
@@ -91,12 +91,12 @@ export default async function AccountsStation({
                     <p className="text-bone/90 truncate text-sm">
                       {user.name ?? "—"}
                       {isSelf && (
-                        <span className="text-gold/60 ms-2 font-mono text-[10px] tracking-[0.16em] uppercase">
+                        <span className="text-gold/60 ms-2 text-xs">
                           you
                         </span>
                       )}
                     </p>
-                    <p className="text-bone/40 truncate font-mono text-[11px]">
+                    <p className="text-bone/40 truncate text-xs">
                       {user.email}
                     </p>
                   </div>
@@ -105,15 +105,20 @@ export default async function AccountsStation({
                     <Tag on={entitled} label={entitled ? "Pro" : "Standard"} />
                     {user.isAdmin && <Tag on label="Console" />}
                     {paid > 0 && (
-                      <span className="text-bone/35 font-mono text-[10px] tabular-nums">
+                      <span className="text-bone/35 text-xs tabular-nums">
                         {paid} paid
                       </span>
                     )}
                   </div>
 
                   {user.proUntil && (
-                    <span className="text-bone/30 font-mono text-[10px] tabular-nums">
-                      until {user.proUntil.toISOString().slice(0, 10)}
+                    <span className="text-bone/30 text-xs tabular-nums">
+                      until{" "}
+                      {user.proUntil.toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
                     </span>
                   )}
 
@@ -157,7 +162,7 @@ export default async function AccountsStation({
 function Tag({ on, label }: { on: boolean; label: string }) {
   return (
     <span
-      className={`border px-2 py-0.5 font-mono text-[10px] tracking-[0.14em] uppercase ${
+      className={`border px-2 py-0.5 text-xs ${
         on ? "border-gold/40 text-gold" : "border-bone/15 text-bone/45"
       }`}
     >
@@ -176,7 +181,7 @@ function MiniButton({
   return (
     <button
       type="submit"
-      className={`cursor-pointer border px-2.5 py-1 font-mono text-[10px] tracking-[0.14em] uppercase transition-colors ${
+      className={`cursor-pointer border px-2.5 py-1 text-xs transition-colors ${
         danger
           ? "border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink"
           : "border-bone/15 text-bone/60 hover:border-gold hover:text-gold"

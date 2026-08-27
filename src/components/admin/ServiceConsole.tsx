@@ -62,7 +62,6 @@ export default function ServiceConsole({
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <Panel
         label="Catalogue"
-        index="05"
         action={
           <button
             type="button"
@@ -70,7 +69,7 @@ export default function ServiceConsole({
               setEditing(null);
               setCreating(true);
             }}
-            className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer border px-3 py-1 font-mono text-[10px] tracking-[0.16em] uppercase transition-colors"
+            className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer border px-3 py-1 text-xs transition-colors"
           >
             + New service
           </button>
@@ -83,7 +82,7 @@ export default function ServiceConsole({
               <form action={seedFromStaticServices} className="mt-6">
                 <button
                   type="submit"
-                  className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors"
+                  className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-xs transition-colors"
                 >
                   Import the 13 existing services
                 </button>
@@ -123,18 +122,18 @@ export default function ServiceConsole({
                     <span className="text-bone/90 block truncate text-sm">
                       {service.titleEn}
                     </span>
-                    <span className="text-bone/35 block truncate font-mono text-[10px]">
+                    <span className="text-bone/35 block truncate text-xs">
                       {service.slug} · {service.group}
                     </span>
                   </span>
 
                   {!service.published && (
-                    <span className="text-bone/30 font-mono text-[9px] tracking-[0.18em] uppercase">
+                    <span className="text-bone/30 text-xs">
                       hidden
                     </span>
                   )}
                   {service.hasUpload && (
-                    <span className="text-gold/70 font-mono text-[9px] tracking-[0.16em]">
+                    <span className="text-gold/70 text-xs">
                       NEW
                     </span>
                   )}
@@ -156,7 +155,7 @@ export default function ServiceConsole({
           }}
         />
       ) : (
-        <Panel label="Editor" index="06">
+        <Panel label="Editor">
           <p className="text-bone/45 px-5 py-10 text-center text-sm">
             Select a service to edit its copy or replace its photo, or add a new
             one.
@@ -181,12 +180,11 @@ function ServiceEditor({
   return (
     <Panel
       label={editing ? "Edit service" : "New service"}
-      index="06"
       action={
         <button
           type="button"
           onClick={onClose}
-          className="text-bone/40 hover:text-bone cursor-pointer font-mono text-[10px] tracking-[0.2em] uppercase transition-colors"
+          className="text-bone/40 hover:text-bone cursor-pointer text-xs transition-colors"
         >
           Close
         </button>
@@ -213,7 +211,7 @@ function ServiceEditor({
               className="object-cover"
               unoptimized={service.hasUpload}
             />
-            <span className="bg-ink/70 text-bone/60 absolute bottom-0 start-0 px-2 py-1 font-mono text-[10px] tracking-[0.14em] uppercase backdrop-blur">
+            <span className="bg-ink/70 text-bone/60 absolute bottom-0 start-0 px-2 py-1 text-xs backdrop-blur">
               {service.hasUpload ? "Uploaded" : "Shipped image"}
             </span>
           </div>
@@ -224,10 +222,10 @@ function ServiceEditor({
             type="file"
             name="image"
             accept="image/webp,image/jpeg,image/png,image/avif"
-            className="text-bone/60 file:border-gold/40 file:text-gold hover:file:bg-gold hover:file:text-ink w-full cursor-pointer font-mono text-xs file:mr-3 file:cursor-pointer file:border file:bg-transparent file:px-3 file:py-1.5 file:font-mono file:text-[10px] file:tracking-[0.14em] file:uppercase file:transition-colors"
+            className="text-bone/60 file:border-gold/40 file:text-gold hover:file:bg-gold hover:file:text-ink w-full cursor-pointer text-xs file:mr-3 file:cursor-pointer file:border file:bg-transparent file:px-3 file:py-1.5 file:text-xs file:transition-colors"
           />
           {service?.hasUpload && (
-            <span className="text-bone/30 mt-1.5 block font-mono text-[10px]">
+            <span className="text-bone/30 mt-1.5 block text-xs">
               Leave empty to keep the current photo.
             </span>
           )}
@@ -240,7 +238,7 @@ function ServiceEditor({
               defaultValue={service?.slug ?? ""}
               required
               autoComplete="off"
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 font-mono text-xs outline-none"
+              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-xs outline-none"
             />
           </Field>
 
@@ -248,7 +246,7 @@ function ServiceEditor({
             <select
               name="group"
               defaultValue={service?.group ?? "protection"}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 font-mono text-xs outline-none"
+              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
             >
               {GROUPS.map((group) => (
                 <option key={group.id} value={group.id}>
@@ -263,7 +261,7 @@ function ServiceEditor({
           <select
             name="icon"
             defaultValue={service?.icon ?? ""}
-            className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 font-mono text-xs outline-none"
+            className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
           >
             <option value="">None</option>
             {iconNames.map((name) => (
@@ -308,20 +306,20 @@ function ServiceEditor({
               defaultChecked={service?.published ?? true}
               className="accent-gold size-4 cursor-pointer"
             />
-            <span className="text-bone/70 font-mono text-[10px] tracking-[0.18em] uppercase">
+            <span className="text-bone/70 text-xs">
               Show on the site
             </span>
           </label>
 
           <label className="flex items-center gap-2">
-            <span className="text-bone/45 font-mono text-[10px] tracking-[0.18em] uppercase">
+            <span className="text-bone/45 text-xs">
               Order
             </span>
             <input
               type="number"
               name="sortOrder"
               defaultValue={service?.sortOrder ?? 0}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 font-mono text-xs tabular-nums outline-none"
+              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-xs tabular-nums outline-none"
             />
           </label>
         </div>
@@ -329,7 +327,7 @@ function ServiceEditor({
         <div className="border-bone/8 flex flex-wrap gap-2 border-t pt-4">
           <button
             type="submit"
-            className="bg-gold text-ink hover:bg-gold-bright cursor-pointer px-5 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors"
+            className="bg-gold text-ink hover:bg-gold-bright cursor-pointer px-5 py-2 text-xs transition-colors"
           >
             {editing ? "Save" : "Create service"}
           </button>
@@ -340,7 +338,7 @@ function ServiceEditor({
                 type="submit"
                 formAction={toggleServicePublished}
                 formNoValidate
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors"
+                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 {service.published ? "Hide" : "Show"}
               </button>
@@ -350,7 +348,7 @@ function ServiceEditor({
                   type="submit"
                   formAction={clearServiceImage}
                   formNoValidate
-                  className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors"
+                  className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
                 >
                   Remove photo
                 </button>
@@ -360,7 +358,7 @@ function ServiceEditor({
                 type="submit"
                 formAction={deleteService}
                 formNoValidate
-                className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink ms-auto cursor-pointer border px-4 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors"
+                className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink ms-auto cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 Delete
               </button>
@@ -391,7 +389,7 @@ function LocaleBlock({
   return (
     <fieldset className="border-bone/8 space-y-2 border-s-2 ps-3">
       <legend className="sr-only">{locale}</legend>
-      <p className="text-gold/60 font-mono text-[10px] tracking-[0.2em] uppercase">
+      <p className="text-gold/60 text-xs">
         {locale}
         {!required && (
           <span className="text-bone/25 ms-2 normal-case">optional</span>
@@ -412,7 +410,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-bone/45 mb-1.5 block font-mono text-[10px] tracking-[0.2em] uppercase">
+      <span className="text-bone/45 mb-1.5 block text-xs">
         {label}
       </span>
       {children}

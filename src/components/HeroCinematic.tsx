@@ -40,7 +40,17 @@ const MAX_TILT = 10;
  * deliberately independent of it: the clip plays at its own pace and the dots
  * answer only to the cursor, so neither stutters when the page moves.
  */
-export default function HeroCinematic() {
+export default function HeroCinematic({
+  overrides,
+}: {
+  /**
+   * Eyebrow/title/subtitle resolved server-side from the console's
+   * `SiteContent` row (or the shipped translation if nothing was saved
+   * there). Passed in rather than fetched here because this component runs
+   * client-side for its scroll/pointer animation.
+   */
+  overrides: { eyebrow: string; title: string; subtitle: string };
+}) {
   const t = useTranslations("hero");
   const tCta = useTranslations("cta");
   const reduceMotion = useReducedMotion();
@@ -231,7 +241,7 @@ export default function HeroCinematic() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.35, ease }}
         >
-          {t("eyebrow")}
+          {overrides.eyebrow}
         </motion.p>
 
         <motion.h1
@@ -240,7 +250,7 @@ export default function HeroCinematic() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 1.5, ease }}
         >
-          {t("title")}
+          {overrides.title}
         </motion.h1>
 
         <motion.p
@@ -249,7 +259,7 @@ export default function HeroCinematic() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 1.65, ease }}
         >
-          {t("subtitle")}
+          {overrides.subtitle}
         </motion.p>
 
         <motion.div

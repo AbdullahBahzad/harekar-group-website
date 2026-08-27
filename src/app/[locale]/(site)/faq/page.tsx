@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Reveal from "@/components/Reveal";
 import { Link } from "@/i18n/navigation";
+import { getSiteContent, pick } from "@/lib/site-content";
+import { getPublishedFaqItems } from "@/lib/faq";
+import type { Locale } from "@/i18n/routing";
 import FaqAccordion from "./FaqAccordion";
 
 export async function generateMetadata({
@@ -23,11 +25,11 @@ export default async function FaqPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <Faq />;
-}
-
-function Faq() {
-  const t = useTranslations("faq");
+  const t = await getTranslations({ locale, namespace: "faq" });
+  const content = await getSiteContent();
+  const items = await getPublishedFaqItems(locale as Locale);
+  const p = (field: string, fallback: string) =>
+    pick(content, field, locale as Locale, fallback);
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-24">
@@ -39,13 +41,13 @@ function Faq() {
       <div className="grid gap-12 lg:grid-cols-[minmax(0,19rem)_minmax(0,1fr)] lg:gap-20">
         <Reveal className="lg:sticky lg:top-28 lg:self-start">
           <p className="text-gold/80 text-xs tracking-[0.35em] uppercase">
-            {t("eyebrow")}
+            {p("faqEyebrow", t("eyebrow"))}
           </p>
           <h1 className="font-display text-bone mt-6 text-4xl leading-[1.15] font-light text-balance sm:text-5xl">
-            {t("title")}
+            {p("faqTitle", t("title"))}
           </h1>
           <p className="text-bone/60 mt-6 text-sm leading-relaxed text-pretty">
-            {t("subtitle")}
+            {p("faqSubtitle", t("subtitle"))}
           </p>
 
           {/*
@@ -55,10 +57,10 @@ function Faq() {
            */}
           <div className="border-bone/10 mt-10 border-t pt-8">
             <p className="font-display text-bone text-lg font-medium">
-              {t("ctaTitle")}
+              {p("faqCtaTitle", t("ctaTitle"))}
             </p>
             <p className="text-bone/55 mt-2 text-sm leading-relaxed text-pretty">
-              {t("ctaBody")}
+              {p("faqCtaBody", t("ctaBody"))}
             </p>
             <Link
               href="/contact"
@@ -84,7 +86,7 @@ function Faq() {
         </Reveal>
 
         <Reveal delay={0.1}>
-          <FaqAccordion />
+          <FaqAccordion items={items} />
         </Reveal>
       </div>
     </section>

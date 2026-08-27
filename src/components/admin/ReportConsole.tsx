@@ -6,14 +6,18 @@ import {
   generateReportDraft,
   saveReport,
   deleteReport,
-} from "@/app/[locale]/admin/reports/actions";
-import { REGIONS, THREAT_LEVELS } from "@/lib/reports";
+} from "@/app/[locale]/admin/sources/actions";
+/*
+ * From `report-shape`, not `reports`: this is a client component, and
+ * `reports.ts` reaches for `node:dns` and the Anthropic SDK at import time.
+ */
+import { REGIONS, THREAT_LEVELS } from "@/lib/report-shape";
 import type {
   Region,
   ReportContent,
   ReportNewsItem,
   ThreatLevel,
-} from "@/lib/reports";
+} from "@/lib/report-shape";
 
 export type ConsoleReport = {
   id: string;
@@ -141,7 +145,7 @@ export default function ReportConsole({
   return (
     <div className="space-y-5">
       {!canGenerate && (
-        <p className="border-status-elevated/40 bg-status-elevated/10 text-status-elevated border px-4 py-2 font-mono text-[10px] tracking-[0.18em] uppercase">
+        <p className="border-status-elevated/40 bg-status-elevated/10 text-status-elevated border px-4 py-2 text-xs">
           Preview — reports cannot be generated or saved without a database
           connection.
         </p>
@@ -154,7 +158,7 @@ export default function ReportConsole({
       )}
 
       {savedNotice && (
-        <p className="border-status-clear/40 bg-status-clear/10 text-status-clear border px-4 py-2 font-mono text-[10px] tracking-[0.18em] uppercase">
+        <p className="border-status-clear/40 bg-status-clear/10 text-status-clear border px-4 py-2 text-xs">
           Report saved.
         </p>
       )}
@@ -163,9 +167,8 @@ export default function ReportConsole({
         {/* ---- sources --------------------------------------------------- */}
         <Panel
           label="Sources"
-          index="01"
           action={
-            <span className="text-bone/30 font-mono text-[10px] tracking-[0.16em] uppercase">
+            <span className="text-bone/30 text-xs">
               {sources.length} item{sources.length === 1 ? "" : "s"}
             </span>
           }
@@ -177,8 +180,8 @@ export default function ReportConsole({
                 className="border-bone/10 space-y-2 border p-3"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-bone/30 font-mono text-[10px] tabular-nums">
-                    {String(i + 1).padStart(2, "0")}
+                  <span className="text-bone/30 text-xs tabular-nums">
+                    {i + 1}
                   </span>
                   <select
                     value={row.region}
@@ -187,7 +190,7 @@ export default function ReportConsole({
                         region: e.target.value as Region,
                       })
                     }
-                    className="border-bone/12 bg-ink/60 text-bone focus:border-gold cursor-pointer border px-2 py-1 font-mono text-[10px] uppercase outline-none"
+                    className="border-bone/12 bg-ink/60 text-bone focus:border-gold cursor-pointer border px-2 py-1 text-xs outline-none"
                   >
                     {REGIONS.map((region) => (
                       <option key={region} value={region}>
@@ -203,7 +206,7 @@ export default function ReportConsole({
                       )
                     }
                     disabled={sources.length === 1}
-                    className="text-bone/30 hover:text-status-critical ms-auto cursor-pointer font-mono text-[10px] uppercase transition-colors disabled:pointer-events-none disabled:opacity-30"
+                    className="text-bone/30 hover:text-status-critical ms-auto cursor-pointer text-xs transition-colors disabled:pointer-events-none disabled:opacity-30"
                   >
                     Remove
                   </button>
@@ -234,7 +237,7 @@ export default function ReportConsole({
               <button
                 type="button"
                 onClick={() => setSources((rows) => [...rows, newRow()])}
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors"
+                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 + Add source
               </button>
@@ -242,7 +245,7 @@ export default function ReportConsole({
                 type="button"
                 onClick={handleGenerate}
                 disabled={isPending || !canGenerate}
-                className="bg-gold text-ink hover:bg-gold-bright ms-auto cursor-pointer px-5 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                className="bg-gold text-ink hover:bg-gold-bright ms-auto cursor-pointer px-5 py-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {isPending && !draftItems ? "Drafting…" : "Generate draft"}
               </button>
@@ -251,7 +254,7 @@ export default function ReportConsole({
         </Panel>
 
         {/* ---- draft review ------------------------------------------------ */}
-        <Panel label="Review & publish" index="02">
+        <Panel label="Review & publish">
           <div className="space-y-4 p-5">
             {!draftItems && (
               <p className="text-bone/40 text-sm">
@@ -284,7 +287,7 @@ export default function ReportConsole({
                       onChange={(e) =>
                         setKurdistanThreat(e.target.value as ThreatLevel)
                       }
-                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 font-mono text-xs uppercase outline-none"
+                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
                     >
                       {THREAT_LEVELS.map((level) => (
                         <option key={level} value={level}>
@@ -299,7 +302,7 @@ export default function ReportConsole({
                       onChange={(e) =>
                         setIraqThreat(e.target.value as ThreatLevel)
                       }
-                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 font-mono text-xs uppercase outline-none"
+                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
                     >
                       {THREAT_LEVELS.map((level) => (
                         <option key={level} value={level}>
@@ -331,7 +334,7 @@ export default function ReportConsole({
                       className="border-bone/10 space-y-2 border p-3"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-gold/70 font-mono text-[10px] uppercase">
+                        <span className="text-gold/70 text-xs">
                           {item.region === "KURDISTAN"
                             ? "Kurdistan"
                             : "Iraq wide"}
@@ -345,7 +348,7 @@ export default function ReportConsole({
                                 : items,
                             )
                           }
-                          className="text-bone/30 hover:text-status-critical ms-auto cursor-pointer font-mono text-[10px] uppercase transition-colors"
+                          className="text-bone/30 hover:text-status-critical ms-auto cursor-pointer text-xs transition-colors"
                         >
                           Remove
                         </button>
@@ -366,7 +369,7 @@ export default function ReportConsole({
                         className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
                       />
                       {item.url && (
-                        <p className="text-bone/30 truncate font-mono text-[10px]">
+                        <p className="text-bone/30 truncate text-xs">
                           {item.url}
                         </p>
                       )}
@@ -379,14 +382,14 @@ export default function ReportConsole({
                     type="button"
                     onClick={handleSave}
                     disabled={isPending || !canGenerate}
-                    className="bg-gold text-ink hover:bg-gold-bright cursor-pointer px-5 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                    className="bg-gold text-ink hover:bg-gold-bright cursor-pointer px-5 py-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {isPending ? "Saving…" : "Save report"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setDraftItems(null)}
-                    className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 font-mono text-[11px] tracking-[0.16em] uppercase transition-colors"
+                    className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
                   >
                     Discard
                   </button>
@@ -398,7 +401,7 @@ export default function ReportConsole({
       </div>
 
       {/* ---- history ------------------------------------------------------ */}
-      <Panel label="History" index="03">
+      <Panel label="History">
         <ul className="divide-bone/6 divide-y">
           {reports.length === 0 && (
             <li className="text-bone/40 px-4 py-6 text-sm">
@@ -418,15 +421,15 @@ export default function ReportConsole({
                   day: "numeric",
                 })}
               </span>
-              <span className="text-bone/40 font-mono text-[10px] uppercase">
+              <span className="text-bone/40 text-xs">
                 {report.content.items.length} item
                 {report.content.items.length === 1 ? "" : "s"}
               </span>
-              <span className="text-bone/30 font-mono text-[10px] uppercase">
+              <span className="text-bone/30 text-xs">
                 KRI {report.kurdistanThreat} · IRQ {report.iraqThreat}
               </span>
               {report.createdByName && (
-                <span className="text-bone/30 hidden font-mono text-[10px] sm:inline">
+                <span className="text-bone/30 hidden text-xs sm:inline">
                   {report.createdByName}
                 </span>
               )}
@@ -434,7 +437,7 @@ export default function ReportConsole({
                 type="button"
                 onClick={() => handleDelete(report.id)}
                 disabled={isPending}
-                className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink cursor-pointer border px-3 py-1.5 font-mono text-[10px] tracking-[0.16em] uppercase transition-colors disabled:opacity-40"
+                className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink cursor-pointer border px-3 py-1.5 text-xs transition-colors disabled:opacity-40"
               >
                 Delete
               </button>
@@ -455,7 +458,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-bone/45 mb-1.5 block font-mono text-[10px] tracking-[0.2em] uppercase">
+      <span className="text-bone/45 mb-1.5 block text-xs">
         {label}
       </span>
       {children}

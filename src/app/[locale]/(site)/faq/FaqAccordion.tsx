@@ -3,18 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
-
-/** Question keys, in the order the previous site presented them. */
-export const faqKeys = [
-  "types",
-  "hours",
-  "response",
-  "licensed",
-  "vetting",
-  "specialized",
-] as const;
-
-type FaqKey = (typeof faqKeys)[number];
+import type { PublicFaqItem } from "@/lib/faq";
 
 function subscribeToHash(onChange: () => void) {
   window.addEventListener("hashchange", onChange);
@@ -22,11 +11,12 @@ function subscribeToHash(onChange: () => void) {
 }
 
 /**
- * The question named by the URL fragment, if any. Read through
- * `useSyncExternalStore` so the server snapshot is empty and hydration matches,
- * rather than reading `location` during render.
+ * The question named by the URL fragment, if any, matched against whichever
+ * items are actually on the page. Read through `useSyncExternalStore` so the
+ * server snapshot is empty and hydration matches, rather than reading
+ * `location` during render.
  */
-function useHashKey(): FaqKey | null {
+function useHashKey(itemIds: string[]): string | null {
   const hash = useSyncExternalStore(
     subscribeToHash,
     () => window.location.hash,
@@ -34,12 +24,13 @@ function useHashKey(): FaqKey | null {
   );
 
   const id = hash.replace(/^#faq-/, "");
-  return faqKeys.includes(id as FaqKey) ? (id as FaqKey) : null;
+  return itemIds.includes(id) ? id : null;
 }
 
-export default function FaqAccordion() {
+export default function FaqAccordion({ items }: { items: PublicFaqItem[] }) {
   const t = useTranslations("faq");
   const reduceMotion = useReducedMotion();
+  const itemIds = items.map((item) => item.id);
 
   /*
    * Multiple panels may be open at once. The old site closed the previous
@@ -51,8 +42,8 @@ export default function FaqAccordion() {
    * state from an effect keeps the first paint correct and avoids a second
    * render pass.
    */
-  const [override, setOverride] = useState<Set<FaqKey> | null>(null);
-  const hashKey = useHashKey();
+  const [override, setOverride] = useState<Set<string> | null>(null);
+  const hashKey = useHashKey(itemIds);
   const open = override ?? new Set(hashKey ? [hashKey] : []);
 
   /*
@@ -68,9 +59,9 @@ export default function FaqAccordion() {
     });
   }, [hashKey, reduceMotion]);
 
-  const allOpen = open.size === faqKeys.length;
+  const allOpen = open.size === items.length;
 
-  function toggle(key: FaqKey) {
+  function toggle(key: string) {
     setOverride(() => {
       const next = new Set(open);
       if (!next.delete(key)) next.add(key);
@@ -83,7 +74,7 @@ export default function FaqAccordion() {
       <div className="flex justify-end">
         <button
           type="button"
-          onClick={() => setOverride(allOpen ? new Set() : new Set(faqKeys))}
+          onClick={() => setOverride(allOpen ? new Set() : new Set(itemIds))}
           className="text-bone/50 hover:text-gold min-h-11 cursor-pointer text-xs tracking-[0.2em] uppercase transition-colors"
         >
           {allOpen ? t("collapseAll") : t("expandAll")}
@@ -91,7 +82,8 @@ export default function FaqAccordion() {
       </div>
 
       <ul className="border-bone/10 border-t">
-        {faqKeys.map((key, i) => {
+        {items.map((item, i) => {
+          const key = item.id;
           const isOpen = open.has(key);
           const panelId = `faq-panel-${key}`;
           const buttonId = `faq-button-${key}`;
@@ -131,7 +123,7 @@ export default function FaqAccordion() {
                       isOpen ? "text-bone" : "text-bone/80 group-hover:text-bone"
                     }`}
                   >
-                    {t(`items.${key}.q`)}
+                    {item.question}
                   </span>
 
                   {/*
@@ -174,10 +166,10 @@ export default function FaqAccordion() {
                   >
                     <div className="pb-8 ps-12 pe-4">
                       <p className="text-bone/65 max-w-[65ch] text-sm leading-relaxed text-pretty">
-                        {t(`items.${key}.a`)}
+                        {item.answer}
                       </p>
 
-                      {key === "types" && <ServiceList />}
+                      {item.list && <ServiceList list={item.list} />}
                     </div>
                   </motion.div>
                 )}
@@ -191,14 +183,12 @@ export default function FaqAccordion() {
 }
 
 /**
- * The fifteen service lines behind the first question. Rendered as a real list
- * across columns — as one run-on paragraph of bullets it was the tallest thing
- * on the page and effectively unreadable.
+ * The bullet list behind a FAQ item that carries one (only "What services do
+ * you offer?" does, today). Rendered as a real list across columns — as one
+ * run-on paragraph of bullets it was the tallest thing on the page and
+ * effectively unreadable.
  */
-function ServiceList() {
-  const t = useTranslations("faq.items.types");
-  const list = t.raw("list") as string[];
-
+function ServiceList({ list }: { list: string[] }) {
   return (
     <ul className="mt-5 grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
       {list.map((item) => (

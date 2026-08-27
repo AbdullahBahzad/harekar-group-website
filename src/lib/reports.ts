@@ -1,29 +1,22 @@
 import { lookup } from "node:dns/promises";
 import Anthropic from "@anthropic-ai/sdk";
+import type { RawNewsInput, ReportNewsItem } from "@/lib/report-shape";
 
-export const THREAT_LEVELS = ["LOW", "MODERATE", "HIGH", "CRITICAL"] as const;
-export type ThreatLevel = (typeof THREAT_LEVELS)[number];
-
-export const REGIONS = ["KURDISTAN", "IRAQ"] as const;
-export type Region = (typeof REGIONS)[number];
-
-export type ReportNewsItem = {
-  title: string;
-  body: string;
-  url: string | null;
-  region: Region;
-};
-
-/** Shape of `DailyReport.content` in the database. */
-export type ReportContent = {
-  items: ReportNewsItem[];
-};
-
-export type RawNewsInput = {
-  url: string;
-  notes: string;
-  region: Region;
-};
+/*
+ * The vocabulary lives in `report-shape.ts` so the client console can read it
+ * without dragging this module — and the Anthropic SDK with it — into the
+ * browser bundle. Re-exported here so existing server-side importers are
+ * unaffected.
+ */
+export {
+  THREAT_LEVELS,
+  REGIONS,
+  type ThreatLevel,
+  type Region,
+  type ReportNewsItem,
+  type ReportContent,
+  type RawNewsInput,
+} from "@/lib/report-shape";
 
 /**
  * Addresses that must never be reachable from a URL somebody typed into a form.
@@ -236,7 +229,7 @@ export async function draftReportItems(
   const maxTokens = Math.min(16_000, 2_048 + sourced.length * 512);
 
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-5",
+    model: "claude-opus-4-8",
     max_tokens: maxTokens,
     system:
       "You write items for Harekar Group's Daily Security Report, a bulletin read by a private security company's operations team covering Kurdistan and Iraq. Match the register of a professional security bulletin: factual, concise, third person, no speculation or commentary. Each item is a short bold headline followed by one tight paragraph.",
