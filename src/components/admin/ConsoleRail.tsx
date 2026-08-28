@@ -2,13 +2,19 @@
 
 import { useState, type ReactNode } from "react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import LocaleSwitcher from "@/components/ui/locale-switcher";
+import { getDirection, type Locale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
-type Station = { href: string; label: string; icon: ReactNode };
-type Group = { label: string; stations: Station[] };
+/**
+ * Stations carry a translation key, not a label. The console renders in three
+ * languages and this list is the one place every station is named.
+ */
+type Station = { href: string; labelKey: string; icon: ReactNode };
+type Group = { labelKey: string; stations: Station[] };
 
 const icon = {
   dashboard: (
@@ -90,34 +96,34 @@ const icon = {
 /** Console sections, grouped the way an operator actually thinks about them. */
 const groups: Group[] = [
   {
-    label: "Overview",
-    stations: [{ href: "/admin", label: "Dashboard", icon: icon.dashboard }],
+    labelKey: "overview",
+    stations: [{ href: "/admin", labelKey: "dashboard", icon: icon.dashboard }],
   },
   {
-    label: "Content",
+    labelKey: "content",
     stations: [
-      { href: "/admin/content", label: "Site Content", icon: icon.content },
-      { href: "/admin/intelligence", label: "Intelligence", icon: icon.map },
-      { href: "/admin/services", label: "Services", icon: icon.services },
-      { href: "/admin/clients", label: "Clients", icon: icon.clients },
-      { href: "/admin/faq", label: "FAQ", icon: icon.faq },
-      { href: "/admin/benefits", label: "Career Benefits", icon: icon.benefits },
+      { href: "/admin/content", labelKey: "siteContent", icon: icon.content },
+      { href: "/admin/intelligence", labelKey: "intelligence", icon: icon.map },
+      { href: "/admin/services", labelKey: "services", icon: icon.services },
+      { href: "/admin/clients", labelKey: "clients", icon: icon.clients },
+      { href: "/admin/faq", labelKey: "faq", icon: icon.faq },
+      { href: "/admin/benefits", labelKey: "benefits", icon: icon.benefits },
     ],
   },
   {
-    label: "Inbox",
+    labelKey: "inbox",
     stations: [
-      { href: "/admin/messages", label: "Messages", icon: icon.messages },
-      { href: "/admin/applications", label: "Applications", icon: icon.applications },
+      { href: "/admin/messages", labelKey: "messages", icon: icon.messages },
+      { href: "/admin/applications", labelKey: "applications", icon: icon.applications },
     ],
   },
   {
-    label: "Access",
-    stations: [{ href: "/admin/accounts", label: "Accounts", icon: icon.accounts }],
+    labelKey: "access",
+    stations: [{ href: "/admin/accounts", labelKey: "accounts", icon: icon.accounts }],
   },
   {
-    label: "Sources",
-    stations: [{ href: "/admin/sources", label: "Sources", icon: icon.reports }],
+    labelKey: "sources",
+    stations: [{ href: "/admin/sources", labelKey: "reports", icon: icon.reports }],
   },
 ];
 
@@ -145,26 +151,33 @@ export default function ConsoleRail({
   locale: string;
   signOutAction: (formData: FormData) => void | Promise<void>;
 }) {
+  const t = useTranslations("admin");
   const pathname = usePathname();
+  const router = useRouter();
+  const activeLocale = useLocale() as Locale;
   const [open, setOpen] = useState(false);
 
-  const path = pathname.replace(/^\/(en|ar|ckb)/, "") || "/";
+  // next-intl's `usePathname` already returns the path with the locale prefix
+  // stripped, so there is nothing to trim off by hand.
+  const path = pathname || "/";
   const isActive = (href: string) =>
     href === "/admin" ? path === "/admin" : path.startsWith(href);
 
   const brand = (
     <Link href="/admin" className="flex items-center gap-2.5">
       <Image src="/harekar-mark.png" alt="" width={488} height={207} className="h-7 w-auto" />
-      <span className="text-bone text-sm font-medium tracking-wide">Admin</span>
+      <span className="text-bone text-sm font-medium tracking-wide">
+        {t("brand")}
+      </span>
     </Link>
   );
 
   const nav = (onNavigate?: () => void) => (
     <nav className="flex flex-1 flex-col gap-5 overflow-y-auto">
       {groups.map((group) => (
-        <div key={group.label}>
+        <div key={group.labelKey}>
           <p className="text-bone/35 px-3 pb-1.5 text-[11px] tracking-[0.14em] uppercase">
-            {group.label}
+            {t(`nav.groups.${group.labelKey}`)}
           </p>
           <div className="flex flex-col gap-0.5">
             {group.stations.map((station) => {
@@ -187,11 +200,13 @@ export default function ConsoleRail({
                   <span className={cn("size-5 shrink-0", active ? "text-gold" : "text-bone/40")}>
                     {station.icon}
                   </span>
-                  <span className="flex-1 truncate">{station.label}</span>
+                  <span className="flex-1 truncate">
+                    {t(`nav.${station.labelKey}`)}
+                  </span>
                   {count > 0 && (
                     <span
                       className="bg-gold/15 text-gold rounded-full px-1.5 py-0.5 text-xs tabular-nums"
-                      aria-label={`${count} items`}
+                      aria-label={t("nav.badge", { count })}
                     >
                       {count}
                     </span>
@@ -207,21 +222,41 @@ export default function ConsoleRail({
 
   const footer = (onNavigate?: () => void) => (
     <div className="border-bone/8 space-y-3 border-t pt-4">
+      {/*
+       * The language control lives with the operator's own settings rather
+       * than in the nav list: switching language is something you do once, not
+       * a station you visit. It swaps locale on the current path, so an
+       * operator mid-task lands back on the same screen in the new language.
+       */}
+      <LocaleSwitcher
+        onSelect={(next) => {
+          onNavigate?.();
+          router.replace(pathname, { locale: next });
+        }}
+        className="h-11 w-full justify-between rounded-lg px-3"
+      />
+
       <p className="text-bone/45 truncate px-3 text-xs">{operatorLabel}</p>
+
       <Link
         href="/"
         onClick={onNavigate}
-        className="text-bone/45 hover:text-gold flex min-h-11 items-center px-3 text-sm transition-colors"
+        className="text-bone/45 hover:text-gold flex min-h-11 items-center gap-2 px-3 text-sm transition-colors"
       >
-        ← Back to site
+        {/* Points back the way you came, which is the other way under RTL. */}
+        <span aria-hidden className="inline-block rtl:rotate-180">
+          ←
+        </span>
+        {t("nav.backToSite")}
       </Link>
+
       <form action={signOutAction} className="px-3">
         <input type="hidden" name="locale" value={locale} />
         <button
           type="submit"
           className="border-bone/15 text-bone/55 hover:border-status-critical/50 hover:text-status-critical min-h-11 w-full cursor-pointer rounded-md border text-sm transition-colors"
         >
-          Sign out
+          {t("nav.signOut")}
         </button>
       </form>
     </div>
@@ -230,7 +265,7 @@ export default function ConsoleRail({
   return (
     <>
       {/* ---- desktop / tablet: persistent sidebar ---- */}
-      <aside className="border-bone/8 bg-ink/60 sticky top-0 hidden h-svh w-64 shrink-0 flex-col gap-6 border-r p-4 md:flex">
+      <aside className="border-bone/8 bg-ink/60 sticky top-0 hidden h-svh w-64 shrink-0 flex-col gap-6 border-e p-4 md:flex">
         {brand}
         {nav()}
         {footer()}
@@ -245,6 +280,7 @@ export default function ConsoleRail({
         nav={nav}
         footer={footer}
         badgeCount={Object.values(counts).reduce((a, b) => a + b, 0)}
+        rtl={getDirection(activeLocale) === "rtl"}
       />
     </>
   );
@@ -258,6 +294,7 @@ function MobileNav({
   nav,
   footer,
   badgeCount,
+  rtl,
 }: {
   open: boolean;
   onOpen: () => void;
@@ -266,9 +303,20 @@ function MobileNav({
   nav: (onNavigate?: () => void) => ReactNode;
   footer: (onNavigate?: () => void) => ReactNode;
   badgeCount: number;
+  /** Which edge the drawer is docked to, so it slides in off-screen. */
+  rtl: boolean;
 }) {
+  const t = useTranslations("admin");
   const reduceMotion = useReducedMotion();
   const ease = [0.22, 1, 0.36, 1] as const;
+
+  /*
+   * The panel is docked with `start-0`, so it sits on the left in LTR and the
+   * right in RTL. Framer's `x` is a raw transform and knows nothing about
+   * writing direction — a fixed `-100%` would slide the RTL drawer in from the
+   * far side, across the screen it is anchored against.
+   */
+  const offscreen = rtl ? "100%" : "-100%";
 
   return (
     <div className="md:hidden">
@@ -277,7 +325,7 @@ function MobileNav({
         <button
           type="button"
           onClick={onOpen}
-          aria-label="Open menu"
+          aria-label={t("nav.openMenu")}
           aria-expanded={open}
           aria-haspopup="dialog"
           className="border-bone/15 text-bone/70 relative flex size-11 cursor-pointer items-center justify-center rounded-lg border"
@@ -286,7 +334,7 @@ function MobileNav({
             <path d="M3 5.5h14M3 10h14M3 14.5h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
           {badgeCount > 0 && (
-            <span className="bg-gold absolute -top-1 -right-1 size-2.5 rounded-full" aria-hidden />
+            <span className="bg-gold absolute -top-1 -end-1 size-2.5 rounded-full" aria-hidden />
           )}
         </button>
       </div>
@@ -296,7 +344,7 @@ function MobileNav({
           <motion.div className="fixed inset-0 z-50" initial="hidden" animate="visible" exit="hidden">
             <motion.button
               type="button"
-              aria-label="Close menu"
+              aria-label={t("nav.closeMenu")}
               onClick={onClose}
               className="absolute inset-0"
               style={{ background: "#000" }}
@@ -307,11 +355,11 @@ function MobileNav({
             <motion.aside
               role="dialog"
               aria-modal="true"
-              aria-label="Admin navigation"
+              aria-label={t("nav.drawerLabel")}
               className="border-bone/10 absolute inset-y-0 start-0 flex w-[85vw] max-w-xs flex-col gap-6 border-e p-4"
               style={{ background: "#000" }}
               variants={{
-                hidden: { x: reduceMotion ? 0 : "-100%", opacity: reduceMotion ? 0 : 1 },
+                hidden: { x: reduceMotion ? 0 : offscreen, opacity: reduceMotion ? 0 : 1 },
                 visible: { x: 0, opacity: 1 },
               }}
               transition={{ duration: 0.35, ease }}
@@ -321,7 +369,7 @@ function MobileNav({
                 <button
                   type="button"
                   onClick={onClose}
-                  aria-label="Close menu"
+                  aria-label={t("nav.closeMenu")}
                   className="border-bone/15 text-bone/70 hover:border-gold hover:text-gold flex size-9 cursor-pointer items-center justify-center rounded-full border transition-colors"
                 >
                   <svg viewBox="0 0 20 20" className="size-3.5" fill="none" aria-hidden>

@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { auth } from "@/auth";
 import { getPublishedMarkers } from "@/lib/intel";
 import IraqMap from "@/components/IraqMap";
 import MapStage from "@/components/MapStage";
@@ -15,7 +16,19 @@ export default async function IntelligenceSection({
   as?: "h1" | "h2";
 }) {
   const t = await getTranslations("intelligence");
-  const markers = await getPublishedMarkers();
+
+  /*
+   * Entitlement is resolved here, on the server, and decides what is put in the
+   * payload at all. The map reads the session too, but only to choose which
+   * words to show — see the note in `IraqMap`. The two are not redundant: this
+   * one is the gate, that one is the label on it.
+   *
+   * `session.user.isPro` is already the resolved entitlement rather than the
+   * raw comped flag (`auth.ts` runs it through `hasProAccess`), so a purchased
+   * subscription counts here exactly as a comped one does.
+   */
+  const session = await auth();
+  const markers = await getPublishedMarkers(Boolean(session?.user?.isPro));
 
   return (
     <section

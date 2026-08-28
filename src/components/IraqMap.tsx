@@ -375,16 +375,30 @@ export default function IraqMap({
                 {isPro ? t("modal.badgePro") : t("modal.badge")}
               </span>
 
+              {/*
+               * The written assessment is present only when the server decided
+               * this reader may have it — an unentitled reader's payload has no
+               * `body` at all, so there is nothing here to reveal. When a
+               * marker simply has not been written up yet, the awaiting-copy
+               * line stands in for a Pro reader, and the upgrade pitch still
+               * shows for everyone else.
+               */}
               <h2
                 id="report-title"
                 className="font-display text-bone mt-5 text-2xl leading-snug"
               >
-                {isPro
-                  ? t("modal.titlePro", { city: activeMarker.label })
-                  : t("modal.title")}
+                {activeMarker.body
+                  ? (activeMarker.headline ?? activeMarker.label)
+                  : isPro
+                    ? t("modal.titlePro", { city: activeMarker.label })
+                    : t("modal.title")}
               </h2>
-              <p className="text-bone/60 mt-4 text-sm leading-relaxed">
-                {isPro ? t("modal.bodyPro") : t("modal.body")}
+              <p className="text-bone/60 mt-4 text-sm leading-relaxed whitespace-pre-wrap">
+                {activeMarker.body
+                  ? activeMarker.body
+                  : isPro
+                    ? t("modal.bodyPro")
+                    : t("modal.body")}
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">

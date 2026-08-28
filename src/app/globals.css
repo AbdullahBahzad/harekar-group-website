@@ -154,6 +154,46 @@ body {
 }
 
 /*
+ * Scrollbars, themed to the dark palette.
+ *
+ * The site is dark-only, so the platform's default light scrollbar — most
+ * visible on Windows, and in the admin console's scrolling nav rail — reads
+ * as a seam of the wrong colour down the edge of every panel. These rules
+ * repaint the track transparent and the thumb as a faint bone tint that
+ * firms up on hover, matching the borders used everywhere else.
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--color-bone) 20%, transparent)
+    transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--color-bone) 14%, transparent);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--color-bone) 28%, transparent);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/*
  * A tracking readout acquiring its target in the hero sensor sweep. Lives here
  * rather than in the component because the element is positioned by inline
  * `left`/`top` and centred by `translate(-50%, -50%)` — the keyframe has to

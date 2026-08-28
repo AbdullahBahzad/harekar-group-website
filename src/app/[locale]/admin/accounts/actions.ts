@@ -27,6 +27,19 @@ async function assertAdmin(): Promise<string> {
   return session.user.id;
 }
 
+/**
+ * Refreshes both surfaces an entitlement change is visible on.
+ *
+ * The dashboard reads subscriber totals and the activity feed straight from
+ * these tables, so comping Pro or granting console access without invalidating
+ * it leaves the first screen an operator sees disagreeing with the one they
+ * just used.
+ */
+function revalidateAccounts() {
+  revalidatePath("/[locale]/admin/accounts", "page");
+  revalidatePath("/[locale]/admin", "page");
+}
+
 /** Permanent comped Pro, independent of any purchase. */
 export async function toggleUserPro(formData: FormData) {
   await assertAdmin();
@@ -44,7 +57,7 @@ export async function toggleUserPro(formData: FormData) {
     data: { isPro: !user.isPro },
   });
 
-  revalidatePath("/[locale]/admin/accounts", "page");
+  revalidateAccounts();
 }
 
 /** Grants a fixed period of purchased-equivalent access. */
@@ -68,7 +81,7 @@ export async function grantProPeriod(formData: FormData) {
     data: { proUntil: extendProUntil(user.proUntil, days) },
   });
 
-  revalidatePath("/[locale]/admin/accounts", "page");
+  revalidateAccounts();
 }
 
 /**
@@ -95,7 +108,7 @@ export async function toggleUserAdmin(formData: FormData) {
     data: { isAdmin: !user.isAdmin },
   });
 
-  revalidatePath("/[locale]/admin/accounts", "page");
+  revalidateAccounts();
 }
 
 
@@ -103,7 +116,17 @@ export async function toggleUserAdmin(formData: FormData) {
 
 export type OperatorFormState = {
   status: "idle" | "error" | "success";
-  message?: string;
+  /*
+   * A key under `admin.operators`, not a sentence.
+   *
+   * The console renders in three languages and this outcome is shown inline in
+   * the panel. Returning English here would make the one line the operator
+   * actually needs to read the one line that never translates — so the action
+   * returns what happened and the panel says it in the reader's language.
+   */
+  messageKey?: string;
+  /** Interpolation values for `messageKey`. */
+  values?: Record<string, string>;
   /*
    * Echoed back on failure. React 19 resets uncontrolled fields once an action
    * completes, so without this a rejected grant costs the operator the address
@@ -128,7 +151,7 @@ export async function grantAdminByEmail(
   try {
     await assertAdmin();
   } catch {
-    return { status: "error", message: "Not authorised." };
+    return { status: "error", messageKey: "notAuthorised" };
   }
 
 
@@ -138,7 +161,7 @@ export async function grantAdminByEmail(
     .toLowerCase();
 
   if (!email) {
-    return { status: "error", message: "Enter an email address." };
+    return { status: "error", messageKey: "enterEmail" };
   }
 
   /*
@@ -156,7 +179,8 @@ export async function grantAdminByEmail(
     if (!user) {
       return {
         status: "error",
-        message: `No account for ${email}. They must register on the site first.`,
+        messageKey: "noAccount",
+        values: { email },
         email,
       };
     }
@@ -164,7 +188,8 @@ export async function grantAdminByEmail(
     if (user.isAdmin) {
       return {
         status: "error",
-        message: `${user.name ?? email} already has console access.`,
+        messageKey: "alreadyOperator",
+        values: { who: user.name ?? email },
         email,
       };
     }
@@ -174,16 +199,17 @@ export async function grantAdminByEmail(
       data: { isAdmin: true },
     });
 
-    revalidatePath("/[locale]/admin/accounts", "page");
+    revalidateAccounts();
     return {
       status: "success",
-      message: `Console access granted to ${user.name ?? email}.`,
+      messageKey: "granted",
+      values: { who: user.name ?? email },
     };
   } catch (error) {
     console.error("Failed to grant console access", error);
     return {
       status: "error",
-      message: "Could not reach the database. Nothing was changed.",
+      messageKey: "databaseUnreachable",
       email,
     };
   }

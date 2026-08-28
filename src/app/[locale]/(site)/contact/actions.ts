@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { clientKey, withinRateLimit } from "@/lib/rate-limit";
+import { notifyContactSubmission } from "@/lib/mail/notifications";
 
 /*
  * Deliberately permissive, and identical to the check the careers form already
@@ -77,20 +78,27 @@ export async function submitContactForm(
     return { status: "error", error: "errorTooMany" };
   }
 
+  const submission = {
+    name,
+    email,
+    organization: organization || null,
+    phone: phone || null,
+    message,
+  };
+
   try {
-    await prisma.contactSubmission.create({
-      data: {
-        name,
-        email,
-        organization: organization || null,
-        phone: phone || null,
-        message,
-      },
-    });
+    await prisma.contactSubmission.create({ data: submission });
   } catch (error) {
     console.error("Failed to store contact submission", error);
     return { status: "error", error: "errorGeneric" };
   }
+
+  /*
+   * After the write, and outside its try/catch on purpose. The enquiry is
+   * safely stored by this point, so a mail outage must not reach the sender —
+   * `notifyContactSubmission` swallows its own failures for that reason.
+   */
+  await notifyContactSubmission(submission);
 
   return { status: "success" };
 }

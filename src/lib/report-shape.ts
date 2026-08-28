@@ -28,6 +28,33 @@ export type ReportContent = {
   items: ReportNewsItem[];
 };
 
+/**
+ * A stored report as the console reads it back.
+ *
+ * Lives here rather than beside the component that renders it because the
+ * server reads this shape too — `lib/dashboard-reports.ts` was importing it
+ * from `ReportConsole`, a `"use client"` module, which pointed the dependency
+ * the wrong way round: a server-only data function should not name a client
+ * component to describe its own return type. Type-only imports erase at
+ * compile time so nothing shipped, but the next person to add a runtime import
+ * on that line would have pulled the whole console into the server bundle.
+ *
+ * The dates are strings, not `Date`s: these rows cross into a client component,
+ * and a `Date` cannot make that trip.
+ */
+export type ConsoleReport = {
+  id: string;
+  date: string;
+  kurdistanThreat: ThreatLevel;
+  iraqThreat: ThreatLevel;
+  politicalKurdistan: string | null;
+  politicalIraq: string | null;
+  weather: string | null;
+  content: ReportContent;
+  createdAt: string;
+  createdByName: string | null;
+};
+
 export type RawNewsInput = {
   url: string;
   notes: string;

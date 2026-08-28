@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import IntelConsole, {
@@ -14,6 +14,7 @@ export default async function IntelligenceStation({
   const { locale } = await params;
   setRequestLocale(locale);
   await requireAdmin(locale);
+  const t = await getTranslations({ locale, namespace: "admin.intelligence" });
 
   /*
    * Serialisation happens inside both branches so the live query and the
@@ -66,11 +67,10 @@ export default async function IntelligenceStation({
     <>
       <header className="mb-6">
         <h1 className="font-display text-bone text-3xl font-light">
-          Intelligence
+          {t("title")}
         </h1>
         <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
-          The map the public sees is this table. Nothing here is live until it
-          is published.
+          {t("intro")}
         </p>
       </header>
 

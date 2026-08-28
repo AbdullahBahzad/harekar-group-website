@@ -15,12 +15,26 @@ import { failOrder, fulfilOrder } from "@/lib/payments/fulfil";
  * here, so an unverified body is treated as noise rather than as a payment.
  */
 export async function POST(request: Request) {
+  /*
+   * The body is read once, as text, and handed on unparsed.
+   *
+   * A request body is a stream and can only be consumed once, so whichever
+   * form is read first is the only one available afterwards — and the form an
+   * adapter actually needs is the raw one, because that is what the gateway
+   * signed. Parsing first and re-serialising to check a signature cannot work:
+   * the round trip does not return the same bytes.
+   *
+   * The parsed value is offered alongside it purely for convenience, and only
+   * when the payload was JSON at all — several Iraqi gateways post
+   * form-encoded, which `raw` still carries intact.
+   */
+  const raw = await request.text();
+
   let body: unknown = null;
   try {
-    body = await request.json();
+    body = JSON.parse(raw);
   } catch {
-    // Several gateways post form-encoded rather than JSON; the adapter can
-    // still work from the query string and headers.
+    // Not JSON. `raw`, the query string and the headers are still available.
   }
 
   const url = new URL(request.url);
@@ -39,6 +53,7 @@ export async function POST(request: Request) {
   try {
     const provider = getPaymentProvider();
     result = await provider.verifyCallback({
+      raw,
       body,
       searchParams: url.searchParams,
       headers: request.headers,

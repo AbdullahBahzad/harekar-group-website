@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { useTranslations } from "next-intl";
 import Panel from "@/components/admin/Panel";
 import {
   grantAdminByEmail,
@@ -32,26 +33,28 @@ export default function OperatorPanel({
   operators: Operator[];
   currentOperatorId: string;
 }) {
+  const t = useTranslations("admin");
   const [state, formAction] = useActionState(grantAdminByEmail, initialState);
 
   return (
-    <Panel label="Operators" tone="critical">
+    <Panel label={t("operators.title")} tone="critical">
       <div className="space-y-5 p-5">
         <p className="text-bone/45 text-sm leading-relaxed">
-          Console access is granted to accounts that already exist. Ask the
-          person to register on the site first, then add them by email.
+          {t("operators.intro")}
         </p>
 
         <form action={formAction} className="flex flex-wrap gap-2">
+          {/* Latin identifier — kept LTR whatever the console's language. */}
           <input
             type="email"
             name="email"
+            dir="ltr"
             required
             defaultValue={state.email ?? ""}
-            placeholder="name@harekargroup.com"
-            aria-label="Email address"
+            placeholder={t("operators.emailPlaceholder")}
+            aria-label={t("operators.emailLabel")}
             autoComplete="off"
-            className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-xs outline-none transition-colors"
+            className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
           />
           <GrantButton />
         </form>
@@ -61,7 +64,7 @@ export default function OperatorPanel({
          * result is a sentence — a sighted user sees it appear, and without
          * this a screen reader user gets nothing at all.
          */}
-        {state.status !== "idle" && state.message && (
+        {state.status !== "idle" && state.messageKey && (
           <p
             role="status"
             className={`border px-3 py-2 text-xs leading-relaxed ${
@@ -70,7 +73,7 @@ export default function OperatorPanel({
                 : "border-status-clear/40 bg-status-clear/10 text-status-clear"
             }`}
           >
-            {state.message}
+            {t(`operators.${state.messageKey}`, state.values)}
           </p>
         )}
 
@@ -93,11 +96,11 @@ export default function OperatorPanel({
                     {operator.name ?? "—"}
                     {isSelf && (
                       <span className="text-gold/60 ms-2 text-xs">
-                        you
+                        {t("common.you")}
                       </span>
                     )}
                   </span>
-                  <span className="text-bone/40 block truncate text-xs">
+                  <span dir="ltr" className="text-bone/40 block truncate text-start text-xs">
                     {operator.email}
                   </span>
                 </span>
@@ -110,7 +113,7 @@ export default function OperatorPanel({
                  */}
                 {isSelf ? (
                   <span className="text-bone/25 text-xs">
-                    locked
+                    {t("operators.locked")}
                   </span>
                 ) : (
                   <form action={toggleUserAdmin}>
@@ -119,7 +122,7 @@ export default function OperatorPanel({
                       type="submit"
                       className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink cursor-pointer border px-3 py-1 text-xs transition-colors"
                     >
-                      Revoke
+                      {t("operators.revoke")}
                     </button>
                   </form>
                 )}
@@ -129,7 +132,7 @@ export default function OperatorPanel({
 
           {operators.length === 0 && (
             <li className="text-bone/40 py-4 text-sm">
-              No operators. That should be impossible — you are reading this.
+              {t("operators.empty")}
             </li>
           )}
         </ul>
@@ -140,6 +143,7 @@ export default function OperatorPanel({
 
 /** Disabled while in flight, so a slow lookup cannot be submitted twice. */
 function GrantButton() {
+  const t = useTranslations("admin.operators");
   const { pending } = useFormStatus();
 
   return (
@@ -148,7 +152,7 @@ function GrantButton() {
       disabled={pending}
       className="bg-gold text-ink hover:bg-gold-bright shrink-0 cursor-pointer px-4 py-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {pending ? "Checking…" : "Grant access"}
+      {pending ? t("checking") : t("grant")}
     </button>
   );
 }

@@ -87,8 +87,17 @@ function readMarkerForm(formData: FormData) {
  */
 function revalidateIntel() {
   revalidatePath("/[locale]/admin/intelligence", "page");
-  revalidatePath("/[locale]/intelligence", "page");
-  revalidatePath("/[locale]", "page");
+  /*
+   * The `(site)` group is part of the path `revalidatePath` matches on when
+   * type is "page" — see the route-group examples in its API reference. These
+   * two previously read `/[locale]/intelligence` and `/[locale]`, which are
+   * not routes this app has, so they matched nothing: every other station
+   * refreshed its public page after a write and this one silently did not.
+   */
+  revalidatePath("/[locale]/(site)/intelligence", "page");
+  revalidatePath("/[locale]/(site)", "page");
+  // The dashboard's posture panel and marker counts are read from this table.
+  revalidatePath("/[locale]/admin", "page");
 }
 
 export async function createMarker(formData: FormData) {

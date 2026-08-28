@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import Panel from "@/components/admin/Panel";
 import {
@@ -42,6 +43,7 @@ export default function FaqConsole({
   items: ConsoleFaqItem[];
   canSeed: boolean;
 }) {
+  const t = useTranslations("admin");
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
@@ -50,7 +52,7 @@ export default function FaqConsole({
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <Panel
-        label="Questions"
+        label={t("faq.questions")}
         action={
           <button
             type="button"
@@ -60,20 +62,20 @@ export default function FaqConsole({
             }}
             className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-3 py-1 text-xs transition-colors"
           >
-            + New question
+            {t("faq.newQuestion")}
           </button>
         }
       >
         {items.length === 0 ? (
           <div className="px-5 py-10 text-center">
-            <p className="text-bone/45 text-sm">No FAQ items in the database.</p>
+            <p className="text-bone/45 text-sm">{t("faq.empty")}</p>
             {canSeed && (
               <form action={seedFromStaticFaq} className="mt-6">
                 <button
                   type="submit"
                   className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
                 >
-                  Import the 6 existing questions
+                  {t("faq.importExisting", { count: 6 })}
                 </button>
               </form>
             )}
@@ -100,7 +102,9 @@ export default function FaqConsole({
                   </span>
 
                   {!item.published && (
-                    <span className="text-bone/30 text-xs">hidden</span>
+                    <span className="text-bone/30 text-xs">
+                      {t("common.hidden")}
+                    </span>
                   )}
                 </button>
               </li>
@@ -119,9 +123,9 @@ export default function FaqConsole({
           }}
         />
       ) : (
-        <Panel label="Editor">
+        <Panel label={t("common.editor")}>
           <p className="text-bone/45 px-5 py-10 text-center text-sm">
-            Select a question to edit it, or add a new one.
+            {t("faq.emptyEditor")}
           </p>
         </Panel>
       )}
@@ -136,18 +140,19 @@ function FaqEditor({
   item?: ConsoleFaqItem;
   onClose: () => void;
 }) {
+  const t = useTranslations("admin");
   const editing = Boolean(item);
 
   return (
     <Panel
-      label={editing ? "Edit question" : "New question"}
+      label={editing ? t("faq.edit") : t("faq.create")}
       action={
         <button
           type="button"
           onClick={onClose}
           className="text-bone/40 hover:text-bone cursor-pointer text-xs transition-colors"
         >
-          Close
+          {t("common.close")}
         </button>
       }
     >
@@ -159,6 +164,7 @@ function FaqEditor({
 
         <LocaleBlock
           locale="English"
+          dir="ltr"
           required
           question={
             <input
@@ -183,7 +189,7 @@ function FaqEditor({
               name="listEn"
               defaultValue={item?.listEn?.join("\n") ?? ""}
               rows={3}
-              placeholder="One bullet per line — leave empty for a plain answer"
+              placeholder={t("faq.bulletsPlaceholder")}
               className={`${inputClass} resize-y`}
             />
           }
@@ -261,16 +267,19 @@ function FaqEditor({
               defaultChecked={item?.published ?? true}
               className="accent-gold size-4 cursor-pointer"
             />
-            <span className="text-bone/70 text-xs">Show on the site</span>
+            <span className="text-bone/70 text-xs">
+              {t("common.showOnSite")}
+            </span>
           </label>
 
           <label className="flex items-center gap-2">
-            <span className="text-bone/45 text-xs">Order</span>
+            <span className="text-bone/45 text-xs">{t("common.order")}</span>
             <input
               type="number"
               name="sortOrder"
+              dir="ltr"
               defaultValue={item?.sortOrder ?? 0}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-xs tabular-nums outline-none"
+              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
             />
           </label>
         </div>
@@ -280,7 +289,7 @@ function FaqEditor({
             type="submit"
             className="bg-gold text-ink hover:bg-gold-bright cursor-pointer rounded-full px-5 py-2 text-sm font-medium transition-colors"
           >
-            {editing ? "Save" : "Create question"}
+            {editing ? t("common.save") : t("faq.createButton")}
           </button>
 
           {item && (
@@ -291,7 +300,7 @@ function FaqEditor({
                 formNoValidate
                 className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
               >
-                {item.published ? "Hide" : "Show"}
+                {item.published ? t("common.hide") : t("common.show")}
               </button>
 
               <button
@@ -300,7 +309,7 @@ function FaqEditor({
                 formNoValidate
                 className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink ms-auto cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
               >
-                Delete
+                {t("common.delete")}
               </button>
             </>
           )}
@@ -310,6 +319,14 @@ function FaqEditor({
   );
 }
 
+/**
+ * One language's fields for an FAQ entry.
+ *
+ * `dir` is required, not optional-meaning-LTR: these boxes hold the *site's*
+ * copy, so their direction follows the language they store, not the console's.
+ * The English box must stay left-to-right even while the operator works in
+ * Kurdish, which an inherited direction would not guarantee.
+ */
 function LocaleBlock({
   locale,
   dir,
@@ -319,29 +336,37 @@ function LocaleBlock({
   list,
 }: {
   locale: string;
-  dir?: "rtl";
+  dir: "rtl" | "ltr";
   required?: boolean;
   question: ReactNode;
   answer: ReactNode;
   list: ReactNode;
 }) {
+  const t = useTranslations("admin");
+
   return (
     <fieldset className="border-bone/8 space-y-2 border-s-2 ps-3">
       <legend className="text-gold/60 text-xs">
         {locale}
-        {!required && <span className="text-bone/25 ms-2">optional</span>}
+        {!required && (
+          <span className="text-bone/25 ms-2">{t("common.optional")}</span>
+        )}
       </legend>
       <div>
-        <span className="text-bone/40 mb-1 block text-xs">Question</span>
+        <span className="text-bone/40 mb-1 block text-xs">
+          {t("faq.question")}
+        </span>
         <div dir={dir}>{question}</div>
       </div>
       <div>
-        <span className="text-bone/40 mb-1 block text-xs">Answer</span>
+        <span className="text-bone/40 mb-1 block text-xs">
+          {t("faq.answer")}
+        </span>
         <div dir={dir}>{answer}</div>
       </div>
       <div>
         <span className="text-bone/40 mb-1 block text-xs">
-          Bullet list (optional)
+          {t("faq.bullets")}
         </span>
         <div dir={dir}>{list}</div>
       </div>

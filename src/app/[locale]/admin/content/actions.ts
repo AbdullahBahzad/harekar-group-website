@@ -104,6 +104,8 @@ function revalidateSiteContent() {
   revalidatePath("/[locale]/(site)/careers", "page");
   revalidatePath("/[locale]/(site)/contact", "page");
   revalidatePath("/[locale]/(site)/pro", "page");
+  // The dashboard reports whether site content is console-controlled yet.
+  revalidatePath("/[locale]/admin", "page");
 }
 
 /**

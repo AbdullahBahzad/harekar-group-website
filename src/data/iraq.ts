@@ -104,6 +104,18 @@ export type IntelMarker = {
   coordinates: LngLat;
   access: MarkerAccess;
   severity: MarkerSeverity;
+  /**
+   * The written assessment, present only when the server decided this reader
+   * is entitled to it — see `getPublishedMarkers`.
+   *
+   * Optional rather than nullable-and-always-present, and that distinction is
+   * the whole point: a marker the reader may not read arrives with no
+   * assessment field at all, so there is nothing in the payload to reveal by
+   * flipping a flag in the browser. The shipped static markers simply never
+   * carry one.
+   */
+  headline?: string | null;
+  body?: string | null;
 };
 
 export const intelMarkers: IntelMarker[] = [

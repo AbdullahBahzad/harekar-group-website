@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { orPreview, sampleSiteContent } from "@/lib/admin-preview";
@@ -75,6 +75,7 @@ export default async function ContentStation({
   const { locale } = await params;
   setRequestLocale(locale);
   await requireAdmin(locale);
+  const t = await getTranslations({ locale, namespace: "admin.content" });
 
   const { data: content } = await orPreview(
     () => prisma.siteContent.findUnique({ where: { id: "site" } }),
@@ -84,7 +85,7 @@ export default async function ContentStation({
   // Nothing saved yet — prefill the English column from the shipped copy so
   // the first save is a review, not a blank form the operator has to
   // retype the whole site into.
-  let initial: Record<string, string> = {};
+  const initial: Record<string, string> = {};
   if (!content) {
     const en = (await import("@/messages/en.json")).default;
     for (const [field, path] of Object.entries(FIELD_KEYS)) {
@@ -99,12 +100,10 @@ export default async function ContentStation({
     <>
       <header className="mb-6">
         <h1 className="font-display text-bone text-3xl font-light">
-          Site content
+          {t("title")}
         </h1>
         <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
-          The hero, About/Mission/Vision, stats, footer, and the intro copy
-          for FAQ, Careers, Contact and Pro. Every page still renders the
-          shipped copy until this is saved once.
+          {t("intro")}
         </p>
       </header>
 

@@ -35,6 +35,12 @@ async function assertAdmin(): Promise<string> {
 
 function revalidateReports() {
   revalidatePath("/[locale]/admin/sources", "page");
+  // The dashboard carries the report count and the activity feed, both of
+  // which a save or delete here changes.
+  revalidatePath("/[locale]/admin", "page");
+  // Reports are published to subscribers on the intelligence route, so an
+  // approval has to reach the page that serves them.
+  revalidatePath("/[locale]/(site)/intelligence", "page");
 }
 
 /**

@@ -1,10 +1,16 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { formatDate } from "@/lib/admin-format";
 import Panel from "@/components/admin/Panel";
 import { orPreview, sampleApplications } from "@/lib/admin-preview";
 
-/** Human-readable file size. Bytes in a UI are a number nobody can picture. */
+/**
+ * Human-readable file size. Bytes in a UI are a number nobody can picture.
+ *
+ * The unit stays as the SI abbreviation in every language — KB and MB are what
+ * the operating system's own file dialogs show, in any locale.
+ */
 function formatSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
@@ -26,6 +32,7 @@ export default async function ApplicationsStation({
   const { locale } = await params;
   setRequestLocale(locale);
   await requireAdmin(locale);
+  const t = await getTranslations({ locale, namespace: "admin.applications" });
 
   const { data: applications } = await orPreview(
     () => prisma.jobApplication.findMany({
@@ -43,17 +50,18 @@ export default async function ApplicationsStation({
   return (
     <>
       <header className="mb-6">
-        <h1 className="font-display text-bone text-3xl font-light">Applications</h1>
+        <h1 className="font-display text-bone text-3xl font-light">
+          {t("title")}
+        </h1>
         <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
-          Applications received through the careers page. {applications.length}{" "}
-          on file.
+          {t("intro", { count: applications.length })}
         </p>
       </header>
 
       {applications.length === 0 ? (
-        <Panel label="Applications">
+        <Panel label={t("title")}>
           <p className="text-bone/40 px-5 py-10 text-center text-sm">
-            No applications yet.
+            {t("empty")}
           </p>
         </Panel>
       ) : (
@@ -73,14 +81,19 @@ export default async function ApplicationsStation({
                       dateTime={application.createdAt.toISOString()}
                       className="text-bone/30 text-xs tabular-nums"
                     >
-                      {application.createdAt.toLocaleDateString(undefined, {
+                      {formatDate(application.createdAt, locale, {
                         month: "short",
                         day: "numeric",
                       })}
                     </time>
                   </div>
 
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                  {/*
+                   * Addresses and phone numbers are pinned LTR: both are Latin
+                   * identifiers whose punctuation the bidi algorithm otherwise
+                   * shuffles when they sit inside an RTL paragraph.
+                   */}
+                  <div dir="ltr" className="flex flex-wrap gap-x-4 gap-y-1 text-start text-xs rtl:justify-end">
                     <a
                       href={`mailto:${application.email}`}
                       className="text-gold/80 hover:text-gold-bright transition-colors"
@@ -103,13 +116,12 @@ export default async function ApplicationsStation({
                 <a
                   href={`/api/admin/cv/${application.id}`}
                   download
+                  aria-label={t("downloadCv", { name: application.name })}
                   className="border-gold/35 text-gold hover:bg-gold hover:text-ink flex h-fit shrink-0 flex-col items-center gap-1 border px-5 py-4 text-center transition-colors"
                 >
                   <span aria-hidden className="text-lg leading-none">⤓</span>
-                  <span className="text-xs">
-                    CV
-                  </span>
-                  <span className="text-xs tabular-nums opacity-70">
+                  <span className="text-xs">{t("cv")}</span>
+                  <span dir="ltr" className="text-xs tabular-nums opacity-70">
                     {formatSize(application.cvSize)}
                   </span>
                 </a>
