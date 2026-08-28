@@ -44,7 +44,7 @@ export default function OperatorPanel({
         </p>
 
         <form action={formAction} className="flex flex-wrap gap-2">
-          {/* Latin identifier — kept LTR whatever the console's language. */}
+          {/* Latin identifiers — kept LTR whatever the console's language. */}
           <input
             type="email"
             name="email"
@@ -56,8 +56,23 @@ export default function OperatorPanel({
             autoComplete="off"
             className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
           />
+          <input
+            type="password"
+            name="password"
+            dir="ltr"
+            required
+            minLength={8}
+            placeholder={t("operators.passwordPlaceholder")}
+            aria-label={t("operators.passwordLabel")}
+            autoComplete="new-password"
+            className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
+          />
           <GrantButton />
         </form>
+
+        <p className="text-bone/30 text-xs leading-relaxed">
+          {t("operators.passwordHint")}
+        </p>
 
         {/*
          * `role="status"` so the outcome is announced. This form's whole
@@ -120,7 +135,7 @@ export default function OperatorPanel({
                     <input type="hidden" name="id" value={operator.id} />
                     <button
                       type="submit"
-                      className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink cursor-pointer border px-3 py-1 text-xs transition-colors"
+                      className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
                     >
                       {t("operators.revoke")}
                     </button>

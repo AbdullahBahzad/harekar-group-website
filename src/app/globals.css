@@ -142,6 +142,21 @@ body {
   font-family: var(--font-sans);
 }
 
+/*
+ * iOS Safari auto-zooms the page on focus of any form control whose
+ * computed font-size is under 16px. Our text-sm inputs sit at 14px, so
+ * every tap into a form on an iPhone triggered an unwanted zoom the user
+ * had to manually undo. Scoped to mobile widths so the desktop/tablet
+ * visual size (text-sm) is untouched.
+ */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 /* Arabic and Kurdish Sorani both render with the Arabic script stack. */
 :root:lang(ar) body,
 :root:lang(ckb) body {

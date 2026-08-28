@@ -123,7 +123,7 @@ export default function Sidebar({
             role="dialog"
             aria-modal="true"
             aria-label={t("menu")}
-            className="border-bone/10 absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l px-8 py-8 sm:px-12"
+            className="border-bone/10 absolute inset-y-0 right-0 flex w-full max-w-md flex-col overflow-y-auto border-l px-8 py-8 sm:px-12"
             variants={{
               hidden: {
                 x: reduceMotion ? 0 : "100%",
@@ -284,7 +284,7 @@ export default function Sidebar({
                       type="button"
                       onClick={() => onSwitchLocale(code)}
                       aria-current={code === locale}
-                      className={`cursor-pointer rounded-full px-3 py-1 text-xs transition-colors ${
+                      className={`flex min-h-9 cursor-pointer items-center rounded-full px-3 text-xs transition-colors ${
                         code === locale
                           ? "bg-gold text-ink"
                           : "text-bone/60 hover:text-bone"

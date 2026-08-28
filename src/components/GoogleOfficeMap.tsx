@@ -75,7 +75,7 @@ export default function GoogleOfficeMap() {
               aria-selected={selected}
               aria-controls="office-map-panel"
               onClick={() => setActive(entry.id)}
-              className={`cursor-pointer rounded-full border px-4 py-1.5 text-sm transition-colors ${
+              className={`flex min-h-11 cursor-pointer items-center rounded-full border px-4 text-sm transition-colors ${
                 selected
                   ? "border-gold bg-gold text-ink"
                   : "border-bone/15 text-bone/60 hover:border-gold/50 hover:text-gold"

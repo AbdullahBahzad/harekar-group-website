@@ -561,9 +561,12 @@
     },
     "operators": {
       "title": "Operators",
-      "intro": "Console access is granted to accounts that already exist. Ask the person to register on the site first, then add them by email.",
+      "intro": "Add someone by email and set their password. An existing registered account is promoted and given this password; an unknown email gets a new account created for it.",
       "emailLabel": "Email address",
       "emailPlaceholder": "name@harekargroup.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Password",
+      "passwordHint": "Required — this is the password they'll sign in with.",
       "grant": "Grant access",
       "checking": "Checking…",
       "locked": "locked",
@@ -571,9 +574,11 @@
       "empty": "No operators. That should be impossible — you are reading this.",
       "notAuthorised": "Not authorised.",
       "enterEmail": "Enter an email address.",
-      "noAccount": "No account for {email}. They must register on the site first.",
+      "enterPassword": "Enter a password.",
+      "errorPasswordShort": "Password must be at least 8 characters.",
       "alreadyOperator": "{who} already has console access.",
-      "granted": "Console access granted to {who}.",
+      "grantedWithPassword": "Console access granted to {who}, with a new password.",
+      "created": "{who} was created and given console access.",
       "databaseUnreachable": "Could not reach the database. Nothing was changed."
     },
     "applications": {

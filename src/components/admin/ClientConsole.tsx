@@ -63,7 +63,7 @@ export default function ClientConsole({
               setEditing(null);
               setCreating(true);
             }}
-            className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-3 py-1 text-xs transition-colors"
+            className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
           >
             {t("clients.newLogo")}
           </button>
@@ -167,7 +167,7 @@ function ClientEditor({
         <button
           type="button"
           onClick={onClose}
-          className="text-bone/40 hover:text-bone cursor-pointer text-xs transition-colors"
+          className="text-bone/40 hover:text-bone flex min-h-11 cursor-pointer items-center text-xs transition-colors"
         >
           {t("common.close")}
         </button>

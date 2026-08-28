@@ -250,8 +250,14 @@ export default function IraqMap({
                     }}
                     className="cursor-pointer focus:outline-none"
                   >
-                    {/* Generous invisible hit area. */}
-                    <circle cx={x} cy={y} r="16" fill="transparent" />
+                    {/*
+                     * Invisible hit area, sized for a thumb rather than the
+                     * visible glyph — at the map's default rendered width
+                     * r=16 worked out to roughly a 15px tap target, well
+                     * under the ~44px touch minimum. 24 clears that with
+                     * room to spare between the five markers on this map.
+                     */}
+                    <circle cx={x} cy={y} r="24" fill="transparent" />
                     <circle
                       cx={x}
                       cy={y}

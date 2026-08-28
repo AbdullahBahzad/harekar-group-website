@@ -2,10 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { hasLocale } from "next-intl";
+import bcrypt from "bcryptjs";
 import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { extendProUntil } from "@/lib/entitlement";
 import { locales } from "@/i18n/routing";
+
+/** Same cost factor as registration — one password-hashing policy, not two. */
+const BCRYPT_ROUNDS = 12;
+/** Shortest password accepted. Matches the public registration form. */
+const MIN_PASSWORD_LENGTH = 8;
 
 /**
  * Every mutation re-checks admin rights.
@@ -136,13 +142,19 @@ export type OperatorFormState = {
 };
 
 /**
- * Grants console access to an existing account, by email.
+ * Grants console access by email — to an existing account, or to a brand new
+ * one, created here with the password supplied alongside it.
  *
- * Deliberately requires the person to have registered first. Creating an
- * account here would mean inventing a password nobody chose, or emailing an
- * invite link — a whole delivery mechanism this project does not have. Asking
- * them to sign up first is one extra step for them and removes an entire class
- * of half-provisioned accounts.
+ * The password is mandatory, not an optional extra: this is the only place
+ * an operator account gets a password set on it through the console, so
+ * requiring it means every account this form touches leaves with working,
+ * known credentials rather than depending on whether the person happened to
+ * register on the public site first.
+ *
+ * An email that already belongs to an admin is refused rather than silently
+ * rewriting their password — the button says "grant access", and resetting
+ * someone else's credentials is a deliberate act this form does not do by
+ * accident.
  */
 export async function grantAdminByEmail(
   _prevState: OperatorFormState,
@@ -159,9 +171,16 @@ export async function grantAdminByEmail(
   const email = String(formData.get("email") ?? "")
     .trim()
     .toLowerCase();
+  const password = String(formData.get("password") ?? "");
 
   if (!email) {
     return { status: "error", messageKey: "enterEmail" };
+  }
+  if (!password) {
+    return { status: "error", messageKey: "enterPassword", email };
+  }
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return { status: "error", messageKey: "errorPasswordShort", email };
   }
 
   /*
@@ -177,11 +196,16 @@ export async function grantAdminByEmail(
     });
 
     if (!user) {
+      const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+      const created = await prisma.user.create({
+        data: { email, passwordHash, isAdmin: true },
+      });
+
+      revalidateAccounts();
       return {
-        status: "error",
-        messageKey: "noAccount",
-        values: { email },
-        email,
+        status: "success",
+        messageKey: "created",
+        values: { who: created.name ?? email },
       };
     }
 
@@ -194,15 +218,17 @@ export async function grantAdminByEmail(
       };
     }
 
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+
     await prisma.user.update({
       where: { id: user.id },
-      data: { isAdmin: true },
+      data: { isAdmin: true, passwordHash },
     });
 
     revalidateAccounts();
     return {
       status: "success",
-      messageKey: "granted",
+      messageKey: "grantedWithPassword",
       values: { who: user.name ?? email },
     };
   } catch (error) {

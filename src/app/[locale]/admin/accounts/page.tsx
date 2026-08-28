@@ -201,7 +201,7 @@ function MiniButton({
   return (
     <button
       type="submit"
-      className={`cursor-pointer border px-2.5 py-1 text-xs transition-colors ${
+      className={`flex min-h-11 cursor-pointer items-center border px-2.5 text-xs transition-colors ${
         danger
           ? "border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink"
           : "border-bone/15 text-bone/60 hover:border-gold hover:text-gold"

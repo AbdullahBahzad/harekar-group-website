@@ -443,7 +443,7 @@ function MarkerEditor({
         <button
           type="button"
           onClick={onClose}
-          className="text-bone/40 hover:text-bone cursor-pointer text-xs transition-colors"
+          className="text-bone/40 hover:text-bone flex min-h-11 cursor-pointer items-center text-xs transition-colors"
         >
           {t("common.close")}
         </button>

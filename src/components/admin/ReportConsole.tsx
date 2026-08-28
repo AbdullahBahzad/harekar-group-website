@@ -189,7 +189,7 @@ export default function ReportConsole({
                         region: e.target.value as Region,
                       })
                     }
-                    className="border-bone/12 bg-ink/60 text-bone focus:border-gold cursor-pointer border px-2 py-1 text-xs outline-none"
+                    className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-h-11 cursor-pointer border px-2 text-xs outline-none"
                   >
                     {REGIONS.map((region) => (
                       <option key={region} value={region}>
@@ -205,7 +205,7 @@ export default function ReportConsole({
                       )
                     }
                     disabled={sources.length === 1}
-                    className="text-bone/30 hover:text-status-critical ms-auto cursor-pointer text-xs transition-colors disabled:pointer-events-none disabled:opacity-30"
+                    className="text-bone/30 hover:text-status-critical ms-auto flex min-h-11 cursor-pointer items-center text-xs transition-colors disabled:pointer-events-none disabled:opacity-30"
                   >
                     {t("common.remove")}
                   </button>
@@ -349,7 +349,7 @@ export default function ReportConsole({
                                 : items,
                             )
                           }
-                          className="text-bone/30 hover:text-status-critical ms-auto cursor-pointer text-xs transition-colors"
+                          className="text-bone/30 hover:text-status-critical ms-auto flex min-h-11 cursor-pointer items-center text-xs transition-colors"
                         >
                           {t("common.remove")}
                         </button>
@@ -444,7 +444,7 @@ export default function ReportConsole({
                 type="button"
                 onClick={() => handleDelete(report.id)}
                 disabled={isPending}
-                className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink cursor-pointer border px-3 py-1.5 text-xs transition-colors disabled:opacity-40"
+                className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors disabled:opacity-40"
               >
                 {t("common.delete")}
               </button>
