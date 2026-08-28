@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { orPreview, sampleCareerBenefits } from "@/lib/admin-preview";
@@ -14,6 +14,7 @@ export default async function BenefitsStation({
   const { locale } = await params;
   setRequestLocale(locale);
   await requireAdmin(locale);
+  const t = await getTranslations({ locale, namespace: "admin.benefits" });
 
   const { data: benefits, preview } = await orPreview<ConsoleBenefit[]>(
     () =>
@@ -27,10 +28,10 @@ export default async function BenefitsStation({
     <>
       <header className="mb-6">
         <h1 className="font-display text-bone text-3xl font-light">
-          Career benefits
+          {t("title")}
         </h1>
         <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
-          The &ldquo;why work here&rdquo; cards shown on the careers page.
+          {t("intro")}
         </p>
       </header>
 

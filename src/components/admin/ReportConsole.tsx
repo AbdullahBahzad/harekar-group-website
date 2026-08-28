@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { formatDate } from "@/lib/admin-format";
 import Panel from "@/components/admin/Panel";
 import {
   generateReportDraft,
@@ -13,24 +15,15 @@ import {
  */
 import { REGIONS, THREAT_LEVELS } from "@/lib/report-shape";
 import type {
+  ConsoleReport,
   Region,
-  ReportContent,
   ReportNewsItem,
   ThreatLevel,
 } from "@/lib/report-shape";
 
-export type ConsoleReport = {
-  id: string;
-  date: string;
-  kurdistanThreat: ThreatLevel;
-  iraqThreat: ThreatLevel;
-  politicalKurdistan: string | null;
-  politicalIraq: string | null;
-  weather: string | null;
-  content: ReportContent;
-  createdAt: string;
-  createdByName: string | null;
-};
+// Re-exported so existing importers of this component keep working; the type
+// itself now lives in `report-shape`, which the server may safely import.
+export type { ConsoleReport };
 
 type SourceRow = { key: string; url: string; notes: string; region: Region };
 
@@ -57,9 +50,16 @@ export default function ReportConsole({
   reports: ConsoleReport[];
   canGenerate: boolean;
 }) {
+  const t = useTranslations("admin");
+  const locale = useLocale();
   const [sources, setSources] = useState<SourceRow[]>([newRow()]);
   const [draftItems, setDraftItems] = useState<ReportNewsItem[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  /*
+   * A key under `admin`, not the raw `Error.message`. Next redacts
+   * server-action errors before they reach the browser in production, so the
+   * raw message was never showable anyway — and this one translates.
+   */
+  const [errorKey, setErrorKey] = useState<string | null>(null);
   const [savedNotice, setSavedNotice] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -78,7 +78,7 @@ export default function ReportConsole({
   }
 
   function handleGenerate() {
-    setError(null);
+    setErrorKey(null);
     const formData = new FormData();
     for (const row of sources) {
       formData.append("itemUrl", row.url);
@@ -89,8 +89,8 @@ export default function ReportConsole({
       try {
         const items = await generateReportDraft(formData);
         setDraftItems(items);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Generation failed");
+      } catch {
+        setErrorKey("reports.generationFailed");
       }
     });
   }
@@ -105,7 +105,7 @@ export default function ReportConsole({
 
   function handleSave() {
     if (!draftItems || draftItems.length === 0) return;
-    setError(null);
+    setErrorKey(null);
 
     const formData = new FormData();
     formData.set("date", date);
@@ -128,8 +128,8 @@ export default function ReportConsole({
         setSources([newRow()]);
         setSavedNotice(true);
         setTimeout(() => setSavedNotice(false), 4000);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Save failed");
+      } catch {
+        setErrorKey("common.saveFailed");
       }
     });
   }
@@ -146,30 +146,29 @@ export default function ReportConsole({
     <div className="space-y-5">
       {!canGenerate && (
         <p className="border-status-elevated/40 bg-status-elevated/10 text-status-elevated border px-4 py-2 text-xs">
-          Preview — reports cannot be generated or saved without a database
-          connection.
+          {t("reports.previewNotice")}
         </p>
       )}
 
-      {error && (
+      {errorKey && (
         <p className="border-status-critical/40 bg-status-critical/10 text-status-critical border px-4 py-2 text-sm">
-          {error}
+          {t(errorKey)}
         </p>
       )}
 
       {savedNotice && (
         <p className="border-status-clear/40 bg-status-clear/10 text-status-clear border px-4 py-2 text-xs">
-          Report saved.
+          {t("reports.savedNotice")}
         </p>
       )}
 
       <div className="grid gap-5 xl:grid-cols-2">
         {/* ---- sources --------------------------------------------------- */}
         <Panel
-          label="Sources"
+          label={t("reports.sources")}
           action={
             <span className="text-bone/30 text-xs">
-              {sources.length} item{sources.length === 1 ? "" : "s"}
+              {t("reports.itemCount", { count: sources.length })}
             </span>
           }
         >
@@ -194,7 +193,7 @@ export default function ReportConsole({
                   >
                     {REGIONS.map((region) => (
                       <option key={region} value={region}>
-                        {region === "KURDISTAN" ? "Kurdistan" : "Iraq wide"}
+                        {t(`reports.regions.${region}`)}
                       </option>
                     ))}
                   </select>
@@ -208,25 +207,27 @@ export default function ReportConsole({
                     disabled={sources.length === 1}
                     className="text-bone/30 hover:text-status-critical ms-auto cursor-pointer text-xs transition-colors disabled:pointer-events-none disabled:opacity-30"
                   >
-                    Remove
+                    {t("common.remove")}
                   </button>
                 </div>
 
+                {/* A URL is Latin and stays LTR whatever the console's language. */}
                 <input
                   value={row.url}
+                  dir="ltr"
                   onChange={(e) =>
                     updateSource(row.key, { url: e.target.value })
                   }
-                  placeholder="https://…"
+                  placeholder={t("reports.urlPlaceholder")}
                   autoComplete="off"
-                  className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-start text-sm outline-none transition-colors"
                 />
                 <textarea
                   value={row.notes}
                   onChange={(e) =>
                     updateSource(row.key, { notes: e.target.value })
                   }
-                  placeholder="Or paste the raw text here instead of a link"
+                  placeholder={t("reports.notesPlaceholder")}
                   rows={2}
                   className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm outline-none transition-colors"
                 />
@@ -239,7 +240,7 @@ export default function ReportConsole({
                 onClick={() => setSources((rows) => [...rows, newRow()])}
                 className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
-                + Add source
+                {t("reports.addSource")}
               </button>
               <button
                 type="button"
@@ -247,25 +248,27 @@ export default function ReportConsole({
                 disabled={isPending || !canGenerate}
                 className="bg-gold text-ink hover:bg-gold-bright ms-auto cursor-pointer px-5 py-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {isPending && !draftItems ? "Drafting…" : "Generate draft"}
+                {isPending && !draftItems
+                  ? t("reports.generating")
+                  : t("reports.generate")}
               </button>
             </div>
           </div>
         </Panel>
 
         {/* ---- draft review ------------------------------------------------ */}
-        <Panel label="Review & publish">
+        <Panel label={t("reports.review")}>
           <div className="space-y-4 p-5">
             {!draftItems && (
               <p className="text-bone/40 text-sm">
-                Add sources and generate a draft to review it here.
+                {t("reports.reviewEmpty")}
               </p>
             )}
 
             {draftItems && (
               <>
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Date">
+                  <Field label={t("reports.date")}>
                     <input
                       type="date"
                       value={date}
@@ -273,15 +276,15 @@ export default function ReportConsole({
                       className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                     />
                   </Field>
-                  <Field label="Weather">
+                  <Field label={t("reports.weather")}>
                     <input
                       value={weather}
                       onChange={(e) => setWeather(e.target.value)}
-                      placeholder="e.g. Clear, 38°C"
+                      placeholder={t("reports.weatherPlaceholder")}
                       className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                     />
                   </Field>
-                  <Field label="Kurdistan threat level">
+                  <Field label={t("reports.kurdistanThreat")}>
                     <select
                       value={kurdistanThreat}
                       onChange={(e) =>
@@ -291,12 +294,12 @@ export default function ReportConsole({
                     >
                       {THREAT_LEVELS.map((level) => (
                         <option key={level} value={level}>
-                          {level}
+                          {t(`reports.threat.${level}`)}
                         </option>
                       ))}
                     </select>
                   </Field>
-                  <Field label="Iraq wide threat level">
+                  <Field label={t("reports.iraqThreat")}>
                     <select
                       value={iraqThreat}
                       onChange={(e) =>
@@ -306,19 +309,19 @@ export default function ReportConsole({
                     >
                       {THREAT_LEVELS.map((level) => (
                         <option key={level} value={level}>
-                          {level}
+                          {t(`reports.threat.${level}`)}
                         </option>
                       ))}
                     </select>
                   </Field>
-                  <Field label="Political situation — Kurdistan">
+                  <Field label={t("reports.politicalKurdistan")}>
                     <input
                       value={politicalKurdistan}
                       onChange={(e) => setPoliticalKurdistan(e.target.value)}
                       className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                     />
                   </Field>
-                  <Field label="Political situation — Iraq wide">
+                  <Field label={t("reports.politicalIraq")}>
                     <input
                       value={politicalIraq}
                       onChange={(e) => setPoliticalIraq(e.target.value)}
@@ -335,9 +338,7 @@ export default function ReportConsole({
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-gold/70 text-xs">
-                          {item.region === "KURDISTAN"
-                            ? "Kurdistan"
-                            : "Iraq wide"}
+                          {t(`reports.regions.${item.region}`)}
                         </span>
                         <button
                           type="button"
@@ -350,7 +351,7 @@ export default function ReportConsole({
                           }
                           className="text-bone/30 hover:text-status-critical ms-auto cursor-pointer text-xs transition-colors"
                         >
-                          Remove
+                          {t("common.remove")}
                         </button>
                       </div>
                       <input
@@ -369,7 +370,7 @@ export default function ReportConsole({
                         className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
                       />
                       {item.url && (
-                        <p className="text-bone/30 truncate text-xs">
+                        <p dir="ltr" className="text-bone/30 truncate text-start text-xs">
                           {item.url}
                         </p>
                       )}
@@ -384,14 +385,16 @@ export default function ReportConsole({
                     disabled={isPending || !canGenerate}
                     className="bg-gold text-ink hover:bg-gold-bright cursor-pointer px-5 py-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {isPending ? "Saving…" : "Save report"}
+                    {isPending
+                      ? t("common.saving")
+                      : t("reports.saveReport")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setDraftItems(null)}
                     className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
                   >
-                    Discard
+                    {t("reports.discard")}
                   </button>
                 </div>
               </>
@@ -401,11 +404,11 @@ export default function ReportConsole({
       </div>
 
       {/* ---- history ------------------------------------------------------ */}
-      <Panel label="History">
+      <Panel label={t("reports.history")}>
         <ul className="divide-bone/6 divide-y">
           {reports.length === 0 && (
             <li className="text-bone/40 px-4 py-6 text-sm">
-              No reports yet.
+              {t("reports.historyEmpty")}
             </li>
           )}
           {reports.map((report) => (
@@ -414,7 +417,7 @@ export default function ReportConsole({
               className="flex flex-wrap items-center gap-3 px-4 py-3"
             >
               <span className="text-bone/85 flex-1 text-sm">
-                {new Date(report.date).toLocaleDateString(undefined, {
+                {formatDate(new Date(report.date), locale, {
                   weekday: "long",
                   year: "numeric",
                   month: "long",
@@ -422,11 +425,15 @@ export default function ReportConsole({
                 })}
               </span>
               <span className="text-bone/40 text-xs">
-                {report.content.items.length} item
-                {report.content.items.length === 1 ? "" : "s"}
+                {t("reports.itemCount", {
+                  count: report.content.items.length,
+                })}
               </span>
               <span className="text-bone/30 text-xs">
-                KRI {report.kurdistanThreat} · IRQ {report.iraqThreat}
+                {t("reports.threatSummary", {
+                  kurdistan: t(`reports.threat.${report.kurdistanThreat}`),
+                  iraq: t(`reports.threat.${report.iraqThreat}`),
+                })}
               </span>
               {report.createdByName && (
                 <span className="text-bone/30 hidden text-xs sm:inline">
@@ -439,7 +446,7 @@ export default function ReportConsole({
                 disabled={isPending}
                 className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink cursor-pointer border px-3 py-1.5 text-xs transition-colors disabled:opacity-40"
               >
-                Delete
+                {t("common.delete")}
               </button>
             </li>
           ))}

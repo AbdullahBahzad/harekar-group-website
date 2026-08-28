@@ -16,7 +16,13 @@ import {
  * assessment must never travel to the browser, even inside a payload that
  * would not render it.
  */
-export async function getPublishedMarkers(): Promise<IntelMarker[]> {
+export async function getPublishedMarkers(
+  /**
+   * Whether this reader has Pro. Resolved by the caller on the server with
+   * `hasProAccess`, never from anything the browser said about itself.
+   */
+  entitled = false,
+): Promise<IntelMarker[]> {
   try {
     const rows = await prisma.intelMarker.findMany({
       where: { published: true },
@@ -28,6 +34,8 @@ export async function getPublishedMarkers(): Promise<IntelMarker[]> {
         latitude: true,
         severity: true,
         access: true,
+        headline: true,
+        body: true,
       },
     });
 
@@ -40,6 +48,19 @@ export async function getPublishedMarkers(): Promise<IntelMarker[]> {
       // The database speaks in enums; the map's props predate them.
       severity: row.severity.toLowerCase() as IntelMarker["severity"],
       access: row.access.toLowerCase() as IntelMarker["access"],
+      /*
+       * The assessment is attached here or not at all, and this is the only
+       * place that decides it.
+       *
+       * A LOCKED marker's text is dropped on the server for a reader without
+       * Pro, so it never enters the payload — hiding it in the component
+       * instead would mean the restricted report had already been delivered to
+       * anyone willing to read a network response. OPEN markers are readable by
+       * everyone, which is what `access` means.
+       */
+      ...(entitled || row.access === "OPEN"
+        ? { headline: row.headline, body: row.body }
+        : {}),
     }));
   } catch (error) {
     console.error("Falling back to static intel markers", error);

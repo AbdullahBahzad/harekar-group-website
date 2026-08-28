@@ -1,6 +1,7 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { formatDate } from "@/lib/admin-format";
 import Panel from "@/components/admin/Panel";
 import { orPreview, sampleMessages } from "@/lib/admin-preview";
 
@@ -19,6 +20,7 @@ export default async function MessagesStation({
   const { locale } = await params;
   setRequestLocale(locale);
   await requireAdmin(locale);
+  const t = await getTranslations({ locale, namespace: "admin.inbox" });
 
   const { data: messages } = await orPreview(
     () =>
@@ -32,17 +34,18 @@ export default async function MessagesStation({
   return (
     <>
       <header className="mb-6">
-        <h1 className="font-display text-bone text-3xl font-light">Messages</h1>
+        <h1 className="font-display text-bone text-3xl font-light">
+          {t("title")}
+        </h1>
         <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
-          Quote requests and enquiries from the contact form. {messages.length}{" "}
-          received.
+          {t("intro", { count: messages.length })}
         </p>
       </header>
 
       {messages.length === 0 ? (
-        <Panel label="Inbox">
+        <Panel label={t("panel")}>
           <p className="text-bone/40 px-5 py-10 text-center text-sm">
-            No messages yet.
+            {t("empty")}
           </p>
         </Panel>
       ) : (
@@ -50,7 +53,7 @@ export default async function MessagesStation({
           {messages.map((message) => (
             <Panel
               key={message.id}
-              label={message.organization ?? "Individual"}
+              label={message.organization ?? t("individual")}
             >
               <article className="space-y-3 p-5">
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -61,7 +64,7 @@ export default async function MessagesStation({
                     dateTime={message.createdAt.toISOString()}
                     className="text-bone/35 text-xs tabular-nums"
                   >
-                    {message.createdAt.toLocaleString(undefined, {
+                    {formatDate(message.createdAt, locale, {
                       month: "short",
                       day: "numeric",
                       hour: "numeric",
@@ -70,7 +73,8 @@ export default async function MessagesStation({
                   </time>
                 </div>
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                {/* Pinned LTR — see the note on the applications station. */}
+                <div dir="ltr" className="flex flex-wrap gap-x-4 gap-y-1 text-start text-xs rtl:justify-end">
                   {/* Real mailto/tel links — the whole point of an inbox is replying. */}
                   <a
                     href={`mailto:${message.email}`}

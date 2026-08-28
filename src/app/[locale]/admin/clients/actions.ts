@@ -86,6 +86,8 @@ function readCopy(formData: FormData) {
 function revalidateClients() {
   revalidatePath("/[locale]/admin/clients", "page");
   revalidatePath("/[locale]/(site)/clients", "page");
+  // The dashboard counts live vs. hidden logos.
+  revalidatePath("/[locale]/admin", "page");
 }
 
 export async function createClient(formData: FormData) {

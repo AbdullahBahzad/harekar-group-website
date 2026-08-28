@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { orPreview, sampleReports } from "@/lib/admin-preview";
-import type { ConsoleReport } from "@/components/admin/ReportConsole";
-import type { ReportContent } from "@/lib/report-shape";
+import type { ConsoleReport, ReportContent } from "@/lib/report-shape";
 
 /**
  * Recent Daily Security Reports, for the Sources station's own list and for

@@ -17,6 +17,30 @@ import { headers } from "next/headers";
  * because a dev tunnel terminates TLS in front of the server and that header is
  * the only thing that knows.
  */
+/**
+ * The origin for `robots.txt` and `sitemap.xml`, resolved without a request.
+ *
+ * Separate from `getAppOrigin` for two reasons. It must not read `headers()` —
+ * that would make both metadata routes dynamic, when they are exactly the kind
+ * of file that should be generated once at build time. And it must not throw on
+ * a missing `APP_URL`: these run during the build, and the cost of getting the
+ * origin wrong here is a stale entry in a search index, not a customer sent to
+ * an attacker's payment page. That asymmetry is why the strict version stays
+ * strict and this one falls back.
+ */
+export function siteOrigin(): string {
+  const configured = process.env.APP_URL?.trim();
+  if (configured) {
+    try {
+      return new URL(configured).origin;
+    } catch {
+      // Fall through to the default rather than failing the build over SEO.
+      console.warn(`APP_URL is not a valid URL: "${configured}"`);
+    }
+  }
+  return "http://localhost:3000";
+}
+
 export async function getAppOrigin(): Promise<string> {
   const configured = process.env.APP_URL?.trim();
 

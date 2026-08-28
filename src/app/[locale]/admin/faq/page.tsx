@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { orPreview, sampleFaqItems } from "@/lib/admin-preview";
@@ -12,6 +12,7 @@ export default async function FaqStation({
   const { locale } = await params;
   setRequestLocale(locale);
   await requireAdmin(locale);
+  const t = await getTranslations({ locale, namespace: "admin.faq" });
 
   const { data: items, preview } = await orPreview<ConsoleFaqItem[]>(
     () =>
@@ -24,9 +25,11 @@ export default async function FaqStation({
   return (
     <>
       <header className="mb-6">
-        <h1 className="font-display text-bone text-3xl font-light">FAQ</h1>
+        <h1 className="font-display text-bone text-3xl font-light">
+          {t("title")}
+        </h1>
         <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
-          The questions and answers shown on the public FAQ page.
+          {t("intro")}
         </p>
       </header>
 

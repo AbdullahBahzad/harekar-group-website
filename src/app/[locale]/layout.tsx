@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { Cormorant_Garamond, Inter, Noto_Kufi_Arabic } from "next/font/google";
 import { getDirection, routing, type Locale } from "@/i18n/routing";
 
@@ -59,6 +59,23 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
 
+  /*
+   * The console's strings are withheld from this provider.
+   *
+   * `NextIntlClientProvider` serialises whatever it is given into the HTML of
+   * every page beneath it, and with no `messages` prop that is the entire
+   * catalogue — so each anonymous visit to the marketing site was carrying
+   * several hundred admin console labels it can never render, in the reader's
+   * language, on every page. The admin layout re-provides the full set for the
+   * subtree that actually needs it.
+   *
+   * This is a payload decision, not a security one: these are UI labels, and
+   * nothing in `admin` is a secret. It is simply not the public's to download.
+   */
+  const publicMessages = Object.fromEntries(
+    Object.entries(await getMessages()).filter(([ns]) => ns !== "admin"),
+  );
+
   return (
     <html
       lang={locale}
@@ -72,7 +89,9 @@ export default async function LocaleLayout({
        * group, does not inherit marketing chrome.
        */}
       <body className="bg-ink text-bone min-h-full">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider messages={publicMessages}>
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

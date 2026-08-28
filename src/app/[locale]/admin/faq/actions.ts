@@ -57,6 +57,8 @@ function readCopy(formData: FormData) {
 function revalidateFaq() {
   revalidatePath("/[locale]/admin/faq", "page");
   revalidatePath("/[locale]/(site)/faq", "page");
+  // The dashboard counts live vs. hidden questions.
+  revalidatePath("/[locale]/admin", "page");
 }
 
 export async function createFaqItem(formData: FormData) {

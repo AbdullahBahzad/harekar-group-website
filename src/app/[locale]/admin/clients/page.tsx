@@ -1,4 +1,4 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { orPreview, sampleClients } from "@/lib/admin-preview";
@@ -14,6 +14,7 @@ export default async function ClientsStation({
   const { locale } = await params;
   setRequestLocale(locale);
   await requireAdmin(locale);
+  const t = await getTranslations({ locale, namespace: "admin.clients" });
 
   const { data: clients, preview } = await orPreview<ConsoleClient[]>(
     async () => {
@@ -55,10 +56,10 @@ export default async function ClientsStation({
     <>
       <header className="mb-6">
         <h1 className="font-display text-bone text-3xl font-light">
-          Clients
+          {t("title")}
         </h1>
         <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
-          The logo wall on the public clients page.
+          {t("intro")}
         </p>
       </header>
 

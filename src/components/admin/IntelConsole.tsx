@@ -1,7 +1,9 @@
 "use client";
 
 import { useOptimistic, useRef, useState, useTransition } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { formatDate } from "@/lib/admin-format";
 import {
   IRAQ_BOUNDS,
   MAP_HEIGHT,
@@ -66,6 +68,7 @@ export default function IntelConsole({
   markers: ConsoleMarker[];
   canSeed: boolean;
 }) {
+  const t = useTranslations("admin");
   const reduceMotion = useReducedMotion();
   const svgRef = useRef<SVGSVGElement>(null);
   const [, startTransition] = useTransition();
@@ -142,16 +145,29 @@ export default function IntelConsole({
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
       {/* ---- the map -------------------------------------------------- */}
       <Panel
-        label="Operational picture"
+        label={t("intelligence.picture")}
         action={
           <span className="text-bone/30 text-xs">
-            {optimistic.length} markers
+            {t("intelligence.markerCount", { count: optimistic.length })}
           </span>
         }
       >
         <div className="p-3 sm:p-5">
+          {/*
+           * `dir="ltr"` on the map itself, and only here.
+           *
+           * The country's geometry is geographic, not typographic — mirroring
+           * it would put Erbil west of Baghdad. SVG `<text>` does inherit
+           * `direction`, and every pin's label is drawn at a hard-coded `+11`
+           * offset to the right of its dot, so an inherited RTL would anchor
+           * labels on the wrong side of the pin they name. Arabic and Kurdish
+           * place names still shape right-to-left inside their own run.
+           */}
           <svg
             ref={svgRef}
+            // CSS rather than `dir`: React's SVG typings carry no `dir` prop,
+            // and `direction` is what `<text>` inherits either way.
+            style={{ direction: "ltr" }}
             viewBox={`-20 -20 ${MAP_WIDTH + 40} ${MAP_HEIGHT + 40}`}
             className={cn(
               "block h-auto w-full touch-none select-none",
@@ -159,7 +175,7 @@ export default function IntelConsole({
             )}
             onPointerDown={handleMapClick}
             role="application"
-            aria-label="Intelligence map. Click to place a marker."
+            aria-label={t("intelligence.mapLabel")}
           >
             <defs>
               {/* Cool plate, so gold pins read as the live layer above it. */}
@@ -281,7 +297,7 @@ export default function IntelConsole({
                     style={{ pointerEvents: "none" }}
                   >
                     {marker.label}
-                    {!marker.published && " ·draft"}
+                    {!marker.published && ` ·${t("intelligence.draftSuffix")}`}
                   </text>
                 </g>
               );
@@ -289,7 +305,7 @@ export default function IntelConsole({
           </svg>
 
           <p className="text-bone/30 mt-3 text-xs">
-            Click ground to place · drag a pin to move · select to edit
+            {t("intelligence.mapHint")}
           </p>
         </div>
       </Panel>
@@ -316,11 +332,10 @@ export default function IntelConsole({
                 onClose={() => setDraft(null)}
               />
             ) : (
-              <Panel label="Assessment">
+              <Panel label={t("intelligence.assessment")}>
                 <div className="px-5 py-10 text-center">
                   <p className="text-bone/45 text-sm">
-                    Select a marker to edit its assessment, or click anywhere on
-                    the map to place a new one.
+                    {t("intelligence.emptyEditor")}
                   </p>
                   {/*
                    * Only offered while the table is empty — see
@@ -333,7 +348,7 @@ export default function IntelConsole({
                         type="submit"
                         className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-xs transition-colors"
                       >
-                        Import original markers
+                        {t("intelligence.importOriginal")}
                       </button>
                     </form>
                   )}
@@ -343,11 +358,11 @@ export default function IntelConsole({
           </motion.div>
         </AnimatePresence>
 
-        <Panel label="Register">
+        <Panel label={t("common.register")}>
           <ul className="divide-bone/6 divide-y">
             {optimistic.length === 0 && (
               <li className="text-bone/40 px-4 py-6 text-sm">
-                No markers yet.
+                {t("intelligence.emptyRegister")}
               </li>
             )}
             {optimistic.map((marker) => (
@@ -378,12 +393,13 @@ export default function IntelConsole({
                   <span className="text-bone/85 flex-1 truncate text-sm">
                     {marker.label}
                   </span>
-                  <span className="text-bone/30 text-xs tabular-nums">
+                  {/* A coordinate pair reads lat-then-lon in every language. */}
+                  <span dir="ltr" className="text-bone/30 text-xs tabular-nums">
                     {marker.latitude.toFixed(2)}, {marker.longitude.toFixed(2)}
                   </span>
                   {marker.access === "LOCKED" && (
                     <span className="text-gold/70 text-xs">
-                      PRO
+                      {t("intelligence.proTag")}
                     </span>
                   )}
                 </button>
@@ -407,13 +423,17 @@ function MarkerEditor({
   draft?: Draft;
   onClose: () => void;
 }) {
+  const t = useTranslations("admin");
+  const locale = useLocale();
   const editing = Boolean(marker);
   const longitude = marker?.longitude ?? draft?.longitude ?? 0;
   const latitude = marker?.latitude ?? draft?.latitude ?? 0;
 
   return (
     <Panel
-      label={editing ? "Assessment" : "New marker"}
+      label={
+        editing ? t("intelligence.assessment") : t("intelligence.newMarker")
+      }
       tone={
         marker
           ? (marker.severity.toLowerCase() as "clear" | "elevated" | "critical")
@@ -425,7 +445,7 @@ function MarkerEditor({
           onClick={onClose}
           className="text-bone/40 hover:text-bone cursor-pointer text-xs transition-colors"
         >
-          Close
+          {t("common.close")}
         </button>
       }
     >
@@ -437,7 +457,7 @@ function MarkerEditor({
         <input type="hidden" name="longitude" value={longitude} />
         <input type="hidden" name="latitude" value={latitude} />
 
-        <Field label="Location">
+        <Field label={t("intelligence.location")}>
           <input
             name="label"
             defaultValue={marker?.label ?? ""}
@@ -448,31 +468,31 @@ function MarkerEditor({
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Severity">
+          <Field label={t("intelligence.severity")}>
             <select
               name="severity"
               defaultValue={marker?.severity ?? "CLEAR"}
               className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
             >
-              <option value="CLEAR">Clear</option>
-              <option value="ELEVATED">Elevated</option>
-              <option value="CRITICAL">Critical</option>
+              <option value="CLEAR">{t("severity.CLEAR")}</option>
+              <option value="ELEVATED">{t("severity.ELEVATED")}</option>
+              <option value="CRITICAL">{t("severity.CRITICAL")}</option>
             </select>
           </Field>
 
-          <Field label="Access">
+          <Field label={t("intelligence.access")}>
             <select
               name="access"
               defaultValue={marker?.access ?? "OPEN"}
               className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
             >
-              <option value="OPEN">Open</option>
-              <option value="LOCKED">Pro only</option>
+              <option value="OPEN">{t("intelligence.accessOpen")}</option>
+              <option value="LOCKED">{t("intelligence.accessLocked")}</option>
             </select>
           </Field>
         </div>
 
-        <Field label="Headline">
+        <Field label={t("intelligence.headline")}>
           <input
             name="headline"
             defaultValue={marker?.headline ?? ""}
@@ -481,7 +501,7 @@ function MarkerEditor({
           />
         </Field>
 
-        <Field label="Assessment">
+        <Field label={t("intelligence.assessment")}>
           <textarea
             name="body"
             defaultValue={marker?.body ?? ""}
@@ -498,14 +518,23 @@ function MarkerEditor({
             className="accent-gold size-4 cursor-pointer"
           />
           <span className="text-bone/70 text-xs">
-            Publish to the public map
+            {t("intelligence.publishToMap")}
           </span>
         </label>
 
         <p className="text-bone/25 text-xs tabular-nums">
-          {latitude.toFixed(4)}°N · {longitude.toFixed(4)}°E
-          {marker && ` · updated ${new Date(marker.updatedAt).toLocaleDateString()}`}
-          {marker?.updatedByName && ` by ${marker.updatedByName}`}
+          {t("intelligence.coordinates", {
+            lat: latitude.toFixed(4),
+            lon: longitude.toFixed(4),
+          })}
+          {marker &&
+            ` · ${t("intelligence.updatedAt", {
+              date: formatDate(new Date(marker.updatedAt), locale, {
+                dateStyle: "medium",
+              }),
+            })}`}
+          {marker?.updatedByName &&
+            ` ${t("intelligence.updatedBy", { who: marker.updatedByName })}`}
         </p>
 
         <div className="border-bone/8 flex flex-wrap gap-2 border-t pt-4">
@@ -513,7 +542,7 @@ function MarkerEditor({
             type="submit"
             className="bg-gold text-ink hover:bg-gold-bright cursor-pointer px-5 py-2 text-xs transition-colors"
           >
-            {editing ? "Save" : "Place marker"}
+            {editing ? t("common.save") : t("intelligence.placeMarker")}
           </button>
 
           {marker && (
@@ -523,7 +552,7 @@ function MarkerEditor({
                 formAction={toggleMarkerPublished}
                 className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
-                {marker.published ? "Withdraw" : "Publish"}
+                {marker.published ? t("common.withdraw") : t("common.publish")}
               </button>
 
               {/*
@@ -535,7 +564,7 @@ function MarkerEditor({
                 formAction={deleteMarker}
                 className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink ms-auto cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
-                Delete
+                {t("common.delete")}
               </button>
             </>
           )}

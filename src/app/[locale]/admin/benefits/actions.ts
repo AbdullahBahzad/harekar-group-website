@@ -43,6 +43,8 @@ function readCopy(formData: FormData) {
 function revalidateBenefits() {
   revalidatePath("/[locale]/admin/benefits", "page");
   revalidatePath("/[locale]/(site)/careers", "page");
+  // The dashboard counts live vs. hidden cards.
+  revalidatePath("/[locale]/admin", "page");
 }
 
 export async function createBenefit(formData: FormData) {

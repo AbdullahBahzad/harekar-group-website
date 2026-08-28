@@ -34,6 +34,27 @@ export type PaymentProvider = {
    * indistinguishable from a forged one.
    */
   verifyCallback(payload: {
+    /**
+     * The request body exactly as it arrived, unparsed.
+     *
+     * This is the field a real adapter will verify against, and it has to be
+     * the raw bytes: gateways sign the body they sent, and
+     * `JSON.stringify(JSON.parse(raw))` does not reproduce it. Key order,
+     * whitespace, unicode escaping and number formatting all move, so an HMAC
+     * recomputed from the parsed object disagrees with the signature every
+     * time — and an adapter that cannot verify a signature is an adapter that
+     * has to trust the caller, which is the whole thing this endpoint exists
+     * to avoid.
+     *
+     * It is also what a form-encoded gateway needs, since those do not post
+     * JSON at all.
+     */
+    raw: string;
+    /**
+     * `raw` parsed as JSON, or null when it was not JSON. A convenience for
+     * reading fields *after* the signature has been checked against `raw` —
+     * never a substitute for checking it.
+     */
     body: unknown;
     searchParams: URLSearchParams;
     headers: Headers;

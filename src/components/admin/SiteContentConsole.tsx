@@ -2,106 +2,112 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { useTranslations } from "next-intl";
 import Panel from "@/components/admin/Panel";
 import { saveSiteContent } from "@/app/[locale]/admin/content/actions";
 
-type FieldSpec = { field: string; label: string; multiline?: boolean };
+/**
+ * `labelKey` indexes `admin.content.fields`, `titleKey` indexes
+ * `admin.content.sections`. The database column name stays in `field` — it is
+ * the form's wire format and must never move with the interface language.
+ */
+type FieldSpec = { field: string; labelKey: string; multiline?: boolean };
 type Section = {
-  title: string;
+  titleKey: string;
   fields: FieldSpec[];
   /** Plain (non-locale) figures shown beside this section's labels. */
-  valueFields?: { field: string; label: string }[];
+  valueFields?: { field: string; labelKey: string }[];
 };
 
 const SECTIONS: Section[] = [
   {
-    title: "Hero",
+    titleKey: "hero",
     fields: [
-      { field: "heroEyebrow", label: "Eyebrow" },
-      { field: "heroTitle", label: "Title" },
-      { field: "heroSubtitle", label: "Subtitle", multiline: true },
+      { field: "heroEyebrow", labelKey: "eyebrow" },
+      { field: "heroTitle", labelKey: "title" },
+      { field: "heroSubtitle", labelKey: "subtitle", multiline: true },
     ],
   },
   {
-    title: "About",
+    titleKey: "about",
     fields: [
-      { field: "aboutEyebrow", label: "Eyebrow" },
-      { field: "aboutTitle", label: "Title" },
-      { field: "aboutBody1", label: "Paragraph 1", multiline: true },
-      { field: "aboutBody2", label: "Paragraph 2", multiline: true },
-      { field: "aboutBody3", label: "Paragraph 3", multiline: true },
+      { field: "aboutEyebrow", labelKey: "eyebrow" },
+      { field: "aboutTitle", labelKey: "title" },
+      { field: "aboutBody1", labelKey: "paragraph1", multiline: true },
+      { field: "aboutBody2", labelKey: "paragraph2", multiline: true },
+      { field: "aboutBody3", labelKey: "paragraph3", multiline: true },
     ],
   },
   {
-    title: "Mission & Vision",
+    titleKey: "missionVision",
     fields: [
-      { field: "missionTitle", label: "Mission title" },
-      { field: "missionBody", label: "Mission body", multiline: true },
-      { field: "visionTitle", label: "Vision title" },
-      { field: "visionBody", label: "Vision body", multiline: true },
+      { field: "missionTitle", labelKey: "missionTitle" },
+      { field: "missionBody", labelKey: "missionBody", multiline: true },
+      { field: "visionTitle", labelKey: "visionTitle" },
+      { field: "visionBody", labelKey: "visionBody", multiline: true },
     ],
   },
   {
-    title: "Stats strip",
+    titleKey: "stats",
     fields: [
-      { field: "statExperienceLabel", label: "Experience — label" },
-      { field: "statPersonnelLabel", label: "Personnel — label" },
-      { field: "statSitesLabel", label: "Sites — label" },
-      { field: "statCoverageLabel", label: "Coverage — label" },
+      { field: "statExperienceLabel", labelKey: "statExperienceLabel" },
+      { field: "statPersonnelLabel", labelKey: "statPersonnelLabel" },
+      { field: "statSitesLabel", labelKey: "statSitesLabel" },
+      { field: "statCoverageLabel", labelKey: "statCoverageLabel" },
     ],
     valueFields: [
-      { field: "statExperienceValue", label: "Experience — value (e.g. 15+)" },
-      { field: "statPersonnelValue", label: "Personnel — value (e.g. 800+)" },
-      { field: "statSitesValue", label: "Sites — value (e.g. 120+)" },
-      { field: "statCoverageValue", label: "Coverage — value (e.g. 24/7)" },
+      { field: "statExperienceValue", labelKey: "statExperienceValue" },
+      { field: "statPersonnelValue", labelKey: "statPersonnelValue" },
+      { field: "statSitesValue", labelKey: "statSitesValue" },
+      { field: "statCoverageValue", labelKey: "statCoverageValue" },
     ],
   },
   {
-    title: "Footer",
-    fields: [{ field: "footerTagline", label: "Tagline" }],
+    titleKey: "footer",
+    fields: [{ field: "footerTagline", labelKey: "tagline" }],
   },
   {
-    title: "FAQ page intro",
+    titleKey: "faq",
     fields: [
-      { field: "faqEyebrow", label: "Eyebrow" },
-      { field: "faqTitle", label: "Title" },
-      { field: "faqSubtitle", label: "Subtitle", multiline: true },
-      { field: "faqCtaTitle", label: "CTA title" },
-      { field: "faqCtaBody", label: "CTA body", multiline: true },
+      { field: "faqEyebrow", labelKey: "eyebrow" },
+      { field: "faqTitle", labelKey: "title" },
+      { field: "faqSubtitle", labelKey: "subtitle", multiline: true },
+      { field: "faqCtaTitle", labelKey: "ctaTitle" },
+      { field: "faqCtaBody", labelKey: "ctaBody", multiline: true },
     ],
   },
   {
-    title: "Careers page intro",
+    titleKey: "careers",
     fields: [
-      { field: "careersEyebrow", label: "Eyebrow" },
-      { field: "careersTitle", label: "Title" },
+      { field: "careersEyebrow", labelKey: "eyebrow" },
+      { field: "careersTitle", labelKey: "title" },
     ],
   },
   {
-    title: "Contact page intro",
+    titleKey: "contact",
     fields: [
-      { field: "contactEyebrow", label: "Eyebrow" },
-      { field: "contactTitle", label: "Title" },
-      { field: "contactSubtitle", label: "Subtitle", multiline: true },
+      { field: "contactEyebrow", labelKey: "eyebrow" },
+      { field: "contactTitle", labelKey: "title" },
+      { field: "contactSubtitle", labelKey: "subtitle", multiline: true },
     ],
   },
   {
-    title: "Pro page",
+    titleKey: "pro",
     fields: [
-      { field: "proEyebrow", label: "Eyebrow" },
-      { field: "proTitle", label: "Title" },
-      { field: "proSubtitle", label: "Subtitle", multiline: true },
+      { field: "proEyebrow", labelKey: "eyebrow" },
+      { field: "proTitle", labelKey: "title" },
+      { field: "proSubtitle", labelKey: "subtitle", multiline: true },
     ],
   },
   {
-    title: "Pro plans",
+    titleKey: "plans",
     fields: [
-      { field: "planMonthlyName", label: "Monthly — name" },
-      { field: "planMonthlyPeriod", label: "Monthly — period label" },
-      { field: "planMonthlyBlurb", label: "Monthly — blurb", multiline: true },
-      { field: "planYearlyName", label: "Yearly — name" },
-      { field: "planYearlyPeriod", label: "Yearly — period label" },
-      { field: "planYearlyBlurb", label: "Yearly — blurb", multiline: true },
+      { field: "planMonthlyName", labelKey: "monthlyName" },
+      { field: "planMonthlyPeriod", labelKey: "monthlyPeriod" },
+      { field: "planMonthlyBlurb", labelKey: "monthlyBlurb", multiline: true },
+      { field: "planYearlyName", labelKey: "yearlyName" },
+      { field: "planYearlyPeriod", labelKey: "yearlyPeriod" },
+      { field: "planYearlyBlurb", labelKey: "yearlyBlurb", multiline: true },
     ],
   },
 ];
@@ -117,8 +123,12 @@ const inputClass =
  * copy for fields that have never been saved, so the first visit here is a
  * form to review rather than a blank one to retype the entire site into.
  */
-type SaveState = { message: string | null; error: boolean };
-const initialSaveState: SaveState = { message: null, error: false };
+/**
+ * The outcome carries a key, not a sentence, so it can be said in whichever
+ * language the console is running in.
+ */
+type SaveState = { messageKey: string | null; error: boolean };
+const initialSaveState: SaveState = { messageKey: null, error: false };
 
 export default function SiteContentConsole({
   content,
@@ -127,16 +137,14 @@ export default function SiteContentConsole({
   content: Record<string, unknown> | null;
   initial: Record<string, string>;
 }) {
+  const t = useTranslations("admin");
   const [state, formAction] = useActionState<SaveState, FormData>(
     async (_prev, formData) => {
       try {
         await saveSiteContent(formData);
-        return { message: "Saved.", error: false };
-      } catch (err) {
-        return {
-          message: err instanceof Error ? err.message : "Save failed",
-          error: true,
-        };
+        return { messageKey: "common.saved", error: false };
+      } catch {
+        return { messageKey: "common.saveFailed", error: true };
       }
     },
     initialSaveState,
@@ -157,7 +165,7 @@ export default function SiteContentConsole({
 
   return (
     <form action={formAction} className="space-y-5">
-      {state.message && (
+      {state.messageKey && (
         <p
           role="status"
           className={`border px-4 py-2 text-sm ${
@@ -166,43 +174,60 @@ export default function SiteContentConsole({
               : "border-status-clear/40 bg-status-clear/10 text-status-clear"
           }`}
         >
-          {state.message}
+          {t(state.messageKey)}
         </p>
       )}
 
       {SECTIONS.map((section) => (
-        <Panel key={section.title} label={section.title}>
+        <Panel
+          key={section.titleKey}
+          label={t(`content.sections.${section.titleKey}`)}
+        >
           <div className="space-y-6 p-5">
             {section.valueFields && (
               <div className="grid gap-3 sm:grid-cols-2">
-                {section.valueFields.map(({ field, label }) => (
+                {section.valueFields.map(({ field, labelKey }) => (
                   <label key={field} className="block">
                     <span className="text-bone/45 mb-1.5 block text-xs">
-                      {label}
+                      {t(`content.fields.${labelKey}`)}
                     </span>
+                    {/*
+                     * A figure like "15+" or "24/7" — the same characters on
+                     * the site in every language, so it is typed LTR here.
+                     */}
                     <input
                       name={field}
+                      dir="ltr"
                       defaultValue={plainValueOf(field)}
                       required
                       autoComplete="off"
-                      className={inputClass}
+                      className={`${inputClass} text-start`}
                     />
                   </label>
                 ))}
               </div>
             )}
 
-            {section.fields.map(({ field, label, multiline }) => (
+            {section.fields.map(({ field, labelKey, multiline }) => (
               <fieldset key={field} className="border-bone/8 space-y-2 border-s-2 ps-3">
-                <legend className="text-bone/60 px-1 text-xs">{label}</legend>
+                <legend className="text-bone/60 px-1 text-xs">
+                  {t(`content.fields.${labelKey}`)}
+                </legend>
 
+                {/*
+                 * Each language's box is pinned to that language's direction —
+                 * it holds the site's copy, not the console's chrome, so the
+                 * English field types left-to-right whatever the operator's
+                 * own interface language is.
+                 */}
                 <label className="block">
                   <span className="text-gold/60 mb-1 block text-[11px] tracking-[0.14em] uppercase">
-                    English
+                    {t("common.english")}
                   </span>
                   {multiline ? (
                     <textarea
                       name={`${field}En`}
+                      dir="ltr"
                       defaultValue={valueOf(field, "En")}
                       required
                       rows={3}
@@ -211,6 +236,7 @@ export default function SiteContentConsole({
                   ) : (
                     <input
                       name={`${field}En`}
+                      dir="ltr"
                       defaultValue={valueOf(field, "En")}
                       required
                       autoComplete="off"
@@ -222,7 +248,10 @@ export default function SiteContentConsole({
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="block">
                     <span className="text-bone/35 mb-1 block text-[11px] tracking-[0.14em] uppercase">
-                      Arabic <span className="normal-case">optional</span>
+                      {t("common.arabic")}{" "}
+                      <span className="normal-case">
+                        {t("common.optional")}
+                      </span>
                     </span>
                     {multiline ? (
                       <textarea
@@ -245,7 +274,10 @@ export default function SiteContentConsole({
 
                   <label className="block">
                     <span className="text-bone/35 mb-1 block text-[11px] tracking-[0.14em] uppercase">
-                      Kurdish <span className="normal-case">optional</span>
+                      {t("common.kurdish")}{" "}
+                      <span className="normal-case">
+                        {t("common.optional")}
+                      </span>
                     </span>
                     {multiline ? (
                       <textarea
@@ -280,6 +312,7 @@ export default function SiteContentConsole({
 }
 
 function SaveButton() {
+  const t = useTranslations("admin");
   const { pending } = useFormStatus();
   return (
     <button
@@ -287,7 +320,7 @@ function SaveButton() {
       disabled={pending}
       className="bg-gold text-ink hover:bg-gold-bright w-full cursor-pointer rounded-xl px-5 py-3 text-sm font-medium shadow-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {pending ? "Saving…" : "Save all content"}
+      {pending ? t("common.saving") : t("content.saveAll")}
     </button>
   );
 }

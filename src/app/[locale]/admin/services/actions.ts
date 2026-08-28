@@ -109,6 +109,8 @@ function revalidateServices() {
   revalidatePath("/[locale]/admin/services", "page");
   revalidatePath("/[locale]/(site)/services", "page");
   revalidatePath("/[locale]/(site)", "page");
+  // The dashboard counts live vs. hidden services.
+  revalidatePath("/[locale]/admin", "page");
 }
 
 /**

@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import Panel from "@/components/admin/Panel";
 import { clientCategories } from "@/lib/client-logos";
@@ -45,6 +46,7 @@ export default function ClientConsole({
   clients: ConsoleClient[];
   canSeed: boolean;
 }) {
+  const t = useTranslations("admin");
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
@@ -53,7 +55,7 @@ export default function ClientConsole({
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <Panel
-        label="Logos"
+        label={t("clients.logos")}
         action={
           <button
             type="button"
@@ -63,20 +65,20 @@ export default function ClientConsole({
             }}
             className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-3 py-1 text-xs transition-colors"
           >
-            + New logo
+            {t("clients.newLogo")}
           </button>
         }
       >
         {clients.length === 0 ? (
           <div className="px-5 py-10 text-center">
-            <p className="text-bone/45 text-sm">No clients in the database.</p>
+            <p className="text-bone/45 text-sm">{t("clients.empty")}</p>
             {canSeed && (
               <form action={seedFromStaticClients} className="mt-6">
                 <button
                   type="submit"
                   className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
                 >
-                  Import the 37 existing logos
+                  {t("clients.importExisting", { count: 37 })}
                 </button>
               </form>
             )}
@@ -109,15 +111,17 @@ export default function ClientConsole({
 
                   <span className="min-w-0 flex-1">
                     <span className="text-bone/90 block truncate text-sm">
-                      {client.name ?? "Unnamed"}
+                      {client.name ?? t("common.unnamed")}
                     </span>
                     <span className="text-bone/35 block truncate text-xs">
-                      {client.category}
+                      {t(`clients.categories.${client.category}`)}
                     </span>
                   </span>
 
                   {!client.published && (
-                    <span className="text-bone/30 text-xs">hidden</span>
+                    <span className="text-bone/30 text-xs">
+                      {t("common.hidden")}
+                    </span>
                   )}
                 </button>
               </li>
@@ -136,9 +140,9 @@ export default function ClientConsole({
           }}
         />
       ) : (
-        <Panel label="Editor">
+        <Panel label={t("common.editor")}>
           <p className="text-bone/45 px-5 py-10 text-center text-sm">
-            Select a logo to edit it or replace its image, or add a new one.
+            {t("clients.emptyEditor")}
           </p>
         </Panel>
       )}
@@ -153,18 +157,19 @@ function ClientEditor({
   client?: ConsoleClient;
   onClose: () => void;
 }) {
+  const t = useTranslations("admin");
   const editing = Boolean(client);
 
   return (
     <Panel
-      label={editing ? "Edit logo" : "New logo"}
+      label={editing ? t("clients.edit") : t("clients.create")}
       action={
         <button
           type="button"
           onClick={onClose}
           className="text-bone/40 hover:text-bone cursor-pointer text-xs transition-colors"
         >
-          Close
+          {t("common.close")}
         </button>
       }
     >
@@ -190,38 +195,41 @@ function ClientEditor({
               unoptimized={client.hasUpload}
             />
             <span className="bg-ink/70 text-bone/60 absolute bottom-0 start-0 px-2 py-1 text-xs backdrop-blur">
-              {client.hasUpload ? "Uploaded" : "Shipped image"}
+              {client.hasUpload
+                ? t("common.uploaded")
+                : t("common.shippedImage")}
             </span>
           </div>
         )}
 
-        <Field label="Logo — WebP, PNG, JPEG or AVIF, max 2MB. White artwork on transparency reads best.">
+        <Field label={t("clients.logoLabel")}>
+          {/* `file:me-3` — logical, so the gap sits inside the button in RTL too. */}
           <input
             type="file"
             name="image"
             accept="image/webp,image/png,image/jpeg,image/avif"
             required={!editing}
-            className="text-bone/60 file:border-gold/40 file:text-gold hover:file:bg-gold hover:file:text-ink w-full cursor-pointer text-xs file:mr-3 file:cursor-pointer file:border file:bg-transparent file:px-3 file:py-1.5 file:text-xs file:transition-colors"
+            className="text-bone/60 file:border-gold/40 file:text-gold hover:file:bg-gold hover:file:text-ink w-full cursor-pointer text-xs file:me-3 file:cursor-pointer file:border file:bg-transparent file:px-3 file:py-1.5 file:text-xs file:transition-colors"
           />
           {client?.hasUpload && (
             <span className="text-bone/30 mt-1.5 block text-xs">
-              Leave empty to keep the current logo.
+              {t("clients.logoKeep")}
             </span>
           )}
         </Field>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Name — optional">
+          <Field label={t("clients.nameLabel")}>
             <input
               name="name"
               defaultValue={client?.name ?? ""}
               autoComplete="off"
-              placeholder="Client name"
+              placeholder={t("clients.namePlaceholder")}
               className={inputClass}
             />
           </Field>
 
-          <Field label="Category">
+          <Field label={t("clients.category")}>
             <select
               name="category"
               defaultValue={client?.category ?? clientCategories[0]}
@@ -229,7 +237,7 @@ function ClientEditor({
             >
               {clientCategories.map((category) => (
                 <option key={category} value={category}>
-                  {category}
+                  {t(`clients.categories.${category}`)}
                 </option>
               ))}
             </select>
@@ -242,38 +250,42 @@ function ClientEditor({
          * logos read as threads next to ones that fill their cell. These
          * three numbers correct that per logo, same as the shipped values.
          */}
+        {/* Geometry, pinned LTR so the decimals read the same in every language. */}
         <div className="grid gap-3 sm:grid-cols-3">
-          <Field label="Width % of cell">
+          <Field label={t("clients.width")}>
             <input
               type="number"
               name="w"
+              dir="ltr"
               defaultValue={client?.w ?? 60}
               min={5}
               max={100}
               step={0.1}
-              className={`${inputClass} tabular-nums`}
+              className={`${inputClass} text-start tabular-nums`}
             />
           </Field>
-          <Field label="Centre X %">
+          <Field label={t("clients.centreX")}>
             <input
               type="number"
               name="cx"
+              dir="ltr"
               defaultValue={client?.cx ?? 50}
               min={0}
               max={100}
               step={0.1}
-              className={`${inputClass} tabular-nums`}
+              className={`${inputClass} text-start tabular-nums`}
             />
           </Field>
-          <Field label="Centre Y %">
+          <Field label={t("clients.centreY")}>
             <input
               type="number"
               name="cy"
+              dir="ltr"
               defaultValue={client?.cy ?? 50}
               min={0}
               max={100}
               step={0.1}
-              className={`${inputClass} tabular-nums`}
+              className={`${inputClass} text-start tabular-nums`}
             />
           </Field>
         </div>
@@ -286,16 +298,19 @@ function ClientEditor({
               defaultChecked={client?.published ?? true}
               className="accent-gold size-4 cursor-pointer"
             />
-            <span className="text-bone/70 text-xs">Show on the site</span>
+            <span className="text-bone/70 text-xs">
+              {t("common.showOnSite")}
+            </span>
           </label>
 
           <label className="flex items-center gap-2">
-            <span className="text-bone/45 text-xs">Order</span>
+            <span className="text-bone/45 text-xs">{t("common.order")}</span>
             <input
               type="number"
               name="sortOrder"
+              dir="ltr"
               defaultValue={client?.sortOrder ?? 0}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-xs tabular-nums outline-none"
+              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
             />
           </label>
         </div>
@@ -305,7 +320,7 @@ function ClientEditor({
             type="submit"
             className="bg-gold text-ink hover:bg-gold-bright cursor-pointer rounded-full px-5 py-2 text-sm font-medium transition-colors"
           >
-            {editing ? "Save" : "Create logo"}
+            {editing ? t("common.save") : t("clients.createButton")}
           </button>
 
           {client && (
@@ -316,7 +331,7 @@ function ClientEditor({
                 formNoValidate
                 className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
               >
-                {client.published ? "Hide" : "Show"}
+                {client.published ? t("common.hide") : t("common.show")}
               </button>
 
               <button
@@ -325,7 +340,7 @@ function ClientEditor({
                 formNoValidate
                 className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink ms-auto cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
               >
-                Delete
+                {t("common.delete")}
               </button>
             </>
           )}
