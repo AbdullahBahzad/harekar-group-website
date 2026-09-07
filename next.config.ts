@@ -70,6 +70,22 @@ const nextConfig: NextConfig = {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
 
+  /*
+   * Client and service photos are served through their own API routes
+   * (`/api/clients/[id]/image`, `/api/services/[id]/image`) with a `?v=`
+   * cache-busting query string appended — see `lib/clients.ts` and
+   * `lib/services.ts`. `next/image` refuses to optimize a local image URL
+   * that carries a query string unless the pattern is explicitly allow-listed
+   * here; omitting `search` allows any value rather than pinning it to the
+   * timestamp of whichever row happened to exist at build time.
+   */
+  images: {
+    localPatterns: [
+      { pathname: "/api/clients/**" },
+      { pathname: "/api/services/**" },
+    ],
+  },
+
   allowedDevOrigins: ["192.168.100.66"],
   experimental: {
     serverActions: {
