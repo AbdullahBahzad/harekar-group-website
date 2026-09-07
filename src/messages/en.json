@@ -760,6 +760,7 @@
       "generating": "Drafting…",
       "review": "Review & publish",
       "reviewEmpty": "Add sources and generate a draft to review it here.",
+      "addManualItem": "+ Add item manually",
       "date": "Date",
       "weather": "Weather",
       "weatherPlaceholder": "e.g. Clear, 38°C",

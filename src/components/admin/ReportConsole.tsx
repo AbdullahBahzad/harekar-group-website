@@ -96,6 +96,24 @@ export default function ReportConsole({
     });
   }
 
+  /**
+   * Opens the review panel with a blank item instead of an AI draft.
+   *
+   * The Claude-drafting step needs `ANTHROPIC_API_KEY`, which is optional —
+   * a report is otherwise just the same structured text it always was, so an
+   * operator without a key configured can still write items by hand, exactly
+   * as before the console automated the writing. Mixing the two is fine:
+   * this appends to whatever is already in the review panel, AI-drafted or
+   * not.
+   */
+  function handleAddManualItem() {
+    setErrorKey(null);
+    setDraftItems((items) => [
+      ...(items ?? []),
+      { title: "", body: "", url: null, region: "KURDISTAN" },
+    ]);
+  }
+
   function updateDraftItem(index: number, patch: Partial<ReportNewsItem>) {
     setDraftItems((items) =>
       items
@@ -280,9 +298,18 @@ export default function ReportConsole({
         <Panel label={t("reports.review")}>
           <div className="space-y-4 p-5">
             {!draftItems && (
-              <p className="text-bone/40 text-sm">
-                {t("reports.reviewEmpty")}
-              </p>
+              <div className="space-y-3">
+                <p className="text-bone/40 text-sm">
+                  {t("reports.reviewEmpty")}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleAddManualItem}
+                  className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                >
+                  {t("reports.addManualItem")}
+                </button>
+              </div>
             )}
 
             {draftItems && (
@@ -357,9 +384,21 @@ export default function ReportConsole({
                       className="border-bone/10 space-y-2 border p-3"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-gold/70 text-xs">
-                          {t(`reports.regions.${item.region}`)}
-                        </span>
+                        <select
+                          value={item.region}
+                          onChange={(e) =>
+                            updateDraftItem(i, {
+                              region: e.target.value as Region,
+                            })
+                          }
+                          className="border-bone/12 bg-ink/60 text-gold/70 focus:border-gold cursor-pointer border px-2 py-1 text-xs outline-none"
+                        >
+                          {REGIONS.map((region) => (
+                            <option key={region} value={region}>
+                              {t(`reports.regions.${region}`)}
+                            </option>
+                          ))}
+                        </select>
                         <button
                           type="button"
                           onClick={() =>
@@ -397,6 +436,14 @@ export default function ReportConsole({
                     </div>
                   ))}
                 </div>
+
+                <button
+                  type="button"
+                  onClick={handleAddManualItem}
+                  className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                >
+                  {t("reports.addManualItem")}
+                </button>
 
                 <div className="border-bone/8 flex gap-2 border-t pt-4">
                   <button
