@@ -21,6 +21,7 @@
     "@sanity/client": "^7.26.2",
     "@sanity/image-url": "^2.1.1",
     "bcryptjs": "^3.0.3",
+    "cheerio": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^13.1.0",

@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import {
   draftReportItems,
+  fetchArticleText,
   THREAT_LEVELS,
   REGIONS,
   type ThreatLevel,
@@ -12,6 +13,8 @@ import {
   type ReportContent,
   type ReportNewsItem,
 } from "@/lib/reports";
+import { fetchHeadlines, type Headline } from "@/lib/headlines";
+import { REPORT_SOURCES } from "@/data/report-sources";
 
 /**
  * Every mutation re-checks admin rights.
@@ -72,6 +75,105 @@ export async function generateReportDraft(
   }
 
   return draftReportItems(raw);
+}
+
+export type SourceHeadlines = {
+  name: string;
+  defaultRegion: Region;
+  headlines: Headline[];
+  /** The fetch itself failed (site unreachable, blocked, timed out, ...). */
+  failed: boolean;
+};
+
+/**
+ * Today's candidate headlines from every fixed source, for the "fetch
+ * today's headlines" checklist.
+ *
+ * Sources are checked in parallel and independently of one another —
+ * `Promise.allSettled`, not `Promise.all` — because one outlet being down or
+ * redesigned should not blank the other ten; it just comes back `failed` and
+ * the analyst tries again later or skips it for today.
+ */
+export async function fetchAllSourceHeadlines(): Promise<SourceHeadlines[]> {
+  await assertAdmin();
+
+  const results = await Promise.allSettled(
+    REPORT_SOURCES.map((source) => fetchHeadlines(source.url)),
+  );
+
+  return REPORT_SOURCES.map((source, i) => {
+    const result = results[i];
+    const headlines = result.status === "fulfilled" ? result.value : [];
+    return {
+      name: source.name,
+      defaultRegion: source.defaultRegion,
+      headlines,
+      failed: result.status === "rejected" || headlines.length === 0,
+    };
+  });
+}
+
+/** One headline the analyst checked in the "fetch today's headlines" list. */
+type HeadlineSelection = { title: string; url: string; region: Region };
+
+/**
+ * Turns checked headlines straight into report-ready items, with no
+ * `ANTHROPIC_API_KEY` involved at all.
+ *
+ * `generateReportDraft` above is the polished path: Claude reads the source
+ * and writes a bulletin-register paragraph. This is the plain one — the
+ * article's own text, lightly cleaned and trimmed to a paragraph — for a
+ * deployment with no key configured, or an operator who would rather not pay
+ * per generation. Either way the result lands in the same review panel and
+ * is edited and approved the same way before `saveReport` ever sees it.
+ */
+export async function pullHeadlineItems(
+  selections: HeadlineSelection[],
+): Promise<ReportNewsItem[]> {
+  await assertAdmin();
+
+  if (selections.length === 0) throw new Error("Nothing selected");
+  if (selections.some((s) => !REGIONS.includes(s.region))) {
+    throw new Error("Unknown region on a selected headline");
+  }
+
+  return Promise.all(
+    selections.map(async (selection) => {
+      const text = await fetchArticleText(selection.url);
+      return {
+        title: selection.title,
+        body: text
+          ? toParagraph(text)
+          : "(Could not retrieve the article text — write a summary here.)",
+        url: selection.url,
+        region: selection.region,
+      };
+    }),
+  );
+}
+
+/**
+ * Cuts fetched article text down to one bulletin-length paragraph.
+ *
+ * Breaks at the last sentence boundary before the limit rather than a hard
+ * cut, so the item reads as a complete paragraph instead of trailing off
+ * mid-sentence — the same reason a hard cut is only the fallback when no
+ * sentence break exists in range at all (a wire story with no punctuation
+ * that early, or written in a script this regex does not recognise).
+ */
+function toParagraph(text: string, maxLen = 900): string {
+  if (text.length <= maxLen) return text;
+
+  const slice = text.slice(0, maxLen);
+  const lastBreak = Math.max(
+    slice.lastIndexOf(". "),
+    slice.lastIndexOf("! "),
+    slice.lastIndexOf("? "),
+  );
+
+  return lastBreak > maxLen * 0.4
+    ? slice.slice(0, lastBreak + 1)
+    : slice.trimEnd() + "…";
 }
 
 /**

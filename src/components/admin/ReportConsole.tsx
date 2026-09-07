@@ -8,10 +8,16 @@ import {
   generateReportDraft,
   saveReport,
   deleteReport,
+  fetchAllSourceHeadlines,
+  pullHeadlineItems,
+  type SourceHeadlines,
 } from "@/app/[locale]/admin/sources/actions";
 /*
  * From `report-shape`, not `reports`: this is a client component, and
  * `reports.ts` reaches for `node:dns` and the Anthropic SDK at import time.
+ * The action imports above are safe regardless — "use server" strips
+ * everything but the callable reference from the client bundle no matter
+ * what that action's own module imports internally.
  */
 import { REGIONS, THREAT_LEVELS } from "@/lib/report-shape";
 import { REPORT_SOURCES } from "@/data/report-sources";
@@ -64,6 +70,17 @@ export default function ReportConsole({
   const [savedNotice, setSavedNotice] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  // Kept separate from `isPending` above: fetching or pulling headlines
+  // should not disable Save/Delete elsewhere on the page, and vice versa.
+  const [headlineGroups, setHeadlineGroups] = useState<
+    SourceHeadlines[] | null
+  >(null);
+  const [checkedHeadlines, setCheckedHeadlines] = useState<
+    Map<string, { title: string; url: string; region: Region }>
+  >(new Map());
+  const [isFetchingHeadlines, startHeadlinesTransition] = useTransition();
+  const [isPullingHeadlines, startPullTransition] = useTransition();
+
   const [date, setDate] = useState(today());
   const [kurdistanThreat, setKurdistanThreat] =
     useState<ThreatLevel>("MODERATE");
@@ -92,6 +109,68 @@ export default function ReportConsole({
         setDraftItems(items);
       } catch {
         setErrorKey("reports.generationFailed");
+      }
+    });
+  }
+
+  /**
+   * Pulls today's candidate headlines from every fixed source at once —
+   * replacing the trip to each site to find and copy a link.
+   */
+  function handleFetchHeadlines() {
+    setErrorKey(null);
+    startHeadlinesTransition(async () => {
+      try {
+        const groups = await fetchAllSourceHeadlines();
+        setHeadlineGroups(groups);
+        setCheckedHeadlines(new Map());
+      } catch {
+        setErrorKey("reports.headlinesFailed");
+      }
+    });
+  }
+
+  function toggleHeadline(defaultRegion: Region, headline: { title: string; url: string }) {
+    setCheckedHeadlines((prev) => {
+      const next = new Map(prev);
+      if (next.has(headline.url)) {
+        next.delete(headline.url);
+      } else {
+        next.set(headline.url, { ...headline, region: defaultRegion });
+      }
+      return next;
+    });
+  }
+
+  function setCheckedHeadlineRegion(url: string, region: Region) {
+    setCheckedHeadlines((prev) => {
+      const existing = prev.get(url);
+      if (!existing) return prev;
+      const next = new Map(prev);
+      next.set(url, { ...existing, region });
+      return next;
+    });
+  }
+
+  /**
+   * Fetches each checked story's own text and drops it straight into the
+   * review panel as a ready-to-edit item — no `ANTHROPIC_API_KEY` required.
+   * Appends to whatever is already in the review panel, same as
+   * `handleAddManualItem`, so this can be combined with AI-drafted or
+   * hand-written items in one report.
+   */
+  function handleUseSelectedHeadlines() {
+    if (checkedHeadlines.size === 0) return;
+    setErrorKey(null);
+    startPullTransition(async () => {
+      try {
+        const items = await pullHeadlineItems(
+          Array.from(checkedHeadlines.values()),
+        );
+        setDraftItems((prev) => [...(prev ?? []), ...items]);
+        setCheckedHeadlines(new Map());
+      } catch {
+        setErrorKey("reports.pullFailed");
       }
     });
   }
@@ -209,6 +288,110 @@ export default function ReportConsole({
                   {source.name}
                 </a>
               ))}
+            </div>
+
+            {/* ---- fetch today's headlines ------------------------------- */}
+            <div className="border-bone/10 space-y-3 border p-3">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleFetchHeadlines}
+                  disabled={isFetchingHeadlines}
+                  className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer border px-4 py-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {isFetchingHeadlines
+                    ? t("reports.fetchingHeadlines")
+                    : t("reports.fetchHeadlines")}
+                </button>
+                {headlineGroups && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHeadlineGroups(null);
+                      setCheckedHeadlines(new Map());
+                    }}
+                    className="text-bone/40 hover:text-gold ms-auto cursor-pointer text-xs transition-colors"
+                  >
+                    {t("common.hide")}
+                  </button>
+                )}
+              </div>
+
+              {headlineGroups && (
+                <>
+                  <div className="max-h-96 space-y-4 overflow-y-auto">
+                    {headlineGroups.map((group) => (
+                      <div key={group.name}>
+                        <p className="text-gold/70 text-xs font-semibold">
+                          {group.name}
+                          {group.failed && group.headlines.length === 0 && (
+                            <span className="text-bone/35 ms-2 font-normal">
+                              {t("reports.sourceUnavailable")}
+                            </span>
+                          )}
+                        </p>
+                        <ul className="mt-1.5 space-y-1.5">
+                          {group.headlines.map((headline) => {
+                            const checked = checkedHeadlines.get(headline.url);
+                            return (
+                              <li
+                                key={headline.url}
+                                className="flex items-start gap-2"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={Boolean(checked)}
+                                  onChange={() =>
+                                    toggleHeadline(
+                                      group.defaultRegion,
+                                      headline,
+                                    )
+                                  }
+                                  className="mt-1 min-h-4 min-w-4 cursor-pointer"
+                                />
+                                <span className="text-bone/70 flex-1 text-xs leading-snug">
+                                  {headline.title}
+                                </span>
+                                {checked && (
+                                  <select
+                                    value={checked.region}
+                                    onChange={(e) =>
+                                      setCheckedHeadlineRegion(
+                                        headline.url,
+                                        e.target.value as Region,
+                                      )
+                                    }
+                                    className="border-bone/12 bg-ink/60 text-gold/70 shrink-0 cursor-pointer border px-1.5 py-0.5 text-[10px] outline-none"
+                                  >
+                                    {REGIONS.map((region) => (
+                                      <option key={region} value={region}>
+                                        {t(`reports.regions.${region}`)}
+                                      </option>
+                                    ))}
+                                  </select>
+                                )}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleUseSelectedHeadlines}
+                    disabled={checkedHeadlines.size === 0 || isPullingHeadlines}
+                    className="bg-gold text-ink hover:bg-gold-bright w-full cursor-pointer px-4 py-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {isPullingHeadlines
+                      ? t("reports.pulling")
+                      : t("reports.useSelected", {
+                          count: checkedHeadlines.size,
+                        })}
+                  </button>
+                </>
+              )}
             </div>
 
             {sources.map((row, i) => (
