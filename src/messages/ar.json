@@ -771,6 +771,7 @@
       "discard": "تجاهل",
       "history": "السجل",
       "historyEmpty": "لا توجد تقارير بعد.",
+      "downloadPdf": "تنزيل PDF",
       "threatSummary": "كردستان {kurdistan} · العراق {iraq}",
       "regions": {
         "KURDISTAN": "كردستان",

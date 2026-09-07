@@ -771,6 +771,7 @@
       "discard": "Discard",
       "history": "History",
       "historyEmpty": "No reports yet.",
+      "downloadPdf": "Download PDF",
       "threatSummary": "KRI {kurdistan} · IRQ {iraq}",
       "regions": {
         "KURDISTAN": "Kurdistan",

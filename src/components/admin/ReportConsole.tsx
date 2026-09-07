@@ -14,6 +14,7 @@ import {
  * `reports.ts` reaches for `node:dns` and the Anthropic SDK at import time.
  */
 import { REGIONS, THREAT_LEVELS } from "@/lib/report-shape";
+import { REPORT_SOURCES } from "@/data/report-sources";
 import type {
   ConsoleReport,
   Region,
@@ -173,6 +174,25 @@ export default function ReportConsole({
           }
         >
           <div className="space-y-4 p-5">
+            {/*
+             * Jump-to-source shortcuts, not a scraper — selecting a story
+             * stays a human decision (see `reports.ts`), this just saves the
+             * analyst a bookmarks folder for the outlets checked every day.
+             */}
+            <div className="flex flex-wrap gap-1.5">
+              {REPORT_SOURCES.map((source) => (
+                <a
+                  key={source.name}
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border-bone/12 text-bone/55 hover:border-gold hover:text-gold flex min-h-8 cursor-pointer items-center border px-2.5 text-[11px] transition-colors"
+                >
+                  {source.name}
+                </a>
+              ))}
+            </div>
+
             {sources.map((row, i) => (
               <div
                 key={row.key}
@@ -440,6 +460,12 @@ export default function ReportConsole({
                   {report.createdByName}
                 </span>
               )}
+              <a
+                href={`/api/admin/reports/${report.id}/pdf`}
+                className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
+              >
+                {t("reports.downloadPdf")}
+              </a>
               <button
                 type="button"
                 onClick={() => handleDelete(report.id)}
