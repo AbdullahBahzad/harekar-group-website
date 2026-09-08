@@ -153,24 +153,35 @@ export async function pullHeadlineItems(
 }
 
 /**
- * Cuts fetched article text down to one bulletin-length paragraph.
+ * Cuts fetched article text down to a bulletin-length body.
  *
- * Breaks at the last sentence boundary before the limit rather than a hard
- * cut, so the item reads as a complete paragraph instead of trailing off
- * mid-sentence — the same reason a hard cut is only the fallback when no
- * sentence break exists in range at all (a wire story with no punctuation
- * that early, or written in a script this regex does not recognise).
+ * `fetchArticleText` already returns real paragraphs (`article-extract.ts`),
+ * separated by blank lines — so this takes whole paragraphs from the top
+ * rather than a raw character-count slice, which used to risk cutting a
+ * paragraph in half regardless of where the sentence itself ended. Only
+ * when even the first paragraph alone runs past the limit does it fall back
+ * to trimming at the nearest sentence boundary inside that one paragraph.
  */
 function toParagraph(text: string, maxLen = 900): string {
-  if (text.length <= maxLen) return text;
+  const paragraphs = text.split(/\n\s*\n/).filter(Boolean);
+  if (paragraphs.length === 0) return "";
 
-  const slice = text.slice(0, maxLen);
+  let result = "";
+  for (const paragraph of paragraphs) {
+    const next = result ? `${result}\n\n${paragraph}` : paragraph;
+    if (next.length > maxLen) break;
+    result = next;
+  }
+
+  if (result) return result;
+
+  // Even the first paragraph alone exceeds maxLen — trim just that one.
+  const slice = paragraphs[0].slice(0, maxLen);
   const lastBreak = Math.max(
     slice.lastIndexOf(". "),
     slice.lastIndexOf("! "),
     slice.lastIndexOf("? "),
   );
-
   return lastBreak > maxLen * 0.4
     ? slice.slice(0, lastBreak + 1)
     : slice.trimEnd() + "…";

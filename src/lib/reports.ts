@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { safeFetchText } from "@/lib/safe-fetch";
+import { extractArticleText } from "@/lib/article-extract";
 import type { RawNewsInput, ReportNewsItem } from "@/lib/report-shape";
 
 /*
@@ -19,27 +20,21 @@ export {
 } from "@/lib/report-shape";
 
 /**
- * Pulls the readable text out of a news article page.
+ * Pulls the readable text out of a news article page — the article's own
+ * paragraphs, not the nav bar and sidebar widgets around them. See
+ * `article-extract.ts` for how that separation is made.
  *
- * No HTML parser is pulled in for this — scripts and styles are stripped and
- * tags are collapsed with regex, which is coarse but good enough raw material
- * for Claude to work from (and, via `pullHeadlineItems` in the sources
- * actions, as a report body in its own right when there is no
- * `ANTHROPIC_API_KEY` to rewrite it). The fetch itself is SSRF-guarded and
- * never throws — see `safe-fetch.ts` — so a slow or refused source just
- * yields an empty string here rather than failing the whole batch.
+ * Used both as raw material for Claude to work from, and, via
+ * `pullHeadlineItems` in the sources actions, as a report body in its own
+ * right when there is no `ANTHROPIC_API_KEY` to rewrite it. The fetch itself
+ * is SSRF-guarded and never throws — see `safe-fetch.ts` — so a slow or
+ * refused source just yields an empty string here rather than failing the
+ * whole batch.
  */
 export async function fetchArticleText(url: string): Promise<string> {
   const html = await safeFetchText(url);
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 6000);
+  if (!html) return "";
+  return extractArticleText(html);
 }
 
 function anthropicClient() {
