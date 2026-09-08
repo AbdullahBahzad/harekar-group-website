@@ -14,7 +14,11 @@ import {
   type ReportNewsItem,
 } from "@/lib/reports";
 import { fetchHeadlines, type Headline } from "@/lib/headlines";
-import { REPORT_SOURCES } from "@/data/report-sources";
+import {
+  listCombinedSources,
+  type CombinedSource,
+} from "@/lib/report-sources-db";
+export type { CombinedSource };
 
 /**
  * Every mutation re-checks admin rights.
@@ -86,22 +90,44 @@ export type SourceHeadlines = {
 };
 
 /**
- * Today's candidate headlines from every fixed source, for the "fetch
- * today's headlines" checklist.
+ * The full source list — the eleven built into the app plus whatever an
+ * operator has added — for the console to render its quick-links and
+ * "sources to fetch" picker from. Read-only; adding and removing go through
+ * `addReportSource` / `deleteReportSource` below.
+ */
+export async function listSources(): Promise<CombinedSource[]> {
+  await assertAdmin();
+  return listCombinedSources();
+}
+
+/**
+ * Today's candidate headlines, for the "fetch today's headlines" checklist.
+ *
+ * `sourceUrls`, when given, restricts the fetch to just those sources —
+ * "fetch only Channel8" is the same call as "fetch all eleven", just with a
+ * shorter list. Omitted or empty means every source, built-in and custom.
  *
  * Sources are checked in parallel and independently of one another —
  * `Promise.allSettled`, not `Promise.all` — because one outlet being down or
- * redesigned should not blank the other ten; it just comes back `failed` and
+ * redesigned should not blank the others; it just comes back `failed` and
  * the analyst tries again later or skips it for today.
  */
-export async function fetchAllSourceHeadlines(): Promise<SourceHeadlines[]> {
+export async function fetchAllSourceHeadlines(
+  sourceUrls?: string[],
+): Promise<SourceHeadlines[]> {
   await assertAdmin();
 
+  const all = await listCombinedSources();
+  const wanted =
+    sourceUrls && sourceUrls.length > 0
+      ? all.filter((source) => sourceUrls.includes(source.url))
+      : all;
+
   const results = await Promise.allSettled(
-    REPORT_SOURCES.map((source) => fetchHeadlines(source.url)),
+    wanted.map((source) => fetchHeadlines(source.url)),
   );
 
-  return REPORT_SOURCES.map((source, i) => {
+  return wanted.map((source, i) => {
     const result = results[i];
     const headlines = result.status === "fulfilled" ? result.value : [];
     return {
@@ -111,6 +137,45 @@ export async function fetchAllSourceHeadlines(): Promise<SourceHeadlines[]> {
       failed: result.status === "rejected" || headlines.length === 0,
     };
   });
+}
+
+/** Adds a source an operator wants checked alongside the built-in eleven. */
+export async function addReportSource(formData: FormData) {
+  await assertAdmin();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const rawUrl = String(formData.get("url") ?? "").trim();
+  const defaultRegion = String(formData.get("defaultRegion") ?? "");
+
+  if (!name) throw new Error("A source needs a name");
+  if (!REGIONS.includes(defaultRegion as Region)) {
+    throw new Error("Unknown default region");
+  }
+
+  let url: URL;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    throw new Error(`"${rawUrl}" is not a valid URL`);
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error("A source must be an http or https URL");
+  }
+
+  await prisma.reportSource.create({
+    data: { name, url: url.toString(), defaultRegion },
+  });
+
+  revalidatePath("/[locale]/admin/sources", "page");
+}
+
+export async function deleteReportSource(formData: FormData) {
+  await assertAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) throw new Error("Missing source id");
+
+  await prisma.reportSource.delete({ where: { id } });
+  revalidatePath("/[locale]/admin/sources", "page");
 }
 
 /** One headline the analyst checked in the "fetch today's headlines" list. */

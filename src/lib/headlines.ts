@@ -1,8 +1,11 @@
 import * as cheerio from "cheerio";
 import { safeFetchText } from "@/lib/safe-fetch";
 import { sortByRelevance } from "@/lib/headline-relevance";
+import { detectHeadlineDate } from "@/lib/headline-date";
 
-export type Headline = { title: string; url: string };
+/** `date` is `YYYY-MM-DD`, best-effort — `null` when no source in
+ * `headline-date.ts` found one on the homepage. */
+export type Headline = { title: string; url: string; date: string | null };
 
 /**
  * Path segments that mark a link as a section index or taxonomy page rather
@@ -71,10 +74,12 @@ export async function fetchHeadlines(sourceUrl: string): Promise<Headline[]> {
   }
 
   const $ = cheerio.load(html);
-  const seen = new Map<string, string>();
+  const seen = new Map<string, { title: string; date: string | null }>();
+  const now = new Date();
 
   $("a[href]").each((_, el) => {
-    const href = $(el).attr("href");
+    const anchor = $(el);
+    const href = anchor.attr("href");
     if (!href) return;
 
     let url: URL;
@@ -87,7 +92,7 @@ export async function fetchHeadlines(sourceUrl: string): Promise<Headline[]> {
     if (url.origin + url.pathname === base.origin + base.pathname) return;
     if (!looksLikeArticlePath(url.pathname)) return;
 
-    const innerHtml = $(el).html() ?? "";
+    const innerHtml = anchor.html() ?? "";
     const title = innerHtml
       .replace(/<[^>]+>/g, " ")
       .replace(/&nbsp;/g, " ")
@@ -99,9 +104,15 @@ export async function fetchHeadlines(sourceUrl: string): Promise<Headline[]> {
     if (!title.includes(" ")) return;
 
     const key = url.origin + url.pathname;
-    if (!seen.has(key)) seen.set(key, title);
+    if (!seen.has(key)) {
+      seen.set(key, { title, date: detectHeadlineDate($, anchor, title, now) });
+    }
   });
 
-  const found = Array.from(seen, ([url, title]) => ({ title, url }));
+  const found = Array.from(seen, ([url, { title, date }]) => ({
+    title,
+    url,
+    date,
+  }));
   return sortByRelevance(found).slice(0, MAX_HEADLINES_PER_SOURCE);
 }

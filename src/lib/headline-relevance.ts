@@ -1,4 +1,5 @@
 import type { Headline } from "@/lib/headlines";
+import { THREAT_LEVELS, type ThreatLevel } from "@/lib/report-shape";
 
 /**
  * Orders a source's headlines so the ones a security bulletin cares about
@@ -164,7 +165,7 @@ const LOW_PRIORITY_OTHER = [
   "هونەر",
 ];
 
-function relevanceScore(title: string): number {
+export function relevanceScore(title: string): number {
   const lower = title.toLowerCase();
   let score = 0;
   for (const kw of HIGH_PRIORITY_EN) if (lower.includes(kw)) score += 1;
@@ -180,4 +181,33 @@ export function sortByRelevance(headlines: Headline[]): Headline[] {
     .map((headline, index) => ({ headline, index, score: relevanceScore(headline.title) }))
     .sort((a, b) => b.score - a.score || a.index - b.index)
     .map((entry) => entry.headline);
+}
+
+/**
+ * A rough severity guess for the "minimum severity" filter in the console —
+ * reuses the same keyword score as the sort above rather than a second,
+ * separately-tuned scale, since both are answering the same underlying
+ * question ("how much does this keyword match look like a security
+ * story") at different thresholds.
+ *
+ * This is a keyword count, not a judgement of actual severity — a story
+ * mentioning three unrelated security terms in passing scores the same as
+ * one describing an actual attack. Good enough to hide festival coverage
+ * behind "Moderate and up"; not a replacement for the analyst reading the
+ * headline.
+ */
+export function classifySeverity(title: string): ThreatLevel {
+  const score = relevanceScore(title);
+  if (score >= 3) return "CRITICAL";
+  if (score === 2) return "HIGH";
+  if (score === 1) return "MODERATE";
+  return "LOW";
+}
+
+/** Ordinal index into `THREAT_LEVELS`, for a "at least this severity" comparison. */
+export function meetsMinimumSeverity(
+  title: string,
+  minimum: ThreatLevel,
+): boolean {
+  return THREAT_LEVELS.indexOf(classifySeverity(title)) >= THREAT_LEVELS.indexOf(minimum);
 }

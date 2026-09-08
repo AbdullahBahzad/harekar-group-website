@@ -10,7 +10,10 @@ import {
   deleteReport,
   fetchAllSourceHeadlines,
   pullHeadlineItems,
+  addReportSource,
+  deleteReportSource,
   type SourceHeadlines,
+  type CombinedSource,
 } from "@/app/[locale]/admin/sources/actions";
 /*
  * From `report-shape`, not `reports`: this is a client component, and
@@ -20,13 +23,14 @@ import {
  * what that action's own module imports internally.
  */
 import { REGIONS, THREAT_LEVELS } from "@/lib/report-shape";
-import { REPORT_SOURCES } from "@/data/report-sources";
+import { meetsMinimumSeverity } from "@/lib/headline-relevance";
 import type {
   ConsoleReport,
   Region,
   ReportNewsItem,
   ThreatLevel,
 } from "@/lib/report-shape";
+import type { Headline } from "@/lib/headlines";
 
 // Re-exported so existing importers of this component keep working; the type
 // itself now lives in `report-shape`, which the server may safely import.
@@ -53,9 +57,12 @@ function newRow(region: Region = "KURDISTAN"): SourceRow {
 export default function ReportConsole({
   reports,
   canGenerate,
+  sources: reportSources,
 }: {
   reports: ConsoleReport[];
   canGenerate: boolean;
+  /** The built-in eleven plus whatever an operator has added — see `report-sources-db.ts`. */
+  sources: CombinedSource[];
 }) {
   const t = useTranslations("admin");
   const locale = useLocale();
@@ -83,6 +90,26 @@ export default function ReportConsole({
   // Which single headline's one-click "Use" button is in flight, if any —
   // separate from `checkedHeadlines`, which drives the batch flow instead.
   const [pullingUrl, setPullingUrl] = useState<string | null>(null);
+
+  // Which of `reportSources` to include the next time headlines are
+  // fetched — "fetch only Channel8" is just this set holding one url.
+  // Starts with everything selected, matching the old always-fetch-all
+  // behaviour by default.
+  const [selectedSourceUrls, setSelectedSourceUrls] = useState<Set<string>>(
+    () => new Set(reportSources.map((source) => source.url)),
+  );
+  // Client-side only — narrows what the fetched checklist *shows*, not what
+  // gets fetched. Nothing here is sent back to the server.
+  const [minSeverity, setMinSeverity] = useState<ThreatLevel>("LOW");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
+  // The "add a source" form, and pending state for both add and delete.
+  const [showAddSource, setShowAddSource] = useState(false);
+  const [newSourceName, setNewSourceName] = useState("");
+  const [newSourceUrl, setNewSourceUrl] = useState("");
+  const [newSourceRegion, setNewSourceRegion] = useState<Region>("IRAQ");
+  const [isManagingSources, startManageSourcesTransition] = useTransition();
 
   const [date, setDate] = useState(today());
   const [kurdistanThreat, setKurdistanThreat] =
@@ -117,20 +144,96 @@ export default function ReportConsole({
   }
 
   /**
-   * Pulls today's candidate headlines from every fixed source at once —
-   * replacing the trip to each site to find and copy a link.
+   * Pulls today's candidate headlines from whichever sources are checked in
+   * the picker below — every source by default, matching the old
+   * always-fetch-all behaviour, or just the ones left selected.
    */
   function handleFetchHeadlines() {
+    if (selectedSourceUrls.size === 0) return;
     setErrorKey(null);
     startHeadlinesTransition(async () => {
       try {
-        const groups = await fetchAllSourceHeadlines();
+        const groups = await fetchAllSourceHeadlines(
+          Array.from(selectedSourceUrls),
+        );
         setHeadlineGroups(groups);
         setCheckedHeadlines(new Map());
       } catch {
         setErrorKey("reports.headlinesFailed");
       }
     });
+  }
+
+  function toggleSourceSelected(url: string) {
+    setSelectedSourceUrls((prev) => {
+      const next = new Set(prev);
+      if (next.has(url)) next.delete(url);
+      else next.add(url);
+      return next;
+    });
+  }
+
+  /** "Fetch only this one" — replaces the whole selection with a single source. */
+  function handleFetchOneSource(url: string) {
+    setSelectedSourceUrls(new Set([url]));
+    setErrorKey(null);
+    startHeadlinesTransition(async () => {
+      try {
+        const groups = await fetchAllSourceHeadlines([url]);
+        setHeadlineGroups(groups);
+        setCheckedHeadlines(new Map());
+      } catch {
+        setErrorKey("reports.headlinesFailed");
+      }
+    });
+  }
+
+  function handleAddSource() {
+    setErrorKey(null);
+    const formData = new FormData();
+    formData.set("name", newSourceName);
+    formData.set("url", newSourceUrl);
+    formData.set("defaultRegion", newSourceRegion);
+    startManageSourcesTransition(async () => {
+      try {
+        await addReportSource(formData);
+        setNewSourceName("");
+        setNewSourceUrl("");
+        setShowAddSource(false);
+      } catch {
+        setErrorKey("reports.addSourceFailed");
+      }
+    });
+  }
+
+  function handleDeleteSource(id: string) {
+    setErrorKey(null);
+    const formData = new FormData();
+    formData.set("id", id);
+    startManageSourcesTransition(async () => {
+      try {
+        await deleteReportSource(formData);
+      } catch {
+        setErrorKey("reports.deleteSourceFailed");
+      }
+    });
+  }
+
+  /**
+   * Whether a fetched headline should still show under the current
+   * severity/date filters — client-side only, narrows what is *displayed*
+   * from what `fetchAllSourceHeadlines` already returned, so changing a
+   * filter never needs a re-fetch. A headline with no detected date (most
+   * of them, on several sources — see `headline-date.ts`) always passes the
+   * date filter rather than being guessed out of range.
+   */
+  function isHeadlineVisible(headline: Headline): boolean {
+    if (!meetsMinimumSeverity(headline.title, minSeverity)) return false;
+    if (headline.date) {
+      if (dateFrom && headline.date < dateFrom) return false;
+      if (dateTo && headline.date > dateTo) return false;
+    }
+    return true;
   }
 
   function toggleHeadline(defaultRegion: Region, headline: { title: string; url: string }) {
@@ -299,31 +402,123 @@ export default function ReportConsole({
         >
           <div className="space-y-4 p-5">
             {/*
-             * Jump-to-source shortcuts, not a scraper — selecting a story
-             * stays a human decision (see `reports.ts`), this just saves the
-             * analyst a bookmarks folder for the outlets checked every day.
+             * Which sources the next fetch covers, and a jump-to-source link
+             * for each. Selecting a story stays a human decision (see
+             * `reports.ts`) — this only decides which front pages get
+             * checked, same as the checklist below only decides which of
+             * their stories get looked at.
              */}
-            <div className="flex flex-wrap gap-1.5">
-              {REPORT_SOURCES.map((source) => (
-                <a
-                  key={source.name}
-                  href={source.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="border-bone/12 text-bone/55 hover:border-gold hover:text-gold flex min-h-8 cursor-pointer items-center border px-2.5 text-[11px] transition-colors"
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap gap-1.5">
+                {reportSources.map((source) => {
+                  const isSelected = selectedSourceUrls.has(source.url);
+                  return (
+                    <span
+                      key={source.url}
+                      className={`flex items-center gap-1 border py-1 pe-1 ps-2 text-[11px] transition-colors ${
+                        isSelected
+                          ? "border-gold/40 text-gold"
+                          : "border-bone/12 text-bone/40"
+                      }`}
+                    >
+                      <label className="flex cursor-pointer items-center gap-1.5">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSourceSelected(source.url)}
+                          className="cursor-pointer"
+                        />
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="hover:underline"
+                        >
+                          {source.name}
+                        </a>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => handleFetchOneSource(source.url)}
+                        disabled={isFetchingHeadlines}
+                        title={t("reports.fetchOnlyThis")}
+                        className="text-bone/30 hover:text-gold cursor-pointer px-1 disabled:cursor-not-allowed"
+                      >
+                        ⟳
+                      </button>
+                      {source.custom && source.id && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSource(source.id!)}
+                          disabled={isManagingSources}
+                          title={t("common.delete")}
+                          className="text-bone/30 hover:text-status-critical cursor-pointer px-1 disabled:cursor-not-allowed"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </span>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => setShowAddSource((v) => !v)}
+                  className="border-bone/12 text-bone/40 hover:border-gold hover:text-gold flex min-h-8 cursor-pointer items-center border px-2.5 text-[11px] transition-colors"
                 >
-                  {source.name}
-                </a>
-              ))}
+                  {t("reports.addSourceButton")}
+                </button>
+              </div>
+
+              {showAddSource && (
+                <div className="border-bone/10 flex flex-wrap items-center gap-1.5 border p-2">
+                  <input
+                    value={newSourceName}
+                    onChange={(e) => setNewSourceName(e.target.value)}
+                    placeholder={t("reports.newSourceName")}
+                    className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-h-8 flex-1 border px-2 text-xs outline-none"
+                  />
+                  <input
+                    value={newSourceUrl}
+                    onChange={(e) => setNewSourceUrl(e.target.value)}
+                    placeholder={t("reports.urlPlaceholder")}
+                    dir="ltr"
+                    className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-h-8 flex-[2] border px-2 text-start text-xs outline-none"
+                  />
+                  <select
+                    value={newSourceRegion}
+                    onChange={(e) =>
+                      setNewSourceRegion(e.target.value as Region)
+                    }
+                    className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-h-8 cursor-pointer border px-2 text-xs outline-none"
+                  >
+                    {REGIONS.map((region) => (
+                      <option key={region} value={region}>
+                        {t(`reports.regions.${region}`)}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={handleAddSource}
+                    disabled={
+                      isManagingSources || !newSourceName || !newSourceUrl
+                    }
+                    className="bg-gold text-ink hover:bg-gold-bright min-h-8 cursor-pointer px-3 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {t("reports.addSourceButton")}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* ---- fetch today's headlines ------------------------------- */}
             <div className="border-bone/10 space-y-3 border p-3">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={handleFetchHeadlines}
-                  disabled={isFetchingHeadlines}
+                  disabled={isFetchingHeadlines || selectedSourceUrls.size === 0}
                   className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer border px-4 py-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isFetchingHeadlines
@@ -345,9 +540,60 @@ export default function ReportConsole({
               </div>
 
               {headlineGroups && (
+                <div className="flex flex-wrap items-end gap-3 text-xs">
+                  <Field label={t("reports.minSeverity")}>
+                    <select
+                      value={minSeverity}
+                      onChange={(e) =>
+                        setMinSeverity(e.target.value as ThreatLevel)
+                      }
+                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold cursor-pointer border px-2 py-1.5 text-xs outline-none"
+                    >
+                      {THREAT_LEVELS.map((level) => (
+                        <option key={level} value={level}>
+                          {t(`reports.threat.${level}`)}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label={t("reports.dateFrom")}>
+                    <input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold border px-2 py-1.5 text-xs outline-none"
+                    />
+                  </Field>
+                  <Field label={t("reports.dateTo")}>
+                    <input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold border px-2 py-1.5 text-xs outline-none"
+                    />
+                  </Field>
+                  {(minSeverity !== "LOW" || dateFrom || dateTo) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMinSeverity("LOW");
+                        setDateFrom("");
+                        setDateTo("");
+                      }}
+                      className="text-bone/40 hover:text-gold cursor-pointer text-xs transition-colors"
+                    >
+                      {t("reports.clearFilters")}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {headlineGroups && (
                 <>
                   <div className="max-h-96 space-y-4 overflow-y-auto">
-                    {headlineGroups.map((group) => (
+                    {headlineGroups.map((group) => {
+                      const visible = group.headlines.filter(isHeadlineVisible);
+                      return (
                       <div key={group.name}>
                         <p className="text-gold/70 text-xs font-semibold">
                           {group.name}
@@ -356,9 +602,16 @@ export default function ReportConsole({
                               {t("reports.sourceUnavailable")}
                             </span>
                           )}
+                          {!group.failed &&
+                            group.headlines.length > 0 &&
+                            visible.length === 0 && (
+                              <span className="text-bone/35 ms-2 font-normal">
+                                {t("reports.hiddenByFilter")}
+                              </span>
+                            )}
                         </p>
                         <ul className="mt-1.5 space-y-1.5">
-                          {group.headlines.map((headline) => {
+                          {visible.map((headline) => {
                             const checked = checkedHeadlines.get(headline.url);
                             return (
                               <li
@@ -417,7 +670,8 @@ export default function ReportConsole({
                           })}
                         </ul>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <button
