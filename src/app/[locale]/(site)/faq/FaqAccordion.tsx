@@ -75,13 +75,13 @@ export default function FaqAccordion({ items }: { items: PublicFaqItem[] }) {
         <button
           type="button"
           onClick={() => setOverride(allOpen ? new Set() : new Set(itemIds))}
-          className="text-bone/50 hover:text-gold min-h-11 cursor-pointer text-xs tracking-[0.2em] uppercase transition-colors"
+          className="text-bone/58 hover:text-gold min-h-11 cursor-pointer text-xs tracking-[0.2em] uppercase transition-colors"
         >
           {allOpen ? t("collapseAll") : t("expandAll")}
         </button>
       </div>
 
-      <ul className="border-bone/10 border-t">
+      <ul className="border-bone/14 border-t">
         {items.map((item, i) => {
           const key = item.id;
           const isOpen = open.has(key);
@@ -92,7 +92,7 @@ export default function FaqAccordion({ items }: { items: PublicFaqItem[] }) {
             <li
               key={key}
               id={`faq-${key}`}
-              className="border-bone/10 scroll-mt-24 border-b"
+              className="border-bone/14 scroll-mt-24 border-b"
             >
               {/*
                * h2 wrapping the trigger: the button carries the interaction
@@ -112,7 +112,7 @@ export default function FaqAccordion({ items }: { items: PublicFaqItem[] }) {
                 >
                   <span
                     className={`mt-1 w-7 shrink-0 text-xs tracking-[0.2em] tabular-nums transition-colors ${
-                      isOpen ? "text-gold" : "text-gold/40 group-hover:text-gold/70"
+                      isOpen ? "text-gold" : "text-gold/55 group-hover:text-gold/78"
                     }`}
                   >
                     {String(i + 1).padStart(2, "0")}
@@ -134,7 +134,7 @@ export default function FaqAccordion({ items }: { items: PublicFaqItem[] }) {
                   <span
                     aria-hidden
                     className={`relative mt-1.5 h-4 w-4 shrink-0 transition-colors ${
-                      isOpen ? "text-gold" : "text-bone/40 group-hover:text-gold"
+                      isOpen ? "text-gold" : "text-bone/50 group-hover:text-gold"
                     }`}
                   >
                     <span className="absolute top-1/2 left-0 h-px w-4 -translate-y-1/2 bg-current" />
@@ -165,7 +165,7 @@ export default function FaqAccordion({ items }: { items: PublicFaqItem[] }) {
                     className="overflow-hidden"
                   >
                     <div className="pb-8 ps-12 pe-4">
-                      <p className="text-bone/65 max-w-[65ch] text-sm leading-relaxed text-pretty">
+                      <p className="text-bone/72 max-w-[65ch] text-sm leading-relaxed text-pretty">
                         {item.answer}
                       </p>
 

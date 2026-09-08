@@ -23,12 +23,20 @@
 }
 
 :root {
-  /* Brand palette */
+  /*
+   * Brand palette.
+   *
+   * Gold and bone were each lifted a step in luminance — hue and saturation
+   * held, so the brand reads the same, just richer against the ink. Because
+   * every `text-bone/40`, `border-gold/50` and so on derives from these two
+   * tokens, the lift carries across the whole site from here rather than
+   * needing hundreds of classes touched.
+   */
   --color-ink: #0b0b0b;
   --color-surface: #353533;
-  --color-gold: #c59c40;
-  --color-gold-bright: #efcc6e;
-  --color-bone: #f3ece1;
+  --color-gold: #cfa74f;
+  --color-gold-bright: #f2d27d;
+  --color-bone: #f8f2e9;
   --color-white: #ffffff;
 
   /*
@@ -58,17 +66,18 @@
    */
   --primary: var(--color-gold);
   --primary-foreground: var(--color-ink);
-  --secondary: color-mix(in oklab, var(--color-bone) 8%, transparent);
+  --secondary: color-mix(in oklab, var(--color-bone) 10%, transparent);
   --secondary-foreground: var(--color-bone);
-  --muted: color-mix(in oklab, var(--color-bone) 6%, transparent);
-  --muted-foreground: color-mix(in oklab, var(--color-bone) 55%, transparent);
-  --accent: color-mix(in oklab, var(--color-gold) 14%, transparent);
+  --muted: color-mix(in oklab, var(--color-bone) 8%, transparent);
+  /* 55% measured 5.49:1 — lifted with the rest of the body-text scale. */
+  --muted-foreground: color-mix(in oklab, var(--color-bone) 65%, transparent);
+  --accent: color-mix(in oklab, var(--color-gold) 18%, transparent);
   --accent-foreground: var(--color-gold-bright);
   --popover: color-mix(in oklab, var(--color-ink) 92%, transparent);
   --popover-foreground: var(--color-bone);
-  --border: color-mix(in oklab, var(--color-bone) 12%, transparent);
-  --input: color-mix(in oklab, var(--color-bone) 15%, transparent);
-  --ring: color-mix(in oklab, var(--color-gold) 60%, transparent);
+  --border: color-mix(in oklab, var(--color-bone) 16%, transparent);
+  --input: color-mix(in oklab, var(--color-bone) 20%, transparent);
+  --ring: color-mix(in oklab, var(--color-gold) 70%, transparent);
   --destructive: var(--color-status-critical);
   --destructive-foreground: var(--color-bone);
   --radius: 0.75rem;
@@ -206,6 +215,28 @@ body {
 
 ::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+/*
+ * The page's own scrollbar is hidden.
+ *
+ * Scoped to the root element on purpose: the rules above still paint every
+ * *inner* scroll area — the admin console's nav rail, the services detail
+ * panel, the mobile menu — where a scrollbar is the only cue that a panel
+ * holds more than it shows. It is only the full-height bar down the edge of
+ * the window that is removed.
+ *
+ * Scrolling itself is untouched; the wheel, touch, keyboard and the header's
+ * reading-progress hairline all still work.
+ */
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 /*

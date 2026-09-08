@@ -52,7 +52,7 @@ export default function ServicesGrid({
               className={`cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors duration-200 ${
                 selected
                   ? "border-gold bg-gold text-ink"
-                  : "border-bone/15 text-bone/60 hover:border-gold/50 hover:text-bone"
+                  : "border-bone/20 text-bone/70 hover:border-gold/60 hover:text-bone"
               }`}
             >
               {t(`groups.${filter}`)}
@@ -78,7 +78,7 @@ export default function ServicesGrid({
                 ease: [0.22, 1, 0.36, 1],
               }}
               whileHover={reduceMotion ? undefined : { y: -5 }}
-              className="group border-bone/10 bg-surface/25 hover:border-gold/45 hover:bg-surface/45 relative h-full overflow-hidden rounded-2xl border p-7 transition-colors duration-300 hover:shadow-[0_18px_50px_-24px_rgba(197,156,64,0.55)]"
+              className="group border-bone/14 bg-surface/25 hover:border-gold/45 hover:bg-surface/45 relative h-full overflow-hidden rounded-2xl border p-7 transition-colors duration-300 hover:shadow-[0_18px_50px_-24px_rgba(197,156,64,0.55)]"
             >
               <span
                 aria-hidden
@@ -100,7 +100,7 @@ export default function ServicesGrid({
                     per-service pages. */}
                 <span
                   aria-hidden
-                  className="border-bone/15 text-bone/40 group-hover:border-gold/50 group-hover:text-gold flex h-8 w-8 -translate-x-1 items-center justify-center rounded-full border opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 rtl:translate-x-1 rtl:group-hover:translate-x-0"
+                  className="border-bone/20 text-bone/50 group-hover:border-gold/60 group-hover:text-gold flex h-8 w-8 -translate-x-1 items-center justify-center rounded-full border opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 rtl:translate-x-1 rtl:group-hover:translate-x-0"
                 >
                   <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 rtl:-scale-x-100">
                     <path
@@ -118,7 +118,7 @@ export default function ServicesGrid({
               <h2 className="font-display text-bone mt-6 text-xl leading-snug">
                 {service.title}
               </h2>
-              <p className="text-bone/55 mt-3 text-sm leading-relaxed">
+              <p className="text-bone/65 mt-3 text-sm leading-relaxed">
                 {service.description}
               </p>
             </motion.article>

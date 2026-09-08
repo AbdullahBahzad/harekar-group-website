@@ -25,7 +25,7 @@ export type ConsoleBenefit = {
 };
 
 const inputClass =
-  "border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
+  "border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
 
 /** The careers page's "why work here" cards — list + editor, as everywhere else. */
 export default function BenefitConsole({
@@ -52,7 +52,7 @@ export default function BenefitConsole({
               setEditing(null);
               setCreating(true);
             }}
-            className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
+            className="border-gold/50 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
           >
             {t("benefits.newCard")}
           </button>
@@ -60,12 +60,12 @@ export default function BenefitConsole({
       >
         {benefits.length === 0 ? (
           <div className="px-5 py-10 text-center">
-            <p className="text-bone/45 text-sm">{t("benefits.empty")}</p>
+            <p className="text-bone/55 text-sm">{t("benefits.empty")}</p>
             {canSeed && (
               <form action={seedFromStaticBenefits} className="mt-6">
                 <button
                   type="submit"
-                  className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
+                  className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
                 >
                   {t("benefits.importExisting", { count: 5 })}
                 </button>
@@ -93,7 +93,7 @@ export default function BenefitConsole({
                     </span>
                   </span>
                   {!benefit.published && (
-                    <span className="text-bone/30 text-xs">
+                    <span className="text-bone/56 text-xs">
                       {t("common.hidden")}
                     </span>
                   )}
@@ -115,7 +115,7 @@ export default function BenefitConsole({
         />
       ) : (
         <Panel label={t("common.editor")}>
-          <p className="text-bone/45 px-5 py-10 text-center text-sm">
+          <p className="text-bone/55 px-5 py-10 text-center text-sm">
             {t("benefits.emptyEditor")}
           </p>
         </Panel>
@@ -141,7 +141,7 @@ function BenefitEditor({
         <button
           type="button"
           onClick={onClose}
-          className="text-bone/40 hover:text-bone flex min-h-11 cursor-pointer items-center text-xs transition-colors"
+          className="text-bone/50 hover:text-bone flex min-h-11 cursor-pointer items-center text-xs transition-colors"
         >
           {t("common.close")}
         </button>
@@ -158,8 +158,8 @@ function BenefitEditor({
          * console's own. The English fields stay left-to-right even when the
          * operator is working in Arabic or Kurdish.
          */}
-        <fieldset className="border-bone/8 space-y-2 border-s-2 ps-3">
-          <legend className="text-gold/60 text-xs">
+        <fieldset className="border-bone/12 space-y-2 border-s-2 ps-3">
+          <legend className="text-gold/70 text-xs">
             {t("common.english")}
           </legend>
           <input
@@ -182,10 +182,10 @@ function BenefitEditor({
           />
         </fieldset>
 
-        <fieldset className="border-bone/8 space-y-2 border-s-2 ps-3">
-          <legend className="text-gold/60 text-xs">
+        <fieldset className="border-bone/12 space-y-2 border-s-2 ps-3">
+          <legend className="text-gold/70 text-xs">
             {t("common.arabic")}{" "}
-            <span className="text-bone/25 ms-2">{t("common.optional")}</span>
+            <span className="text-bone/52 ms-2">{t("common.optional")}</span>
           </legend>
           <input
             name="titleAr"
@@ -205,10 +205,10 @@ function BenefitEditor({
           />
         </fieldset>
 
-        <fieldset className="border-bone/8 space-y-2 border-s-2 ps-3">
-          <legend className="text-gold/60 text-xs">
+        <fieldset className="border-bone/12 space-y-2 border-s-2 ps-3">
+          <legend className="text-gold/70 text-xs">
             {t("common.kurdish")}{" "}
-            <span className="text-bone/25 ms-2">{t("common.optional")}</span>
+            <span className="text-bone/52 ms-2">{t("common.optional")}</span>
           </legend>
           <input
             name="titleKu"
@@ -242,18 +242,18 @@ function BenefitEditor({
           </label>
 
           <label className="flex items-center gap-2">
-            <span className="text-bone/45 text-xs">{t("common.order")}</span>
+            <span className="text-bone/55 text-xs">{t("common.order")}</span>
             <input
               type="number"
               name="sortOrder"
               dir="ltr"
               defaultValue={benefit?.sortOrder ?? 0}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
+              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
             />
           </label>
         </div>
 
-        <div className="border-bone/8 flex flex-wrap gap-2 border-t pt-4">
+        <div className="border-bone/12 flex flex-wrap gap-2 border-t pt-4">
           <button
             type="submit"
             className="bg-gold text-ink hover:bg-gold-bright cursor-pointer rounded-full px-5 py-2 text-sm font-medium transition-colors"
@@ -267,7 +267,7 @@ function BenefitEditor({
                 type="submit"
                 formAction={toggleBenefitPublished}
                 formNoValidate
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
               >
                 {benefit.published ? t("common.hide") : t("common.show")}
               </button>

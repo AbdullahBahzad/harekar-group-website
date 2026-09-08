@@ -268,7 +268,7 @@ export function GradientCard({
           </motion.div>
 
           <motion.p
-            className="text-bone/65 text-sm leading-relaxed font-normal text-pretty"
+            className="text-bone/72 text-sm leading-relaxed font-normal text-pretty"
             {...settle(0.4, 0.9)}
           >
             {body}

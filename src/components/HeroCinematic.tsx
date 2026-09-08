@@ -11,8 +11,6 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import LaurelWreath from "@/components/LaurelWreath";
 import type { LionVideoMode } from "@/components/HeroLionVideo";
 
@@ -51,8 +49,6 @@ export default function HeroCinematic({
    */
   overrides: { eyebrow: string; title: string; subtitle: string };
 }) {
-  const t = useTranslations("hero");
-  const tCta = useTranslations("cta");
   const reduceMotion = useReducedMotion();
   const [finePointer, setFinePointer] = useState(false);
   const [useVideo, setUseVideo] = useState(false);
@@ -236,7 +232,7 @@ export default function HeroCinematic({
       {/* Typography — arrives after the lion has settled. */}
       <div className="relative z-10 mx-auto max-w-3xl px-6 pb-20 text-center">
         <motion.p
-          className="text-gold/80 text-xs tracking-[0.35em] uppercase"
+          className="text-gold text-3xl font-semibold tracking-[0.1em] uppercase sm:text-4xl lg:text-5xl"
           initial={reduceMotion ? false : { opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.35, ease }}
@@ -245,7 +241,7 @@ export default function HeroCinematic({
         </motion.p>
 
         <motion.h1
-          className="font-display text-bone mt-4 text-4xl leading-[1.08] font-light text-balance sm:text-5xl lg:text-6xl"
+          className="font-display text-bone mt-5 text-2xl leading-snug font-normal text-balance sm:text-3xl lg:text-4xl"
           initial={reduceMotion ? false : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 1.5, ease }}
@@ -254,33 +250,13 @@ export default function HeroCinematic({
         </motion.h1>
 
         <motion.p
-          className="text-bone/60 mx-auto mt-5 max-w-xl text-base leading-relaxed text-pretty"
+          className="text-bone/70 mx-auto mt-5 max-w-xl text-base leading-relaxed text-pretty"
           initial={reduceMotion ? false : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 1.65, ease }}
         >
           {overrides.subtitle}
         </motion.p>
-
-        <motion.div
-          className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
-          initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 1.8, ease }}
-        >
-          <Link
-            href="/contact"
-            className="bg-gold text-ink hover:bg-gold-bright cursor-pointer rounded-full px-8 py-3.5 text-sm font-medium transition-colors"
-          >
-            {tCta("primary")}
-          </Link>
-          <a
-            href="#intelligence"
-            className="border-bone/25 text-bone/85 hover:border-gold hover:text-gold cursor-pointer rounded-full border px-8 py-3.5 text-sm transition-colors"
-          >
-            {t("scroll")}
-          </a>
-        </motion.div>
       </div>
 
       {/* Scroll cue. */}

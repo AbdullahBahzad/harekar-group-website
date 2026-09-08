@@ -24,7 +24,7 @@ export default function Panel({
   tone?: "gold" | "clear" | "elevated" | "critical";
 }) {
   const toneClass = {
-    gold: "border-bone/10",
+    gold: "border-bone/14",
     clear: "border-status-clear/30",
     elevated: "border-status-elevated/30",
     critical: "border-status-critical/30",
@@ -35,7 +35,7 @@ export default function Panel({
       className={`bg-surface/30 rounded-xl border ${toneClass} ${className}`}
     >
       {(label || action) && (
-        <header className="border-bone/8 flex items-center gap-3 border-b px-4 py-3">
+        <header className="border-bone/12 flex items-center gap-3 border-b px-4 py-3">
           {label && (
             <h2 className="text-bone/80 text-sm font-medium">{label}</h2>
           )}

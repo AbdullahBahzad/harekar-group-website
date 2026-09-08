@@ -36,6 +36,21 @@ export interface GalleryItem {
  */
 const FACING_LIMIT = 75;
 
+/**
+ * One timing for the whole ring.
+ *
+ * The turn and the depth-fade are two halves of a single movement, so they
+ * share a duration and a curve. They used to differ — 380ms ease-out on the
+ * rotation against 300ms linear on the card opacity — which meant the cards
+ * finished fading before the ring finished turning, and faded at a constant
+ * rate while the ring was decelerating. That mismatch is what read as the
+ * motion being unbalanced.
+ */
+const TURN_MS = 380;
+const TURN_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+const TURN_TRANSITION = (property: string) =>
+  `${property} ${TURN_MS}ms ${TURN_EASE}`;
+
 /*
  * `onSelect` is omitted from the inherited DOM attributes: React already
  * defines one there for text-selection events, and ours takes a GalleryItem
@@ -160,10 +175,20 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
         {...props}
       >
         <div
-          className="relative h-full w-full"
+          className="relative h-full w-full motion-reduce:transition-none"
           style={{
             transform: `rotateY(${activeRotation}deg)`,
             transformStyle: "preserve-3d",
+            /*
+             * The travel between cards is a CSS transition rather than a JS
+             * frame loop: the parent only ever sets discrete target angles, so
+             * the compositor can interpolate them without React re-rendering
+             * the ring on every frame.
+             */
+            transition: TURN_TRANSITION("transform"),
+            // Promotes the ring to its own layer so the turn is composited
+            // rather than repainted alongside the rest of a heavy page.
+            willChange: "transform",
           }}
         >
           {items.map((item, i) => {
@@ -218,7 +243,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
               "group relative h-full w-full overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-lg transition-colors duration-300",
               isSelected
                 ? "border-gold/70 bg-surface/45"
-                : "border-bone/10 bg-surface/30",
+                : "border-bone/14 bg-surface/30",
             );
 
             return (
@@ -229,20 +254,31 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                   width: cardWidth,
                   height: cardHeight,
                   /*
-                   * The trailing translate centres the card on its own anchor.
-                   * This used to be `marginLeft: -125px / marginTop: -170px`,
-                   * hardcoded to the 250x340 mobile card — so from the `sm`
-                   * breakpoint up, where the card becomes 300x400, the entire
-                   * ring hung 25px right and 30px low of the stage. Percentages
-                   * resolve against the element's own box, so this stays correct
-                   * at every breakpoint. It is applied first (rightmost) so it
-                   * offsets the card in its own plane before the ring places it.
+                   * Centred with negative margins, not with a translate inside
+                   * the transform — and the distinction is the whole geometry.
+                   *
+                   * `transform-origin` defaults to the element's own centre.
+                   * Margins move the element's *box* before any transform runs,
+                   * so that centre lands exactly on the stage's centre and every
+                   * card rotates about one shared axis: a true circle.
+                   *
+                   * A trailing `translate(-50%, -50%)` looks equivalent but is
+                   * not. It shifts the element only after the origin has been
+                   * fixed at `left/top: 50%` — leaving the rotation axis half a
+                   * card off-centre, so `translateZ` pushed each card out from
+                   * the wrong pivot and the ring came off its path.
+                   *
+                   * The margins are derived from the measured card size rather
+                   * than hardcoded (the reason they were replaced originally),
+                   * so this stays correct at every breakpoint.
                    */
-                  transform: `rotateY(${itemAngle}deg) translateZ(${radius}px) translate(-50%, -50%)`,
+                  transform: `rotateY(${itemAngle}deg) translateZ(${radius}px)`,
                   left: "50%",
                   top: "50%",
+                  marginLeft: -cardWidth / 2,
+                  marginTop: -cardHeight / 2,
                   opacity,
-                  transition: "opacity 0.3s linear",
+                  transition: TURN_TRANSITION("opacity"),
                   /*
                    * Only the cards turned toward the viewer accept the pointer.
                    * Keyboard focus is unaffected, so every service stays
@@ -261,7 +297,7 @@ const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryProps>(
                     }
                     className={cn(
                       surface,
-                      "focus-visible:ring-gold hover:border-gold/50 cursor-pointer text-start outline-none focus-visible:ring-2 focus-visible:ring-offset-0",
+                      "focus-visible:ring-gold hover:border-gold/60 cursor-pointer text-start outline-none focus-visible:ring-2 focus-visible:ring-offset-0",
                     )}
                   >
                     {card}

@@ -37,14 +37,14 @@ export default async function MessagesStation({
         <h1 className="font-display text-bone text-3xl font-light">
           {t("title")}
         </h1>
-        <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
+        <p className="text-bone/55 mt-2 max-w-2xl text-sm leading-relaxed">
           {t("intro", { count: messages.length })}
         </p>
       </header>
 
       {messages.length === 0 ? (
         <Panel label={t("panel")}>
-          <p className="text-bone/40 px-5 py-10 text-center text-sm">
+          <p className="text-bone/50 px-5 py-10 text-center text-sm">
             {t("empty")}
           </p>
         </Panel>
@@ -62,7 +62,7 @@ export default async function MessagesStation({
                   </h2>
                   <time
                     dateTime={message.createdAt.toISOString()}
-                    className="text-bone/35 text-xs tabular-nums"
+                    className="text-bone/60 text-xs tabular-nums"
                   >
                     {formatDate(message.createdAt, locale, {
                       month: "short",
@@ -78,21 +78,21 @@ export default async function MessagesStation({
                   {/* Real mailto/tel links — the whole point of an inbox is replying. */}
                   <a
                     href={`mailto:${message.email}`}
-                    className="text-gold/80 hover:text-gold-bright transition-colors"
+                    className="text-gold/88 hover:text-gold-bright transition-colors"
                   >
                     {message.email}
                   </a>
                   {message.phone && (
                     <a
                       href={`tel:${message.phone}`}
-                      className="text-bone/50 hover:text-bone transition-colors"
+                      className="text-bone/58 hover:text-bone transition-colors"
                     >
                       {message.phone}
                     </a>
                   )}
                 </div>
 
-                <p className="text-bone/70 border-bone/8 border-s-2 ps-3 text-sm leading-relaxed whitespace-pre-wrap">
+                <p className="text-bone/70 border-bone/12 border-s-2 ps-3 text-sm leading-relaxed whitespace-pre-wrap">
                   {message.message}
                 </p>
               </article>

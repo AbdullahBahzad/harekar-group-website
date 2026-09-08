@@ -22,13 +22,13 @@ export default async function ServicesSection({
     <section id="services" className="scroll-mt-24 px-6 py-28">
       <div className="mx-auto max-w-7xl">
         <Reveal>
-          <p className="text-gold/80 text-xs tracking-[0.35em] uppercase">
+          <p className="text-gold text-3xl font-semibold tracking-[0.1em] uppercase sm:text-4xl lg:text-5xl">
             {t("eyebrow")}
           </p>
-          <Heading className="font-display text-bone mt-6 max-w-3xl text-4xl leading-[1.15] font-light text-balance sm:text-5xl lg:text-6xl">
+          <Heading className="font-display text-bone mt-5 max-w-3xl text-2xl leading-snug font-normal text-balance sm:text-3xl lg:text-4xl">
             {t("title")}
           </Heading>
-          <p className="text-bone/60 mt-6 max-w-2xl text-base leading-relaxed text-pretty">
+          <p className="text-bone/70 mt-6 max-w-2xl text-base leading-relaxed text-pretty">
             {t("subtitle")}
           </p>
         </Reveal>
@@ -41,7 +41,7 @@ export default async function ServicesSection({
 
       <div className="mx-auto max-w-7xl">
         <Reveal delay={0.1}>
-          <div className="border-bone/10 mt-20 flex flex-col items-start gap-6 border-t pt-12 sm:flex-row sm:items-center sm:justify-between">
+          <div className="border-bone/14 mt-20 flex flex-col items-start gap-6 border-t pt-12 sm:flex-row sm:items-center sm:justify-between">
             <p className="font-display text-bone max-w-lg text-2xl leading-snug font-light">
               {t("ctaTitle")}
             </p>

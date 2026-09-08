@@ -40,7 +40,7 @@ export default function ClientWall({ logos }: { logos: PublicClientLogo[] }) {
               className={`focus-visible:ring-gold/40 min-h-11 cursor-pointer rounded-full border px-5 text-sm transition-colors outline-none focus-visible:ring-2 ${
                 selected
                   ? "border-gold bg-gold text-ink"
-                  : "border-bone/15 text-bone/60 hover:border-gold/50 hover:text-bone"
+                  : "border-bone/20 text-bone/70 hover:border-gold/60 hover:text-bone"
               }`}
             >
               {t(`groups.${key}`)}
@@ -50,7 +50,7 @@ export default function ClientWall({ logos }: { logos: PublicClientLogo[] }) {
       </div>
 
       {/* Announced on filter change so the result count is not sighted-only. */}
-      <p aria-live="polite" className="text-bone/40 mt-6 text-xs tracking-[0.2em] uppercase">
+      <p aria-live="polite" className="text-bone/50 mt-6 text-xs tracking-[0.2em] uppercase">
         {t("countLabel", { count: visible.length })}
       </p>
 

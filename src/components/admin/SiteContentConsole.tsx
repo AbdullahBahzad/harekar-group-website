@@ -113,7 +113,7 @@ const SECTIONS: Section[] = [
 ];
 
 const inputClass =
-  "border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
+  "border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
 
 /**
  * The whole site's editable page copy, one section per public page. Saves as
@@ -188,7 +188,7 @@ export default function SiteContentConsole({
               <div className="grid gap-3 sm:grid-cols-2">
                 {section.valueFields.map(({ field, labelKey }) => (
                   <label key={field} className="block">
-                    <span className="text-bone/45 mb-1.5 block text-xs">
+                    <span className="text-bone/55 mb-1.5 block text-xs">
                       {t(`content.fields.${labelKey}`)}
                     </span>
                     {/*
@@ -209,8 +209,8 @@ export default function SiteContentConsole({
             )}
 
             {section.fields.map(({ field, labelKey, multiline }) => (
-              <fieldset key={field} className="border-bone/8 space-y-2 border-s-2 ps-3">
-                <legend className="text-bone/60 px-1 text-xs">
+              <fieldset key={field} className="border-bone/12 space-y-2 border-s-2 ps-3">
+                <legend className="text-bone/70 px-1 text-xs">
                   {t(`content.fields.${labelKey}`)}
                 </legend>
 
@@ -221,7 +221,7 @@ export default function SiteContentConsole({
                  * own interface language is.
                  */}
                 <label className="block">
-                  <span className="text-gold/60 mb-1 block text-[11px] tracking-[0.14em] uppercase">
+                  <span className="text-gold/70 mb-1 block text-[11px] tracking-[0.14em] uppercase">
                     {t("common.english")}
                   </span>
                   {multiline ? (
@@ -247,7 +247,7 @@ export default function SiteContentConsole({
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="block">
-                    <span className="text-bone/35 mb-1 block text-[11px] tracking-[0.14em] uppercase">
+                    <span className="text-bone/60 mb-1 block text-[11px] tracking-[0.14em] uppercase">
                       {t("common.arabic")}{" "}
                       <span className="normal-case">
                         {t("common.optional")}
@@ -273,7 +273,7 @@ export default function SiteContentConsole({
                   </label>
 
                   <label className="block">
-                    <span className="text-bone/35 mb-1 block text-[11px] tracking-[0.14em] uppercase">
+                    <span className="text-bone/60 mb-1 block text-[11px] tracking-[0.14em] uppercase">
                       {t("common.kurdish")}{" "}
                       <span className="normal-case">
                         {t("common.optional")}

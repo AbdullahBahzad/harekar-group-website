@@ -54,7 +54,7 @@ export default function IraqMap({
 
   return (
     <>
-      <div className="border-bone/10 bg-surface/20 relative overflow-hidden rounded-3xl border p-2 sm:p-8">
+      <div className="border-bone/14 bg-surface/20 relative overflow-hidden rounded-3xl border p-2 sm:p-8">
         {/*
          * Iraq's outline is close to square, so width alone cannot bound this:
          * at the full column width the map stood taller than the viewport and
@@ -312,7 +312,7 @@ export default function IraqMap({
           </svg>
         </div>
 
-        <div className="border-bone/10 text-bone/45 mt-6 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 border-t pt-6 text-xs">
+        <div className="border-bone/14 text-bone/55 mt-6 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 border-t pt-6 text-xs">
           {severityOrder.map((level) => (
             <span key={level} className="flex items-center gap-2">
               <span
@@ -375,9 +375,9 @@ export default function IraqMap({
                   : { opacity: 0, y: 12, scale: 0.98 }
               }
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="border-gold/30 bg-surface/95 relative w-full max-w-md rounded-2xl border p-8 shadow-[0_30px_90px_-30px_rgba(0,0,0,0.9)]"
+              className="border-gold/40 bg-surface/95 relative w-full max-w-md rounded-2xl border p-8 shadow-[0_30px_90px_-30px_rgba(0,0,0,0.9)]"
             >
-              <span className="border-gold/40 text-gold inline-block rounded-full border px-3 py-1 text-[10px] tracking-[0.25em] uppercase">
+              <span className="border-gold/50 text-gold inline-block rounded-full border px-3 py-1 text-[10px] tracking-[0.25em] uppercase">
                 {isPro ? t("modal.badgePro") : t("modal.badge")}
               </span>
 
@@ -399,7 +399,7 @@ export default function IraqMap({
                     ? t("modal.titlePro", { city: activeMarker.label })
                     : t("modal.title")}
               </h2>
-              <p className="text-bone/60 mt-4 text-sm leading-relaxed whitespace-pre-wrap">
+              <p className="text-bone/70 mt-4 text-sm leading-relaxed whitespace-pre-wrap">
                 {activeMarker.body
                   ? activeMarker.body
                   : isPro
@@ -428,7 +428,7 @@ export default function IraqMap({
                 <button
                   type="button"
                   onClick={() => setActiveMarker(null)}
-                  className="border-bone/20 text-bone/70 hover:text-bone rounded-full border px-6 py-2.5 text-sm transition-colors"
+                  className="border-bone/26 text-bone/70 hover:text-bone rounded-full border px-6 py-2.5 text-sm transition-colors"
                 >
                   {isPro ? t("modal.close") : t("modal.dismiss")}
                 </button>

@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import Reveal from "@/components/Reveal";
-import { GradientCard } from "@/components/ui/gradient-card";
-import { getSiteContent, pick } from "@/lib/site-content";
+import CareersSection from "@/components/sections/CareersSection";
+import { getSiteContent } from "@/lib/site-content";
 import { getPublishedCareerBenefits } from "@/lib/career-benefits";
 import type { Locale } from "@/i18n/routing";
-import ApplyForm from "./ApplyForm";
 
 export async function generateMetadata({
   params,
@@ -29,87 +26,12 @@ export default async function CareersPage({
   const content = await getSiteContent();
   const benefits = await getPublishedCareerBenefits(locale as Locale);
 
-  return <Careers content={content} benefits={benefits} locale={locale as Locale} />;
-}
-
-function Careers({
-  content,
-  benefits,
-  locale,
-}: {
-  content: Awaited<ReturnType<typeof getSiteContent>>;
-  benefits: Awaited<ReturnType<typeof getPublishedCareerBenefits>>;
-  locale: Locale;
-}) {
-  const t = useTranslations("careers");
-  const tApply = useTranslations("careers.apply");
-  const p = (field: string, fallback: string) =>
-    pick(content, field, locale, fallback);
-
   return (
-    <>
-      <section className="mx-auto max-w-6xl px-6 pt-24 pb-16">
-        <Reveal className="max-w-3xl">
-          <p className="text-gold/80 text-xs tracking-[0.35em] uppercase">
-            {p("careersEyebrow", t("eyebrow"))}
-          </p>
-          <h1 className="font-display text-bone mt-6 text-4xl leading-[1.15] font-light text-balance sm:text-5xl">
-            {p("careersTitle", t("title"))}
-          </h1>
-          <a
-            href="#apply"
-            className="border-gold/50 text-gold hover:bg-gold hover:text-ink mt-10 inline-flex min-h-11 items-center rounded-full border px-7 text-sm transition-colors"
-          >
-            {tApply("title")}
-          </a>
-        </Reveal>
-
-        {/*
-         * The old site paged these five through a carousel, which hid four of
-         * them behind arrows and gave the page no scannable shape. They are all
-         * short, so a grid shows the whole argument for joining at once.
-         */}
-        {/* Five across on desktop so the whole argument reads as one line;
-            stacking only where 200px-wide columns would stop being legible. */}
-        <ul className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {benefits.map((benefit, i) => (
-            <li key={benefit.id} className="h-full">
-              <Reveal delay={0.06 * i} className="h-full">
-                <GradientCard
-                  index={String(i + 1).padStart(2, "0")}
-                  title={benefit.title}
-                  body={benefit.body}
-                />
-              </Reveal>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section id="apply" className="scroll-mt-24 px-6 pt-8 pb-28">
-        {/*
-          The single-column track is spelled out rather than left implicit. A
-          grid item defaults to `min-width: auto`, so an implicit track refuses
-          to shrink below its content's minimum — here the letter-spaced
-          uppercase eyebrow — and on a 320px screen that pushed the whole page
-          three pixels wider than the viewport. `minmax(0,1fr)` is the same
-          guard the `lg` columns already carry, applied from the start.
-        */}
-        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:gap-20">
-          <Reveal>
-            <p className="text-gold/80 text-xs tracking-[0.35em] uppercase">
-              {tApply("eyebrow")}
-            </p>
-            <h2 className="font-display text-bone mt-6 text-3xl leading-tight font-light text-balance sm:text-4xl">
-              {tApply("title")}
-            </h2>
-          </Reveal>
-
-          <Reveal delay={0.1}>
-            <ApplyForm />
-          </Reveal>
-        </div>
-      </section>
-    </>
+    <CareersSection
+      as="h1"
+      content={content}
+      benefits={benefits}
+      locale={locale as Locale}
+    />
   );
 }

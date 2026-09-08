@@ -28,7 +28,7 @@ export type ConsoleClient = {
 };
 
 const inputClass =
-  "border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
+  "border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
 
 /**
  * The clients station.
@@ -63,7 +63,7 @@ export default function ClientConsole({
               setEditing(null);
               setCreating(true);
             }}
-            className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
+            className="border-gold/50 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
           >
             {t("clients.newLogo")}
           </button>
@@ -71,12 +71,12 @@ export default function ClientConsole({
       >
         {clients.length === 0 ? (
           <div className="px-5 py-10 text-center">
-            <p className="text-bone/45 text-sm">{t("clients.empty")}</p>
+            <p className="text-bone/55 text-sm">{t("clients.empty")}</p>
             {canSeed && (
               <form action={seedFromStaticClients} className="mt-6">
                 <button
                   type="submit"
-                  className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
+                  className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
                 >
                   {t("clients.importExisting", { count: 37 })}
                 </button>
@@ -98,7 +98,7 @@ export default function ClientConsole({
                     client.id === editing ? "bg-gold/8" : "hover:bg-bone/[0.03]",
                   )}
                 >
-                  <span className="border-bone/10 bg-ink relative block size-12 shrink-0 overflow-hidden border">
+                  <span className="border-bone/14 bg-ink relative block size-12 shrink-0 overflow-hidden border">
                     <Image
                       src={client.imageUrl}
                       alt=""
@@ -113,13 +113,13 @@ export default function ClientConsole({
                     <span className="text-bone/90 block truncate text-sm">
                       {client.name ?? t("common.unnamed")}
                     </span>
-                    <span className="text-bone/35 block truncate text-xs">
+                    <span className="text-bone/60 block truncate text-xs">
                       {t(`clients.categories.${client.category}`)}
                     </span>
                   </span>
 
                   {!client.published && (
-                    <span className="text-bone/30 text-xs">
+                    <span className="text-bone/56 text-xs">
                       {t("common.hidden")}
                     </span>
                   )}
@@ -141,7 +141,7 @@ export default function ClientConsole({
         />
       ) : (
         <Panel label={t("common.editor")}>
-          <p className="text-bone/45 px-5 py-10 text-center text-sm">
+          <p className="text-bone/55 px-5 py-10 text-center text-sm">
             {t("clients.emptyEditor")}
           </p>
         </Panel>
@@ -167,7 +167,7 @@ function ClientEditor({
         <button
           type="button"
           onClick={onClose}
-          className="text-bone/40 hover:text-bone flex min-h-11 cursor-pointer items-center text-xs transition-colors"
+          className="text-bone/50 hover:text-bone flex min-h-11 cursor-pointer items-center text-xs transition-colors"
         >
           {t("common.close")}
         </button>
@@ -185,7 +185,7 @@ function ClientEditor({
         {client && <input type="hidden" name="id" value={client.id} />}
 
         {client && (
-          <div className="border-bone/10 bg-ink relative aspect-[2.4] w-full overflow-hidden border">
+          <div className="border-bone/14 bg-ink relative aspect-[2.4] w-full overflow-hidden border">
             <Image
               src={client.imageUrl}
               alt={client.name ?? ""}
@@ -194,7 +194,7 @@ function ClientEditor({
               className="object-contain p-6"
               unoptimized={client.hasUpload}
             />
-            <span className="bg-ink/70 text-bone/60 absolute bottom-0 start-0 px-2 py-1 text-xs backdrop-blur">
+            <span className="bg-ink/70 text-bone/70 absolute bottom-0 start-0 px-2 py-1 text-xs backdrop-blur">
               {client.hasUpload
                 ? t("common.uploaded")
                 : t("common.shippedImage")}
@@ -209,10 +209,10 @@ function ClientEditor({
             name="image"
             accept="image/webp,image/png,image/jpeg,image/avif"
             required={!editing}
-            className="text-bone/60 file:border-gold/40 file:text-gold hover:file:bg-gold hover:file:text-ink w-full cursor-pointer text-xs file:me-3 file:cursor-pointer file:border file:bg-transparent file:px-3 file:py-1.5 file:text-xs file:transition-colors"
+            className="text-bone/70 file:border-gold/50 file:text-gold hover:file:bg-gold hover:file:text-ink w-full cursor-pointer text-xs file:me-3 file:cursor-pointer file:border file:bg-transparent file:px-3 file:py-1.5 file:text-xs file:transition-colors"
           />
           {client?.hasUpload && (
-            <span className="text-bone/30 mt-1.5 block text-xs">
+            <span className="text-bone/56 mt-1.5 block text-xs">
               {t("clients.logoKeep")}
             </span>
           )}
@@ -304,18 +304,18 @@ function ClientEditor({
           </label>
 
           <label className="flex items-center gap-2">
-            <span className="text-bone/45 text-xs">{t("common.order")}</span>
+            <span className="text-bone/55 text-xs">{t("common.order")}</span>
             <input
               type="number"
               name="sortOrder"
               dir="ltr"
               defaultValue={client?.sortOrder ?? 0}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
+              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
             />
           </label>
         </div>
 
-        <div className="border-bone/8 flex flex-wrap gap-2 border-t pt-4">
+        <div className="border-bone/12 flex flex-wrap gap-2 border-t pt-4">
           <button
             type="submit"
             className="bg-gold text-ink hover:bg-gold-bright cursor-pointer rounded-full px-5 py-2 text-sm font-medium transition-colors"
@@ -329,7 +329,7 @@ function ClientEditor({
                 type="submit"
                 formAction={toggleClientPublished}
                 formNoValidate
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
               >
                 {client.published ? t("common.hide") : t("common.show")}
               </button>
@@ -353,7 +353,7 @@ function ClientEditor({
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="text-bone/45 mb-1.5 block text-xs">{label}</span>
+      <span className="text-bone/55 mb-1.5 block text-xs">{label}</span>
       {children}
     </label>
   );

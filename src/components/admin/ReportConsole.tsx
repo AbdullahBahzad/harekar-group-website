@@ -167,7 +167,7 @@ export default function ReportConsole({
         <Panel
           label={t("reports.sources")}
           action={
-            <span className="text-bone/30 text-xs">
+            <span className="text-bone/56 text-xs">
               {t("reports.itemCount", { count: sources.length })}
             </span>
           }
@@ -176,10 +176,10 @@ export default function ReportConsole({
             {sources.map((row, i) => (
               <div
                 key={row.key}
-                className="border-bone/10 space-y-2 border p-3"
+                className="border-bone/14 space-y-2 border p-3"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-bone/30 text-xs tabular-nums">
+                  <span className="text-bone/56 text-xs tabular-nums">
                     {i + 1}
                   </span>
                   <select
@@ -189,7 +189,7 @@ export default function ReportConsole({
                         region: e.target.value as Region,
                       })
                     }
-                    className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-h-11 cursor-pointer border px-2 text-xs outline-none"
+                    className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-11 cursor-pointer border px-2 text-xs outline-none"
                   >
                     {REGIONS.map((region) => (
                       <option key={region} value={region}>
@@ -205,7 +205,7 @@ export default function ReportConsole({
                       )
                     }
                     disabled={sources.length === 1}
-                    className="text-bone/30 hover:text-status-critical ms-auto flex min-h-11 cursor-pointer items-center text-xs transition-colors disabled:pointer-events-none disabled:opacity-30"
+                    className="text-bone/56 hover:text-status-critical ms-auto flex min-h-11 cursor-pointer items-center text-xs transition-colors disabled:pointer-events-none disabled:opacity-30"
                   >
                     {t("common.remove")}
                   </button>
@@ -220,7 +220,7 @@ export default function ReportConsole({
                   }
                   placeholder={t("reports.urlPlaceholder")}
                   autoComplete="off"
-                  className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-start text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-start text-sm outline-none transition-colors"
                 />
                 <textarea
                   value={row.notes}
@@ -229,7 +229,7 @@ export default function ReportConsole({
                   }
                   placeholder={t("reports.notesPlaceholder")}
                   rows={2}
-                  className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </div>
             ))}
@@ -238,7 +238,7 @@ export default function ReportConsole({
               <button
                 type="button"
                 onClick={() => setSources((rows) => [...rows, newRow()])}
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 {t("reports.addSource")}
               </button>
@@ -260,7 +260,7 @@ export default function ReportConsole({
         <Panel label={t("reports.review")}>
           <div className="space-y-4 p-5">
             {!draftItems && (
-              <p className="text-bone/40 text-sm">
+              <p className="text-bone/50 text-sm">
                 {t("reports.reviewEmpty")}
               </p>
             )}
@@ -273,7 +273,7 @@ export default function ReportConsole({
                       type="date"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                     />
                   </Field>
                   <Field label={t("reports.weather")}>
@@ -281,7 +281,7 @@ export default function ReportConsole({
                       value={weather}
                       onChange={(e) => setWeather(e.target.value)}
                       placeholder={t("reports.weatherPlaceholder")}
-                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                     />
                   </Field>
                   <Field label={t("reports.kurdistanThreat")}>
@@ -290,7 +290,7 @@ export default function ReportConsole({
                       onChange={(e) =>
                         setKurdistanThreat(e.target.value as ThreatLevel)
                       }
-                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
                     >
                       {THREAT_LEVELS.map((level) => (
                         <option key={level} value={level}>
@@ -305,7 +305,7 @@ export default function ReportConsole({
                       onChange={(e) =>
                         setIraqThreat(e.target.value as ThreatLevel)
                       }
-                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
                     >
                       {THREAT_LEVELS.map((level) => (
                         <option key={level} value={level}>
@@ -318,26 +318,26 @@ export default function ReportConsole({
                     <input
                       value={politicalKurdistan}
                       onChange={(e) => setPoliticalKurdistan(e.target.value)}
-                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                     />
                   </Field>
                   <Field label={t("reports.politicalIraq")}>
                     <input
                       value={politicalIraq}
                       onChange={(e) => setPoliticalIraq(e.target.value)}
-                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                     />
                   </Field>
                 </div>
 
-                <div className="border-bone/8 space-y-3 border-t pt-4">
+                <div className="border-bone/12 space-y-3 border-t pt-4">
                   {draftItems.map((item, i) => (
                     <div
                       key={i}
-                      className="border-bone/10 space-y-2 border p-3"
+                      className="border-bone/14 space-y-2 border p-3"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-gold/70 text-xs">
+                        <span className="text-gold/78 text-xs">
                           {t(`reports.regions.${item.region}`)}
                         </span>
                         <button
@@ -349,7 +349,7 @@ export default function ReportConsole({
                                 : items,
                             )
                           }
-                          className="text-bone/30 hover:text-status-critical ms-auto flex min-h-11 cursor-pointer items-center text-xs transition-colors"
+                          className="text-bone/56 hover:text-status-critical ms-auto flex min-h-11 cursor-pointer items-center text-xs transition-colors"
                         >
                           {t("common.remove")}
                         </button>
@@ -359,7 +359,7 @@ export default function ReportConsole({
                         onChange={(e) =>
                           updateDraftItem(i, { title: e.target.value })
                         }
-                        className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm font-semibold outline-none transition-colors"
+                        className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm font-semibold outline-none transition-colors"
                       />
                       <textarea
                         value={item.body}
@@ -367,10 +367,10 @@ export default function ReportConsole({
                           updateDraftItem(i, { body: e.target.value })
                         }
                         rows={4}
-                        className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
+                        className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
                       />
                       {item.url && (
-                        <p dir="ltr" className="text-bone/30 truncate text-start text-xs">
+                        <p dir="ltr" className="text-bone/56 truncate text-start text-xs">
                           {item.url}
                         </p>
                       )}
@@ -378,7 +378,7 @@ export default function ReportConsole({
                   ))}
                 </div>
 
-                <div className="border-bone/8 flex gap-2 border-t pt-4">
+                <div className="border-bone/12 flex gap-2 border-t pt-4">
                   <button
                     type="button"
                     onClick={handleSave}
@@ -392,7 +392,7 @@ export default function ReportConsole({
                   <button
                     type="button"
                     onClick={() => setDraftItems(null)}
-                    className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                    className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
                   >
                     {t("reports.discard")}
                   </button>
@@ -407,7 +407,7 @@ export default function ReportConsole({
       <Panel label={t("reports.history")}>
         <ul className="divide-bone/6 divide-y">
           {reports.length === 0 && (
-            <li className="text-bone/40 px-4 py-6 text-sm">
+            <li className="text-bone/50 px-4 py-6 text-sm">
               {t("reports.historyEmpty")}
             </li>
           )}
@@ -424,19 +424,19 @@ export default function ReportConsole({
                   day: "numeric",
                 })}
               </span>
-              <span className="text-bone/40 text-xs">
+              <span className="text-bone/50 text-xs">
                 {t("reports.itemCount", {
                   count: report.content.items.length,
                 })}
               </span>
-              <span className="text-bone/30 text-xs">
+              <span className="text-bone/56 text-xs">
                 {t("reports.threatSummary", {
                   kurdistan: t(`reports.threat.${report.kurdistanThreat}`),
                   iraq: t(`reports.threat.${report.iraqThreat}`),
                 })}
               </span>
               {report.createdByName && (
-                <span className="text-bone/30 hidden text-xs sm:inline">
+                <span className="text-bone/56 hidden text-xs sm:inline">
                   {report.createdByName}
                 </span>
               )}
@@ -465,7 +465,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-bone/45 mb-1.5 block text-xs">
+      <span className="text-bone/55 mb-1.5 block text-xs">
         {label}
       </span>
       {children}

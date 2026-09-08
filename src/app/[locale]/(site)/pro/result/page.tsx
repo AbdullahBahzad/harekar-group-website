@@ -52,7 +52,7 @@ export default async function PaymentResultPage({
       <h1 className="font-display text-bone text-3xl leading-tight font-light sm:text-4xl">
         {paid ? t("result.successTitle") : t("result.pendingTitle")}
       </h1>
-      <p className="text-bone/60 mt-5 text-base leading-relaxed text-pretty">
+      <p className="text-bone/70 mt-5 text-base leading-relaxed text-pretty">
         {paid ? t("result.successBody") : t("result.pendingBody")}
       </p>
 
@@ -65,7 +65,7 @@ export default async function PaymentResultPage({
         </Link>
         <Link
           href="/account"
-          className="border-bone/20 text-bone/70 hover:text-bone rounded-full border px-6 py-2.5 text-sm transition-colors"
+          className="border-bone/26 text-bone/70 hover:text-bone rounded-full border px-6 py-2.5 text-sm transition-colors"
         >
           {t("result.viewAccount")}
         </Link>

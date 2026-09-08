@@ -147,7 +147,7 @@ export default function IntelConsole({
       <Panel
         label={t("intelligence.picture")}
         action={
-          <span className="text-bone/30 text-xs">
+          <span className="text-bone/56 text-xs">
             {t("intelligence.markerCount", { count: optimistic.length })}
           </span>
         }
@@ -304,7 +304,7 @@ export default function IntelConsole({
             })}
           </svg>
 
-          <p className="text-bone/30 mt-3 text-xs">
+          <p className="text-bone/56 mt-3 text-xs">
             {t("intelligence.mapHint")}
           </p>
         </div>
@@ -334,7 +334,7 @@ export default function IntelConsole({
             ) : (
               <Panel label={t("intelligence.assessment")}>
                 <div className="px-5 py-10 text-center">
-                  <p className="text-bone/45 text-sm">
+                  <p className="text-bone/55 text-sm">
                     {t("intelligence.emptyEditor")}
                   </p>
                   {/*
@@ -346,7 +346,7 @@ export default function IntelConsole({
                     <form action={seedFromStaticMarkers} className="mt-6">
                       <button
                         type="submit"
-                        className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-xs transition-colors"
+                        className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-xs transition-colors"
                       >
                         {t("intelligence.importOriginal")}
                       </button>
@@ -361,7 +361,7 @@ export default function IntelConsole({
         <Panel label={t("common.register")}>
           <ul className="divide-bone/6 divide-y">
             {optimistic.length === 0 && (
-              <li className="text-bone/40 px-4 py-6 text-sm">
+              <li className="text-bone/50 px-4 py-6 text-sm">
                 {t("intelligence.emptyRegister")}
               </li>
             )}
@@ -394,11 +394,11 @@ export default function IntelConsole({
                     {marker.label}
                   </span>
                   {/* A coordinate pair reads lat-then-lon in every language. */}
-                  <span dir="ltr" className="text-bone/30 text-xs tabular-nums">
+                  <span dir="ltr" className="text-bone/56 text-xs tabular-nums">
                     {marker.latitude.toFixed(2)}, {marker.longitude.toFixed(2)}
                   </span>
                   {marker.access === "LOCKED" && (
-                    <span className="text-gold/70 text-xs">
+                    <span className="text-gold/78 text-xs">
                       {t("intelligence.proTag")}
                     </span>
                   )}
@@ -443,7 +443,7 @@ function MarkerEditor({
         <button
           type="button"
           onClick={onClose}
-          className="text-bone/40 hover:text-bone flex min-h-11 cursor-pointer items-center text-xs transition-colors"
+          className="text-bone/50 hover:text-bone flex min-h-11 cursor-pointer items-center text-xs transition-colors"
         >
           {t("common.close")}
         </button>
@@ -463,7 +463,7 @@ function MarkerEditor({
             defaultValue={marker?.label ?? ""}
             required
             autoComplete="off"
-            className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+            className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
           />
         </Field>
 
@@ -472,7 +472,7 @@ function MarkerEditor({
             <select
               name="severity"
               defaultValue={marker?.severity ?? "CLEAR"}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
             >
               <option value="CLEAR">{t("severity.CLEAR")}</option>
               <option value="ELEVATED">{t("severity.ELEVATED")}</option>
@@ -484,7 +484,7 @@ function MarkerEditor({
             <select
               name="access"
               defaultValue={marker?.access ?? "OPEN"}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
             >
               <option value="OPEN">{t("intelligence.accessOpen")}</option>
               <option value="LOCKED">{t("intelligence.accessLocked")}</option>
@@ -497,7 +497,7 @@ function MarkerEditor({
             name="headline"
             defaultValue={marker?.headline ?? ""}
             autoComplete="off"
-            className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+            className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
           />
         </Field>
 
@@ -506,7 +506,7 @@ function MarkerEditor({
             name="body"
             defaultValue={marker?.body ?? ""}
             rows={6}
-            className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
+            className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
           />
         </Field>
 
@@ -522,7 +522,7 @@ function MarkerEditor({
           </span>
         </label>
 
-        <p className="text-bone/25 text-xs tabular-nums">
+        <p className="text-bone/52 text-xs tabular-nums">
           {t("intelligence.coordinates", {
             lat: latitude.toFixed(4),
             lon: longitude.toFixed(4),
@@ -537,7 +537,7 @@ function MarkerEditor({
             ` ${t("intelligence.updatedBy", { who: marker.updatedByName })}`}
         </p>
 
-        <div className="border-bone/8 flex flex-wrap gap-2 border-t pt-4">
+        <div className="border-bone/12 flex flex-wrap gap-2 border-t pt-4">
           <button
             type="submit"
             className="bg-gold text-ink hover:bg-gold-bright cursor-pointer px-5 py-2 text-xs transition-colors"
@@ -550,7 +550,7 @@ function MarkerEditor({
               <button
                 type="submit"
                 formAction={toggleMarkerPublished}
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 {marker.published ? t("common.withdraw") : t("common.publish")}
               </button>
@@ -583,7 +583,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-bone/45 mb-1.5 block text-xs">
+      <span className="text-bone/55 mb-1.5 block text-xs">
         {label}
       </span>
       {children}

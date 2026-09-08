@@ -68,7 +68,7 @@ export default async function ServicesStation({
         <h1 className="font-display text-bone text-3xl font-light">
           {t("title")}
         </h1>
-        <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
+        <p className="text-bone/55 mt-2 max-w-2xl text-sm leading-relaxed">
           {t("intro")}
         </p>
       </header>

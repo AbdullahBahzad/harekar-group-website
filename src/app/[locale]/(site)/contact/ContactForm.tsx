@@ -7,7 +7,7 @@ import { submitContactForm, type ContactFormState } from "./actions";
 const initialState: ContactFormState = { status: "idle" };
 
 const fieldClass =
-  "border-bone/15 bg-ink/60 text-bone placeholder:text-bone/25 focus:border-gold rounded-lg border px-4 py-3 text-sm outline-none transition-colors";
+  "border-bone/20 bg-ink/60 text-bone placeholder:text-bone/52 focus:border-gold rounded-lg border px-4 py-3 text-sm outline-none transition-colors";
 
 export default function ContactForm() {
   const t = useTranslations("contact.form");

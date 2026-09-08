@@ -53,14 +53,14 @@ export default async function ApplicationsStation({
         <h1 className="font-display text-bone text-3xl font-light">
           {t("title")}
         </h1>
-        <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
+        <p className="text-bone/55 mt-2 max-w-2xl text-sm leading-relaxed">
           {t("intro", { count: applications.length })}
         </p>
       </header>
 
       {applications.length === 0 ? (
         <Panel label={t("title")}>
-          <p className="text-bone/40 px-5 py-10 text-center text-sm">
+          <p className="text-bone/50 px-5 py-10 text-center text-sm">
             {t("empty")}
           </p>
         </Panel>
@@ -74,12 +74,12 @@ export default async function ApplicationsStation({
                     <h2 className="text-bone text-base font-medium">
                       {application.name}
                     </h2>
-                    <span className="text-bone/35 text-xs">
+                    <span className="text-bone/60 text-xs">
                       {application.city}
                     </span>
                     <time
                       dateTime={application.createdAt.toISOString()}
-                      className="text-bone/30 text-xs tabular-nums"
+                      className="text-bone/56 text-xs tabular-nums"
                     >
                       {formatDate(application.createdAt, locale, {
                         month: "short",
@@ -96,19 +96,19 @@ export default async function ApplicationsStation({
                   <div dir="ltr" className="flex flex-wrap gap-x-4 gap-y-1 text-start text-xs rtl:justify-end">
                     <a
                       href={`mailto:${application.email}`}
-                      className="text-gold/80 hover:text-gold-bright transition-colors"
+                      className="text-gold/88 hover:text-gold-bright transition-colors"
                     >
                       {application.email}
                     </a>
                     <a
                       href={`tel:${application.phone}`}
-                      className="text-bone/50 hover:text-bone transition-colors"
+                      className="text-bone/58 hover:text-bone transition-colors"
                     >
                       {application.phone}
                     </a>
                   </div>
 
-                  <p className="text-bone/65 border-bone/8 line-clamp-4 border-s-2 ps-3 text-sm leading-relaxed whitespace-pre-wrap">
+                  <p className="text-bone/72 border-bone/12 line-clamp-4 border-s-2 ps-3 text-sm leading-relaxed whitespace-pre-wrap">
                     {application.coverLetter}
                   </p>
                 </div>

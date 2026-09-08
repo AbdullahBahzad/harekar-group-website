@@ -46,7 +46,7 @@ export default async function AccountsStation({
         <h1 className="font-display text-bone text-3xl font-light">
           {t("accounts.title")}
         </h1>
-        <p className="text-bone/45 mt-2 max-w-2xl text-sm leading-relaxed">
+        <p className="text-bone/55 mt-2 max-w-2xl text-sm leading-relaxed">
           {t("accounts.intro", { count: users.length })}
         </p>
       </header>
@@ -71,7 +71,7 @@ export default async function AccountsStation({
 
       <Panel label={t("common.register")}>
         {users.length === 0 ? (
-          <p className="text-bone/40 px-5 py-10 text-center text-sm">
+          <p className="text-bone/50 px-5 py-10 text-center text-sm">
             {t("accounts.empty")}
           </p>
         ) : (
@@ -94,7 +94,7 @@ export default async function AccountsStation({
                     <p className="text-bone/90 truncate text-sm">
                       {user.name ?? "—"}
                       {isSelf && (
-                        <span className="text-gold/60 ms-2 text-xs">
+                        <span className="text-gold/70 ms-2 text-xs">
                           {t("common.you")}
                         </span>
                       )}
@@ -104,7 +104,7 @@ export default async function AccountsStation({
                      * bidi algorithm moves its dots and @ around when it is
                      * laid out as RTL text.
                      */}
-                    <p dir="ltr" className="text-bone/40 truncate text-start text-xs">
+                    <p dir="ltr" className="text-bone/50 truncate text-start text-xs">
                       {user.email}
                     </p>
                   </div>
@@ -118,14 +118,14 @@ export default async function AccountsStation({
                     />
                     {user.isAdmin && <Tag on label={t("accounts.console")} />}
                     {paid > 0 && (
-                      <span className="text-bone/35 text-xs tabular-nums">
+                      <span className="text-bone/60 text-xs tabular-nums">
                         {t("accounts.paidCount", { count: paid })}
                       </span>
                     )}
                   </div>
 
                   {user.proUntil && (
-                    <span className="text-bone/30 text-xs tabular-nums">
+                    <span className="text-bone/56 text-xs tabular-nums">
                       {t("accounts.until", {
                         date: formatDate(user.proUntil, locale, {
                           month: "short",
@@ -183,7 +183,7 @@ function Tag({ on, label }: { on: boolean; label: string }) {
   return (
     <span
       className={`border px-2 py-0.5 text-xs ${
-        on ? "border-gold/40 text-gold" : "border-bone/15 text-bone/45"
+        on ? "border-gold/50 text-gold" : "border-bone/20 text-bone/55"
       }`}
     >
       {label}
@@ -204,7 +204,7 @@ function MiniButton({
       className={`flex min-h-11 cursor-pointer items-center border px-2.5 text-xs transition-colors ${
         danger
           ? "border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink"
-          : "border-bone/15 text-bone/60 hover:border-gold hover:text-gold"
+          : "border-bone/20 text-bone/70 hover:border-gold hover:text-gold"
       }`}
     >
       {children}

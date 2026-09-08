@@ -17,44 +17,25 @@ import LocaleSwitcher from "@/components/ui/locale-switcher";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-/** The one-page scroll targets used for the desktop rail + scroll-spy. */
-const sections = ["top", "intelligence", "services"] as const;
-type SectionId = (typeof sections)[number];
-
-const navKeys: Record<SectionId, string> = {
-  top: "home",
-  intelligence: "intelligence",
-  services: "services",
-};
-
 /**
- * The full menu shown in the slide-in sidebar. Anchors scroll on the one-pager;
- * `about` points at the credentials strip and `contact` at its route so every
- * entry resolves to something real.
+ * Every public page, in the order the client asked for it to read: Home,
+ * About, Intelligence, Services, Clients, FAQ, Careers, Contact. This single
+ * list drives both the full desktop nav and the phone drawer, so the order
+ * can never drift between them.
  */
-const sidebarItems = [
-  { id: "home", href: "#top", index: "01" },
-  { id: "intelligence", href: "#intelligence", index: "02" },
-  { id: "services", href: "#services", index: "03" },
-  { id: "about", href: "#about", index: "04" },
-  { id: "clients", href: "/clients", index: "05" },
-  { id: "careers", href: "/careers", index: "06" },
-  { id: "faq", href: "/faq", index: "07" },
-  { id: "contact", href: "/contact", index: "08" },
+const navItems = [
+  { id: "home", anchor: "top", index: "01" },
+  { id: "about", anchor: "about", index: "02" },
+  { id: "intelligence", anchor: "intelligence", index: "03" },
+  { id: "services", anchor: "services", index: "04" },
+  { id: "clients", anchor: "clients", index: "05" },
+  { id: "faq", anchor: "faq", index: "06" },
+  { id: "careers", anchor: "careers", index: "07" },
+  { id: "contact", anchor: "contact", index: "08" },
 ] as const;
 
 /** Scroll depth, in pixels, at which the bar condenses into its compact state. */
 const CONDENSE_AT = 24;
-
-/**
- * Shared spring for the sliding indicators.
- *
- * One curve for every pill in the bar, so the locale switcher and the section
- * links move with the same weight — different easings on sibling controls is
- * the sort of thing that reads as "unfinished" without anyone being able to
- * say why.
- */
-const SLIDE = { type: "spring", stiffness: 380, damping: 32, mass: 0.7 } as const;
 
 export default function SiteHeader() {
   const t = useTranslations("nav");
@@ -64,10 +45,9 @@ export default function SiteHeader() {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState<SectionId>("top");
   const [condensed, setCondensed] = useState(false);
-  /** Which section link the pointer is over, if any. */
-  const [hovered, setHovered] = useState<SectionId | null>(null);
+  /** Which section is currently under the reading line, for the nav highlight. */
+  const [active, setActive] = useState<string>("top");
 
   const onePager = pathname === "/";
 
@@ -95,26 +75,26 @@ export default function SiteHeader() {
     setCondensed((current) => (current === next ? current : next));
   });
 
-  // Highlight whichever section is currently in view on the one-page scroll.
+  /*
+   * Scroll-spy for the one-pager.
+   *
+   * A plain scroll handler rather than IntersectionObserver: these sections are
+   * far taller than the viewport, which makes ratio thresholds unreliable — the
+   * last section whose top has crossed the reading line is the one being read.
+   */
   useEffect(() => {
     if (!onePager) return;
 
-    /*
-     * The last section whose top has passed the reading line wins. A plain
-     * scroll handler is used rather than IntersectionObserver because these
-     * sections are far taller than the viewport, which makes ratio thresholds
-     * unreliable.
-     */
     function updateActive() {
       const line = window.innerHeight * 0.4;
-      let current: SectionId = sections[0];
+      let current = navItems[0].anchor as string;
 
-      for (const id of sections) {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= line) current = id;
+      for (const item of navItems) {
+        const el = document.getElementById(item.anchor);
+        if (el && el.getBoundingClientRect().top <= line) current = item.anchor;
       }
 
-      setActive(current);
+      setActive((previous) => (previous === current ? previous : current));
     }
 
     updateActive();
@@ -130,29 +110,6 @@ export default function SiteHeader() {
   function switchLocale(next: Locale) {
     router.replace(pathname, { locale: next });
   }
-
-  /**
-   * Sidebar anchor selection. On the one-pager we smooth-scroll to the target
-   * and close; elsewhere we hand off to a hashed home route.
-   */
-  function handleNavigate(href: string) {
-    const id = href.replace(/^#/, "");
-    setOpen(false);
-
-    if (!onePager) {
-      router.push(`/#${id}`);
-      return;
-    }
-
-    const el = document.getElementById(id);
-    if (el) {
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-    }
-  }
-
-  /** The pill follows the pointer, falling back to the current section. */
-  const highlighted = hovered ?? (onePager ? active : null);
 
   return (
     <header
@@ -179,118 +136,32 @@ export default function SiteHeader() {
       />
 
       {/*
-       * The section links are centred against the *header*, not against the
-       * space left between the logo and the controls.
-       *
-       * Both a `justify-between` row and a `1fr auto 1fr` grid put them
-       * slightly off-centre here, for the same underlying reason: the right
-       * cluster is wider than the logo and wider than its own `1fr` track, so
-       * it pushes the middle across. Taking the links out of flow and pinning
-       * them to 50% makes their position independent of whatever sits either
-       * side — which matters because that side genuinely changes width at
-       * runtime as the Pro CTA appears and disappears.
-       *
-       * `start-1/2` is the logical inset so the anchor point flips in Arabic,
-       * and the RTL translate variant corrects the direction of the offset.
+       * The client asked for a literal, physical layout — menu at the far
+       * left, logo at the far right — regardless of reading direction. Every
+       * other control in this codebase uses logical start/end so RTL mirrors
+       * correctly; these two deliberately use physical `left-`/`right-` so the
+       * brand mark stays in the same corner in Arabic and Kurdish as it does
+       * in English.
        */}
       <nav
-        className={`relative mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 transition-[padding] duration-500 ease-out ${
+        className={`relative flex w-full items-center justify-between gap-4 px-3 transition-[padding] duration-500 ease-out sm:px-4 ${
           condensed ? "py-3" : "py-5"
         }`}
       >
-        <Link
-          href="/"
-          className="group/logo focus-visible:ring-gold/60 col-start-1 flex cursor-pointer items-center gap-3.5 justify-self-start rounded-full outline-none focus-visible:ring-2"
-          aria-label={tBrand("name")}
-        >
-          {/* Official emblem, proportions preserved (488x207 source). */}
-          <Image
-            src="/harekar-mark.png"
-            alt=""
-            width={488}
-            height={207}
-            priority
-            className={`w-auto transition-[height,filter] duration-500 ease-out group-hover/logo:[filter:drop-shadow(0_0_10px_rgba(197,156,64,0.45))] ${
-              condensed ? "h-8 sm:h-9" : "h-9 sm:h-10"
-            }`}
-          />
-          <span className="font-display text-bone hidden text-lg tracking-[0.18em] uppercase sm:inline">
-            {tBrand("name")}
-          </span>
-        </Link>
-
         {/*
-         * Section links, in a glass rail.
-         *
-         * The rail gives the sliding pill something to travel inside — without
-         * a container the highlight would appear to float against the page.
+         * Left cluster, hard against the edge: menu trigger first, then the
+         * language switcher immediately to its right.
          */}
-        <ul
-          className={`border-bone/10 absolute start-1/2 hidden -translate-x-1/2 items-center gap-1 rounded-full border p-1 text-sm tracking-wide backdrop-blur-md transition-colors duration-500 rtl:translate-x-1/2 xl:flex ${
-            condensed ? "bg-ink/40" : "bg-bone/[0.03]"
-          }`}
-          onMouseLeave={() => setHovered(null)}
-        >
-          {sections.map((id) => {
-            const selected = onePager && active === id;
-            return (
-              <li key={id} className="relative">
-                {/* On the one-pager these scroll; elsewhere they route home first. */}
-                <a
-                  href={onePager ? `#${id}` : `/${locale}#${id}`}
-                  aria-current={selected ? "true" : undefined}
-                  onMouseEnter={() => setHovered(id)}
-                  onFocus={() => setHovered(id)}
-                  onBlur={() => setHovered(null)}
-                  className={`focus-visible:ring-gold/60 relative block cursor-pointer rounded-full px-5 py-2 outline-none transition-colors duration-300 focus-visible:ring-2 ${
-                    selected ? "text-ink" : "text-bone/70 hover:text-bone"
-                  }`}
-                >
-                  {/*
-                   * One element with a shared `layoutId` rather than one per
-                   * link: that is what makes the highlight *travel* between
-                   * items instead of cross-fading in place.
-                   */}
-                  {highlighted === id && (
-                    <motion.span
-                      layoutId="nav-pill"
-                      aria-hidden
-                      className={`absolute inset-0 -z-10 rounded-full ${
-                        selected
-                          ? "bg-gold shadow-[0_0_20px_-2px_rgba(197,156,64,0.6)]"
-                          : "bg-bone/10"
-                      }`}
-                      transition={reduceMotion ? { duration: 0 } : SLIDE}
-                    />
-                  )}
-                  <span className="relative">{t(navKeys[id])}</span>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-
         <div className="flex shrink-0 items-center gap-2">
-          {/* Current language on the face; the alternatives on open. */}
-          <LocaleSwitcher onSelect={switchLocale} />
-
-          {/*
-           * Account and the Pro CTA live at the top of the sidebar menu now,
-           * not here — one home for both instead of a duplicate in the bar.
-           */}
-
-          {/* Menu trigger — present on every breakpoint, opens the sidebar. */}
           <button
             type="button"
             onClick={() => setOpen(true)}
             aria-expanded={open}
             aria-haspopup="dialog"
             aria-label={t("menu")}
-            // Shares the outline recipe with every other control in the bar,
-            // so border weight, radius and focus ring cannot drift apart.
             className={cn(
               buttonVariants({ variant: "outline" }),
-              "group text-bone/80 relative h-11 gap-2.5 overflow-hidden px-4 duration-300",
+              "group text-bone/80 relative h-11 shrink-0 gap-2.5 overflow-hidden px-4 duration-300",
             )}
           >
             {/* Gold wash that wipes in from the leading edge on hover. */}
@@ -307,6 +178,74 @@ export default function SiteHeader() {
               <span className="bg-current h-px w-2.5 transition-all duration-300 group-hover:w-4" />
             </span>
           </button>
+
+          <LocaleSwitcher onSelect={switchLocale} />
+        </div>
+
+        {/*
+         * The full page list, every category the client wants visible at
+         * once. Centred independently of the side controls via absolute
+         * positioning at 50%, so it stays truly centred no matter how wide the
+         * menu button or the logo cluster happens to be.
+         */}
+        <ul
+          className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 text-[13px] font-medium tracking-wide whitespace-nowrap xl:flex"
+          dir="ltr"
+        >
+          {navItems.map((item) => {
+            const selected = onePager && active === item.anchor;
+            return (
+              <li key={item.id}>
+                {/*
+                 * A plain anchor, not next-intl's `Link`: on the one-pager
+                 * these are in-page jumps, and routing through the client
+                 * router would reload the page to land on the same document.
+                 * Off the one-pager they fall back to `/{locale}#anchor`.
+                 */}
+                <a
+                  href={onePager ? `#${item.anchor}` : `/${locale}#${item.anchor}`}
+                  aria-current={selected ? "true" : undefined}
+                  className={cn(
+                    "focus-visible:ring-gold/60 relative block cursor-pointer py-2 outline-none transition-colors duration-300 focus-visible:ring-2",
+                    selected ? "text-gold" : "text-bone/70 hover:text-bone",
+                  )}
+                >
+                  {t(item.id)}
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "bg-gold absolute inset-x-0 -bottom-0.5 h-px origin-center transition-transform duration-300",
+                      selected ? "scale-x-100" : "scale-x-0",
+                    )}
+                  />
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* Brand mark — hard against the right edge. */}
+        <div className="flex shrink-0 items-center">
+          <Link
+            href="/"
+            className="group/logo focus-visible:ring-gold/60 flex cursor-pointer items-center gap-3.5 rounded-full outline-none focus-visible:ring-2"
+            aria-label={tBrand("name")}
+          >
+            <span className="font-display text-bone hidden text-lg tracking-[0.18em] uppercase sm:inline">
+              {tBrand("name")}
+            </span>
+            {/* Official emblem, proportions preserved (488x207 source). */}
+            <Image
+              src="/harekar-mark.png"
+              alt=""
+              width={488}
+              height={207}
+              priority
+              className={`w-auto transition-[height,filter] duration-500 ease-out group-hover/logo:[filter:drop-shadow(0_0_10px_rgba(197,156,64,0.45))] ${
+                condensed ? "h-8 sm:h-9" : "h-9 sm:h-10"
+              }`}
+            />
+          </Link>
         </div>
       </nav>
 
@@ -324,8 +263,11 @@ export default function SiteHeader() {
       <Sidebar
         open={open}
         onClose={() => setOpen(false)}
-        items={[...sidebarItems]}
-        onNavigate={handleNavigate}
+        items={navItems.map(({ id, anchor, index }) => ({
+          id,
+          href: onePager ? `#${anchor}` : `/${locale}#${anchor}`,
+          index,
+        }))}
         onSwitchLocale={switchLocale}
       />
     </header>

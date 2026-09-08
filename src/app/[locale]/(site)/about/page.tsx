@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import FaqSection from "@/components/sections/FaqSection";
+import AboutSection from "@/components/sections/AboutSection";
+import { getSiteContent } from "@/lib/site-content";
 
 export async function generateMetadata({
   params,
@@ -8,11 +9,11 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "faq" });
-  return { title: t("eyebrow"), description: t("subtitle") };
+  const t = await getTranslations({ locale, namespace: "about" });
+  return { title: t("title") };
 }
 
-export default async function FaqPage({
+export default async function AboutPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
@@ -20,5 +21,7 @@ export default async function FaqPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <FaqSection as="h1" />;
+  const content = await getSiteContent();
+
+  return <AboutSection as="h1" content={content} />;
 }

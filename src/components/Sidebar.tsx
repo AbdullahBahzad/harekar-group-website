@@ -15,9 +15,9 @@ const localeLabels: Record<Locale, string> = {
 };
 
 /**
- * A navigation entry. `href` targets either an in-page anchor (one-pager) or a
- * local. route. `index` is the display number that reinforces the intelligence
- * dossier aesthetic.
+ * A navigation entry. `href` is a real route — every page has its own now, so
+ * this menu never needs to scroll the page instead of navigating it. `index`
+ * is the display number that reinforces the intelligence dossier aesthetic.
  */
 type NavItem = { id: string; href: string; index: string };
 
@@ -33,14 +33,11 @@ export default function Sidebar({
   open,
   onClose,
   items,
-  onNavigate,
   onSwitchLocale,
 }: {
   open: boolean;
   onClose: () => void;
   items: NavItem[];
-  /** Called with the anchor id when an in-page link is chosen. */
-  onNavigate: (href: string) => void;
   onSwitchLocale: (locale: Locale) => void;
 }) {
   const t = useTranslations("nav");
@@ -123,7 +120,7 @@ export default function Sidebar({
             role="dialog"
             aria-modal="true"
             aria-label={t("menu")}
-            className="border-bone/10 absolute inset-y-0 right-0 flex w-full max-w-md flex-col overflow-y-auto border-l px-8 py-8 sm:px-12"
+            className="border-bone/14 absolute inset-y-0 right-0 flex w-full max-w-md flex-col overflow-y-auto border-l px-8 py-8 sm:px-12"
             variants={{
               hidden: {
                 x: reduceMotion ? 0 : "100%",
@@ -152,7 +149,7 @@ export default function Sidebar({
                 data-first-focus
                 onClick={onClose}
                 aria-label={t("close")}
-                className="border-bone/15 text-bone/70 hover:border-gold hover:text-gold flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border transition-colors"
+                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border transition-colors"
               >
                 <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
                   <path
@@ -180,7 +177,7 @@ export default function Sidebar({
                 <Link
                   href={signedIn ? "/account" : "/login"}
                   onClick={onClose}
-                  className="border-bone/15 text-bone/80 hover:border-gold hover:text-gold flex-1 cursor-pointer rounded-full border py-3 text-center text-sm transition-colors"
+                  className="border-bone/20 text-bone/80 hover:border-gold hover:text-gold flex-1 cursor-pointer rounded-full border py-3 text-center text-sm transition-colors"
                 >
                   {signedIn ? t("account") : t("signIn")}
                 </Link>
@@ -201,22 +198,6 @@ export default function Sidebar({
             {/* Large editorial navigation. */}
             <nav className="mt-10 flex flex-1 flex-col gap-1">
               {items.map((item, i) => {
-                const isAnchor = item.href.startsWith("#");
-                const content = (
-                  <span className="group flex items-baseline gap-4">
-                    <span className="text-gold/50 group-hover:text-gold w-8 text-xs tracking-widest tabular-nums transition-colors">
-                      {item.index}
-                    </span>
-                    <span className="relative">
-                      <span className="font-display text-bone/85 group-hover:text-bone text-3xl font-light transition-colors sm:text-4xl">
-                        {t(item.id)}
-                      </span>
-                      {/* Gold underline sweeps in from the leading edge on hover. */}
-                      <span className="bg-gold absolute -bottom-1 left-0 h-px w-0 transition-all duration-300 ease-out group-hover:w-full" />
-                    </span>
-                  </span>
-                );
-
                 /*
                  * The links ride in just behind the panel edge rather than
                  * waiting for it to land. Started late, a stagger this long
@@ -231,23 +212,25 @@ export default function Sidebar({
 
                 return (
                   <motion.div key={item.id} {...motionProps} className="py-2.5">
-                    {isAnchor ? (
-                      <button
-                        type="button"
-                        onClick={() => onNavigate(item.href)}
-                        className="cursor-pointer text-left"
-                      >
-                        {content}
-                      </button>
-                    ) : (
-                      <Link
-                        href={item.href}
-                        onClick={onClose}
-                        className="cursor-pointer"
-                      >
-                        {content}
-                      </Link>
-                    )}
+                    {/*
+                     * A plain anchor rather than next-intl's `Link`: these are
+                     * in-page jumps on the one-pager, and the client router
+                     * would reload the document to land on the same document.
+                     */}
+                    <a href={item.href} onClick={onClose} className="cursor-pointer">
+                      <span className="group flex items-baseline gap-4">
+                        <span className="text-gold/60 group-hover:text-gold w-8 text-xs tracking-widest tabular-nums transition-colors">
+                          {item.index}
+                        </span>
+                        <span className="relative">
+                          <span className="font-display text-bone/85 group-hover:text-bone text-3xl font-light transition-colors sm:text-4xl">
+                            {t(item.id)}
+                          </span>
+                          {/* Gold underline sweeps in from the leading edge on hover. */}
+                          <span className="bg-gold absolute -bottom-1 left-0 h-px w-0 transition-all duration-300 ease-out group-hover:w-full" />
+                        </span>
+                      </span>
+                    </a>
                   </motion.div>
                 );
               })}
@@ -262,7 +245,7 @@ export default function Sidebar({
                 duration: 0.38,
                 ease,
               }}
-              className="border-bone/10 mt-8 border-t pt-8"
+              className="border-bone/14 mt-8 border-t pt-8"
             >
               <Link
                 href="/contact"
@@ -274,7 +257,7 @@ export default function Sidebar({
 
               <div className="mt-6 flex items-center justify-between">
                 <div
-                  className="border-bone/15 flex items-center gap-1 rounded-full border p-1"
+                  className="border-bone/20 flex items-center gap-1 rounded-full border p-1"
                   role="group"
                   aria-label={t("language")}
                 >
@@ -287,14 +270,14 @@ export default function Sidebar({
                       className={`flex min-h-9 cursor-pointer items-center rounded-full px-3 text-xs transition-colors ${
                         code === locale
                           ? "bg-gold text-ink"
-                          : "text-bone/60 hover:text-bone"
+                          : "text-bone/70 hover:text-bone"
                       }`}
                     >
                       {localeLabels[code]}
                     </button>
                   ))}
                 </div>
-                <span className="text-bone/30 text-[10px] tracking-[0.3em] uppercase">
+                <span className="text-bone/56 text-[10px] tracking-[0.3em] uppercase">
                   Iraq · MENA
                 </span>
               </div>

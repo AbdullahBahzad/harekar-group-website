@@ -15,13 +15,13 @@ export default function OfficeList() {
     <>
       <ul className="space-y-6">
         {offices.map((office) => (
-          <li key={office.id} className="border-bone/10 border-t pt-4">
+          <li key={office.id} className="border-bone/14 border-t pt-4">
             <p className="font-display text-bone text-base tracking-wide">
               {t(office.id)}
             </p>
 
             {office.address && (
-              <p className="text-bone/50 mt-2 text-sm leading-relaxed">
+              <p className="text-bone/58 mt-2 text-sm leading-relaxed">
                 {office.address}
               </p>
             )}
@@ -53,8 +53,8 @@ export default function OfficeList() {
       </ul>
 
       {/* One shared inbox, shown once beneath the branches it serves. */}
-      <div className="border-bone/10 mt-6 border-t pt-4">
-        <p className="text-bone/50 text-xs tracking-[0.2em] uppercase">
+      <div className="border-bone/14 mt-6 border-t pt-4">
+        <p className="text-bone/58 text-xs tracking-[0.2em] uppercase">
           {t("emailLabel")}
         </p>
         <a

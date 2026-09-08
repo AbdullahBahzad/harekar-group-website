@@ -23,11 +23,11 @@ export default function AuthShell({
         <h1 className="font-display text-bone text-3xl leading-tight font-light text-balance sm:text-4xl">
           {title}
         </h1>
-        <p className="text-bone/55 mt-4 text-sm leading-relaxed text-pretty">
+        <p className="text-bone/65 mt-4 text-sm leading-relaxed text-pretty">
           {subtitle}
         </p>
 
-        <div className="border-bone/10 bg-surface/20 mt-10 rounded-3xl border p-6 sm:p-8">
+        <div className="border-bone/14 bg-surface/20 mt-10 rounded-3xl border p-6 sm:p-8">
           {children}
         </div>
       </div>

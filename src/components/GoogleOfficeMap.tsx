@@ -78,7 +78,7 @@ export default function GoogleOfficeMap() {
               className={`flex min-h-11 cursor-pointer items-center rounded-full border px-4 text-sm transition-colors ${
                 selected
                   ? "border-gold bg-gold text-ink"
-                  : "border-bone/15 text-bone/60 hover:border-gold/50 hover:text-gold"
+                  : "border-bone/20 text-bone/70 hover:border-gold/60 hover:text-gold"
               }`}
             >
               {t(entry.id)}
@@ -90,7 +90,7 @@ export default function GoogleOfficeMap() {
       <div
         id="office-map-panel"
         role="tabpanel"
-        className="border-bone/10 mt-4 overflow-hidden rounded-xl border"
+        className="border-bone/14 mt-4 overflow-hidden rounded-xl border"
       >
         <iframe
           // Re-keyed per office so switching tabs replaces the frame outright

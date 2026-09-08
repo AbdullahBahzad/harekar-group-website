@@ -40,32 +40,32 @@ export default async function AccountPage({
 
   return (
     <section className="mx-auto min-h-svh max-w-3xl px-6 py-28">
-      <p className="text-gold/80 text-xs tracking-[0.35em] uppercase">
+      <p className="text-gold/88 text-xs font-semibold tracking-[0.3em] uppercase">
         {t("eyebrow")}
       </p>
       <h1 className="font-display text-bone mt-6 text-4xl leading-tight font-light sm:text-5xl">
         {t("greeting", { name: name ?? email ?? "" })}
       </h1>
 
-      <div className="border-bone/10 bg-surface/20 mt-12 rounded-3xl border p-6 sm:p-8">
+      <div className="border-bone/14 bg-surface/20 mt-12 rounded-3xl border p-6 sm:p-8">
         <dl className="space-y-6">
           <div>
-            <dt className="text-bone/45 text-xs tracking-[0.2em] uppercase">
+            <dt className="text-bone/55 text-xs tracking-[0.2em] uppercase">
               {t("emailLabel")}
             </dt>
             <dd className="text-bone mt-2 text-base">{email}</dd>
           </div>
 
           <div>
-            <dt className="text-bone/45 text-xs tracking-[0.2em] uppercase">
+            <dt className="text-bone/55 text-xs tracking-[0.2em] uppercase">
               {t("planLabel")}
             </dt>
             <dd className="mt-2 flex flex-wrap items-center gap-3">
               <span
                 className={
                   isPro
-                    ? "border-gold/40 text-gold inline-block rounded-full border px-3 py-1 text-xs tracking-[0.2em] uppercase"
-                    : "border-bone/20 text-bone/60 inline-block rounded-full border px-3 py-1 text-xs tracking-[0.2em] uppercase"
+                    ? "border-gold/50 text-gold inline-block rounded-full border px-3 py-1 text-xs tracking-[0.2em] uppercase"
+                    : "border-bone/26 text-bone/70 inline-block rounded-full border px-3 py-1 text-xs tracking-[0.2em] uppercase"
                 }
               >
                 {isPro ? t("planPro") : t("planFree")}
@@ -82,7 +82,7 @@ export default async function AccountPage({
           </div>
         </dl>
 
-        <p className="text-bone/50 mt-8 text-sm leading-relaxed">
+        <p className="text-bone/58 mt-8 text-sm leading-relaxed">
           {isPro ? t("proBlurb") : t("freeBlurb")}
         </p>
 
@@ -107,7 +107,7 @@ export default async function AccountPage({
           >
             <button
               type="submit"
-              className="border-bone/20 text-bone/70 hover:text-bone cursor-pointer rounded-full border px-6 py-2.5 text-sm transition-colors"
+              className="border-bone/26 text-bone/70 hover:text-bone cursor-pointer rounded-full border px-6 py-2.5 text-sm transition-colors"
             >
               {t("signOut")}
             </button>

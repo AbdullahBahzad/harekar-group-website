@@ -68,7 +68,7 @@ export default function ServiceConsole({
               setEditing(null);
               setCreating(true);
             }}
-            className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
+            className="border-gold/50 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
           >
             {t("services.newService")}
           </button>
@@ -76,12 +76,12 @@ export default function ServiceConsole({
       >
         {services.length === 0 ? (
           <div className="px-5 py-10 text-center">
-            <p className="text-bone/45 text-sm">{t("services.empty")}</p>
+            <p className="text-bone/55 text-sm">{t("services.empty")}</p>
             {canSeed && (
               <form action={seedFromStaticServices} className="mt-6">
                 <button
                   type="submit"
-                  className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-xs transition-colors"
+                  className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-xs transition-colors"
                 >
                   {t("services.importExisting", { count: 13 })}
                 </button>
@@ -106,7 +106,7 @@ export default function ServiceConsole({
                   )}
                 >
                   {/* The photo is the point, so it leads. */}
-                  <span className="border-bone/10 relative block size-12 shrink-0 overflow-hidden border">
+                  <span className="border-bone/14 relative block size-12 shrink-0 overflow-hidden border">
                     <Image
                       src={service.imageUrl}
                       alt=""
@@ -121,19 +121,19 @@ export default function ServiceConsole({
                     <span className="text-bone/90 block truncate text-sm">
                       {service.titleEn}
                     </span>
-                    <span className="text-bone/35 block truncate text-xs">
+                    <span className="text-bone/60 block truncate text-xs">
                       <span dir="ltr">{service.slug}</span> ·{" "}
                       {t(`services.groups.${service.group}`)}
                     </span>
                   </span>
 
                   {!service.published && (
-                    <span className="text-bone/30 text-xs">
+                    <span className="text-bone/56 text-xs">
                       {t("common.hidden")}
                     </span>
                   )}
                   {service.hasUpload && (
-                    <span className="text-gold/70 text-xs">
+                    <span className="text-gold/78 text-xs">
                       {t("services.newTag")}
                     </span>
                   )}
@@ -156,7 +156,7 @@ export default function ServiceConsole({
         />
       ) : (
         <Panel label={t("common.editor")}>
-          <p className="text-bone/45 px-5 py-10 text-center text-sm">
+          <p className="text-bone/55 px-5 py-10 text-center text-sm">
             {t("services.emptyEditor")}
           </p>
         </Panel>
@@ -184,7 +184,7 @@ function ServiceEditor({
         <button
           type="button"
           onClick={onClose}
-          className="text-bone/40 hover:text-bone flex min-h-11 cursor-pointer items-center text-xs transition-colors"
+          className="text-bone/50 hover:text-bone flex min-h-11 cursor-pointer items-center text-xs transition-colors"
         >
           {t("common.close")}
         </button>
@@ -202,7 +202,7 @@ function ServiceEditor({
         {service && <input type="hidden" name="id" value={service.id} />}
 
         {service && (
-          <div className="border-bone/10 relative aspect-[16/10] w-full overflow-hidden border">
+          <div className="border-bone/14 relative aspect-[16/10] w-full overflow-hidden border">
             <Image
               src={service.imageUrl}
               alt={service.titleEn}
@@ -211,7 +211,7 @@ function ServiceEditor({
               className="object-cover"
               unoptimized={service.hasUpload}
             />
-            <span className="bg-ink/70 text-bone/60 absolute bottom-0 start-0 px-2 py-1 text-xs backdrop-blur">
+            <span className="bg-ink/70 text-bone/70 absolute bottom-0 start-0 px-2 py-1 text-xs backdrop-blur">
               {service.hasUpload
                 ? t("common.uploaded")
                 : t("common.shippedImage")}
@@ -225,10 +225,10 @@ function ServiceEditor({
             type="file"
             name="image"
             accept="image/webp,image/jpeg,image/png,image/avif"
-            className="text-bone/60 file:border-gold/40 file:text-gold hover:file:bg-gold hover:file:text-ink w-full cursor-pointer text-xs file:me-3 file:cursor-pointer file:border file:bg-transparent file:px-3 file:py-1.5 file:text-xs file:transition-colors"
+            className="text-bone/70 file:border-gold/50 file:text-gold hover:file:bg-gold hover:file:text-ink w-full cursor-pointer text-xs file:me-3 file:cursor-pointer file:border file:bg-transparent file:px-3 file:py-1.5 file:text-xs file:transition-colors"
           />
           {service?.hasUpload && (
-            <span className="text-bone/30 mt-1.5 block text-xs">
+            <span className="text-bone/56 mt-1.5 block text-xs">
               {t("services.photoKeep")}
             </span>
           )}
@@ -243,7 +243,7 @@ function ServiceEditor({
               defaultValue={service?.slug ?? ""}
               required
               autoComplete="off"
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-start text-xs outline-none"
+              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-start text-xs outline-none"
             />
           </Field>
 
@@ -251,7 +251,7 @@ function ServiceEditor({
             <select
               name="group"
               defaultValue={service?.group ?? "protection"}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
             >
               {GROUP_IDS.map((id) => (
                 <option key={id} value={id}>
@@ -266,7 +266,7 @@ function ServiceEditor({
           <select
             name="icon"
             defaultValue={service?.icon ?? ""}
-            className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+            className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
           >
             <option value="">{t("common.none")}</option>
             {iconNames.map((name) => (
@@ -318,18 +318,18 @@ function ServiceEditor({
           </label>
 
           <label className="flex items-center gap-2">
-            <span className="text-bone/45 text-xs">{t("common.order")}</span>
+            <span className="text-bone/55 text-xs">{t("common.order")}</span>
             <input
               type="number"
               name="sortOrder"
               dir="ltr"
               defaultValue={service?.sortOrder ?? 0}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
+              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
             />
           </label>
         </div>
 
-        <div className="border-bone/8 flex flex-wrap gap-2 border-t pt-4">
+        <div className="border-bone/12 flex flex-wrap gap-2 border-t pt-4">
           <button
             type="submit"
             className="bg-gold text-ink hover:bg-gold-bright cursor-pointer px-5 py-2 text-xs transition-colors"
@@ -343,7 +343,7 @@ function ServiceEditor({
                 type="submit"
                 formAction={toggleServicePublished}
                 formNoValidate
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 {service.published ? t("common.hide") : t("common.show")}
               </button>
@@ -353,7 +353,7 @@ function ServiceEditor({
                   type="submit"
                   formAction={clearServiceImage}
                   formNoValidate
-                  className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                  className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
                 >
                   {t("services.removePhoto")}
                 </button>
@@ -376,7 +376,7 @@ function ServiceEditor({
 }
 
 const inputClass =
-  "border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
+  "border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
 
 /**
  * One language's fields for a service.
@@ -403,12 +403,12 @@ function LocaleBlock({
   const t = useTranslations("admin.common");
 
   return (
-    <fieldset className="border-bone/8 space-y-2 border-s-2 ps-3">
+    <fieldset className="border-bone/12 space-y-2 border-s-2 ps-3">
       <legend className="sr-only">{locale}</legend>
-      <p className="text-gold/60 text-xs">
+      <p className="text-gold/70 text-xs">
         {locale}
         {!required && (
-          <span className="text-bone/25 ms-2 normal-case">
+          <span className="text-bone/52 ms-2 normal-case">
             {t("optional")}
           </span>
         )}
@@ -428,7 +428,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-bone/45 mb-1.5 block text-xs">
+      <span className="text-bone/55 mb-1.5 block text-xs">
         {label}
       </span>
       {children}

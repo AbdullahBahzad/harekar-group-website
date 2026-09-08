@@ -133,7 +133,7 @@ export default async function DashboardStation({
     <div className="mx-auto max-w-6xl">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-gold/70 text-[11px] tracking-[0.22em] uppercase">
+          <p className="text-gold/78 text-[11px] tracking-[0.22em] uppercase">
             {t("dashboard.eyebrow")}
           </p>
           <h1 className="font-display text-bone mt-1.5 text-3xl leading-tight font-light sm:text-4xl">
@@ -143,7 +143,7 @@ export default async function DashboardStation({
             })}
           </h1>
         </div>
-        <p className="text-bone/40 text-xs tabular-nums">
+        <p className="text-bone/50 text-xs tabular-nums">
           {formatDate(now, locale, {
             weekday: "long",
             day: "numeric",
@@ -207,7 +207,7 @@ export default async function DashboardStation({
                 t("dashboard.revenueChartLabel", { series })
               }
             />
-            <div className="border-bone/8 grid grid-cols-3 border-t">
+            <div className="border-bone/12 grid grid-cols-3 border-t">
               <FootStat label={t("dashboard.avgOrder")} value={revenue.avgOrderMinor > 0 ? money(revenue.avgOrderMinor) : "—"} />
               <FootStat label={t("dashboard.paidOrders")} value={revenue.paidOrders.toString()} border />
               <FootStat label={t("dashboard.refunded")} value={revenue.refundedOrders.toString()} border />
@@ -228,7 +228,7 @@ export default async function DashboardStation({
 
           <Panel label={t("dashboard.topAccounts")}>
             {revenue.topAccounts.length === 0 ? (
-              <p className="text-bone/40 px-4 py-8 text-center text-sm">
+              <p className="text-bone/50 px-4 py-8 text-center text-sm">
                 {t("dashboard.noPaidAccounts")}
               </p>
             ) : (
@@ -238,12 +238,12 @@ export default async function DashboardStation({
                     key={account.id}
                     className="flex items-center gap-3 px-4 py-3"
                   >
-                    <span className="font-display text-bone/30 w-4 text-lg leading-none">
+                    <span className="font-display text-bone/56 w-4 text-lg leading-none">
                       {i + 1}
                     </span>
                     <span className="text-bone/80 min-w-0 flex-1 truncate text-sm">
                       {account.who}
-                      <span className="text-bone/35">
+                      <span className="text-bone/60">
                         {" · "}
                         {t("dashboard.orders", { count: account.orders })}
                       </span>
@@ -265,7 +265,7 @@ export default async function DashboardStation({
           <Panel label={t("dashboard.activity")}>
             <ul className="divide-bone/6 divide-y">
               {activity.length === 0 && (
-                <li className="text-bone/40 px-4 py-8 text-center text-sm">
+                <li className="text-bone/50 px-4 py-8 text-center text-sm">
                   {t("dashboard.noActivity")}
                 </li>
               )}
@@ -284,13 +284,13 @@ export default async function DashboardStation({
                       <span className="text-bone/85 text-sm">
                         {t(`activity.${event.titleKey}`)}
                       </span>
-                      <span className="text-bone/40 ms-2 text-xs">
+                      <span className="text-bone/50 ms-2 text-xs">
                         {event.detail}
                       </span>
                     </span>
                     <time
                       dateTime={event.at.toISOString()}
-                      className="text-bone/30 shrink-0 text-xs tabular-nums"
+                      className="text-bone/56 shrink-0 text-xs tabular-nums"
                       title={formatDate(event.at, locale, {
                         dateStyle: "medium",
                         timeStyle: "short",
@@ -317,7 +317,7 @@ export default async function DashboardStation({
               >
                 {t(`severity.${posture}`)}
               </p>
-              <p className="text-bone/40 mt-1.5 text-xs">
+              <p className="text-bone/50 mt-1.5 text-xs">
                 {t("dashboard.highestSeverity")}
               </p>
 
@@ -332,7 +332,7 @@ export default async function DashboardStation({
 
               <Link
                 href="/admin/intelligence"
-                className="border-gold/40 text-gold hover:bg-gold hover:text-ink mt-5 inline-flex items-center gap-2 border px-4 py-2 text-xs transition-colors"
+                className="border-gold/50 text-gold hover:bg-gold hover:text-ink mt-5 inline-flex items-center gap-2 border px-4 py-2 text-xs transition-colors"
               >
                 {t("dashboard.openMap")}
                 {/* Flipped in RTL: an arrow means "onward", not "east". */}
@@ -345,7 +345,7 @@ export default async function DashboardStation({
 
           <Panel label={t("dashboard.renewals")}>
             {engagement.renewals.length === 0 ? (
-              <p className="text-bone/40 px-4 py-6 text-sm leading-relaxed">
+              <p className="text-bone/50 px-4 py-6 text-sm leading-relaxed">
                 {t("dashboard.noRenewals")}
               </p>
             ) : (
@@ -378,7 +378,7 @@ export default async function DashboardStation({
           <Panel label={t("dashboard.recentPayments")}>
             <ul className="divide-bone/6 divide-y">
               {revenue.recent.length === 0 && (
-                <li className="text-bone/40 px-4 py-6 text-center text-sm">
+                <li className="text-bone/50 px-4 py-6 text-center text-sm">
                   {t("dashboard.noPayments")}
                 </li>
               )}
@@ -389,7 +389,7 @@ export default async function DashboardStation({
                 >
                   <span className="text-bone/80 min-w-0 flex-1 truncate text-sm">
                     {payment.who}
-                    <span className="text-bone/35">
+                    <span className="text-bone/60">
                       {" · "}
                       {planLabel(payment.plan)}
                     </span>
@@ -399,7 +399,7 @@ export default async function DashboardStation({
                   </span>
                   <time
                     dateTime={payment.at.toISOString()}
-                    className="text-bone/30 w-12 shrink-0 text-end text-xs tabular-nums"
+                    className="text-bone/56 w-12 shrink-0 text-end text-xs tabular-nums"
                   >
                     {age(payment.at, now)}
                   </time>
@@ -415,7 +415,7 @@ export default async function DashboardStation({
                   key={metric.labelKey}
                   href={metric.href}
                   className={cn(
-                    "border-bone/6 hover:bg-bone/[0.03] p-4 transition-colors",
+                    "border-bone/10 hover:bg-bone/[0.03] p-4 transition-colors",
                     i < 2 && "border-b",
                     i % 2 === 0 && "border-e",
                   )}
@@ -423,7 +423,7 @@ export default async function DashboardStation({
                   <p className="text-bone text-xl leading-none tabular-nums">
                     {metric.count}
                   </p>
-                  <p className="text-bone/40 mt-1.5 flex items-center gap-1.5 text-xs">
+                  <p className="text-bone/50 mt-1.5 flex items-center gap-1.5 text-xs">
                     <Delta current={metric.count} prev={metric.prev} />
                     <span className="truncate">
                       {t(`inbound.${metric.labelKey}`)}
@@ -449,18 +449,18 @@ export default async function DashboardStation({
                   <p className="text-status-elevated text-xl tabular-nums">
                     {revenue.pendingOrders}
                   </p>
-                  <p className="text-bone/40 mt-1 text-xs">
+                  <p className="text-bone/50 mt-1 text-xs">
                     {t("dashboard.pending")}
                   </p>
                 </Link>
                 <Link
                   href="/admin/accounts"
-                  className="hover:bg-bone/[0.03] border-bone/8 flex-1 border-s px-4 py-3 transition-colors"
+                  className="hover:bg-bone/[0.03] border-bone/12 flex-1 border-s px-4 py-3 transition-colors"
                 >
                   <p className="text-status-critical text-xl tabular-nums">
                     {revenue.failedOrders}
                   </p>
-                  <p className="text-bone/40 mt-1 text-xs">
+                  <p className="text-bone/50 mt-1 text-xs">
                     {t("dashboard.failed")}
                   </p>
                 </Link>
@@ -543,8 +543,8 @@ function Kpi({
   trend?: number | null;
 }) {
   return (
-    <div className="border-bone/6 border-b p-5 last:border-b-0 sm:[&:nth-child(odd)]:border-e lg:border-b-0 lg:not-last:border-e">
-      <p className="text-bone/40 text-[11px] tracking-[0.12em] uppercase">
+    <div className="border-bone/10 border-b p-5 last:border-b-0 sm:[&:nth-child(odd)]:border-e lg:border-b-0 lg:not-last:border-e">
+      <p className="text-bone/50 text-[11px] tracking-[0.12em] uppercase">
         {label}
       </p>
       <p
@@ -553,7 +553,7 @@ function Kpi({
       >
         {value}
       </p>
-      <p className="text-bone/35 mt-2 flex items-center gap-1.5 text-xs">
+      <p className="text-bone/60 mt-2 flex items-center gap-1.5 text-xs">
         {trend != null && <TrendPill value={trend} />}
         <span className="truncate">{hint}</span>
       </p>
@@ -593,7 +593,7 @@ function Delta({ current, prev }: { current: number; prev: number }) {
   const d = current - prev;
   if (d === 0) {
     return (
-      <span dir="ltr" className="text-bone/25 tabular-nums">
+      <span dir="ltr" className="text-bone/52 tabular-nums">
         ±0
       </span>
     );
@@ -650,7 +650,7 @@ function RevenueChart({
   const total = months.reduce((sum, m) => sum + m.minor, 0);
   if (total === 0) {
     return (
-      <p className="text-bone/40 px-5 py-12 text-center text-sm">
+      <p className="text-bone/50 px-5 py-12 text-center text-sm">
         {emptyLabel}
       </p>
     );
@@ -774,7 +774,7 @@ function PlanMixBar({
   const total = slices.reduce((sum, s) => sum + s.minor, 0);
   if (total === 0) {
     return (
-      <p className="text-bone/40 px-5 py-12 text-center text-sm">
+      <p className="text-bone/50 px-5 py-12 text-center text-sm">
         {emptyLabel}
       </p>
     );
@@ -802,7 +802,7 @@ function PlanMixBar({
               style={{ background: planColor(slice.plan, i) }}
             />
             <span className="text-bone/70 flex-1">{planLabel(slice.plan)}</span>
-            <span className="text-bone/35 text-xs tabular-nums">
+            <span className="text-bone/60 text-xs tabular-nums">
               {orderLabel(slice.orders)}
             </span>
             <span className="text-bone/80 w-16 text-end text-xs tabular-nums">
@@ -853,9 +853,9 @@ function FootStat({
   border?: boolean;
 }) {
   return (
-    <div className={cn("px-4 py-3", border && "border-bone/8 border-s")}>
+    <div className={cn("px-4 py-3", border && "border-bone/12 border-s")}>
       <p className="text-bone/80 text-sm tabular-nums">{value}</p>
-      <p className="text-bone/35 mt-0.5 text-xs">{label}</p>
+      <p className="text-bone/60 mt-0.5 text-xs">{label}</p>
     </div>
   );
 }
@@ -877,7 +877,7 @@ function MiniStat({
       >
         {value}
       </dd>
-      <dt className="text-bone/40 mt-1 text-xs">{label}</dt>
+      <dt className="text-bone/50 mt-1 text-xs">{label}</dt>
     </div>
   );
 }
@@ -897,7 +897,7 @@ function StatRow({
   return (
     <Link
       href={href}
-      className="group border-bone/6 flex items-center justify-between gap-4 border-b px-4 py-3 transition-colors last:border-b-0 hover:bg-bone/[0.03] sm:odd:border-e"
+      className="group border-bone/10 flex items-center justify-between gap-4 border-b px-4 py-3 transition-colors last:border-b-0 hover:bg-bone/[0.03] sm:odd:border-e"
     >
       <span className="text-bone/70 group-hover:text-bone text-sm transition-colors">
         {label}
@@ -906,7 +906,7 @@ function StatRow({
         <span className="text-bone group-hover:text-gold text-base tabular-nums transition-colors">
           {value}
         </span>
-        <span className="text-bone/30 w-24 shrink-0 truncate text-end text-xs">
+        <span className="text-bone/56 w-24 shrink-0 truncate text-end text-xs">
           {note}
         </span>
       </span>

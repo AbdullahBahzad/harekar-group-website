@@ -97,7 +97,7 @@ export default function AuthForm({
 
       <Submit label={registering ? t("createAccount") : t("signIn")} />
 
-      <p className="text-bone/50 pt-2 text-center text-sm">
+      <p className="text-bone/58 pt-2 text-center text-sm">
         {registering ? t("haveAccount") : t("noAccount")}{" "}
         <Link
           href={registering ? "/login" : "/register"}
@@ -148,10 +148,10 @@ function Field({
         required={required}
         defaultValue={defaultValue}
         aria-describedby={hintId}
-        className="border-bone/15 bg-ink/40 text-bone focus:border-gold focus:ring-gold/30 w-full rounded-xl border px-4 py-3 text-base outline-none transition-colors focus:ring-2"
+        className="border-bone/20 bg-ink/40 text-bone focus:border-gold focus:ring-gold/30 w-full rounded-xl border px-4 py-3 text-base outline-none transition-colors focus:ring-2"
       />
       {hint && (
-        <p id={hintId} className="text-bone/40 mt-2 text-xs">
+        <p id={hintId} className="text-bone/50 mt-2 text-xs">
           {hint}
         </p>
       )}

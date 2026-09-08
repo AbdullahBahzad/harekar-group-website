@@ -52,7 +52,7 @@ export default function LocaleSwitcher({
       <PopoverTrigger
         aria-label={t("language")}
         className={cn(
-          "border-border text-bone/75 hover:border-gold/50 hover:text-gold focus-visible:ring-ring data-[state=open]:border-gold/50 data-[state=open]:text-gold flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-xs tracking-[0.15em] uppercase outline-none transition-colors duration-300 focus-visible:ring-2",
+          "border-border text-bone/75 hover:border-gold/60 hover:text-gold focus-visible:ring-ring data-[state=open]:border-gold/60 data-[state=open]:text-gold flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-xs tracking-[0.15em] uppercase outline-none transition-colors duration-300 focus-visible:ring-2",
           className,
         )}
       >

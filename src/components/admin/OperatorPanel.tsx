@@ -39,7 +39,7 @@ export default function OperatorPanel({
   return (
     <Panel label={t("operators.title")} tone="critical">
       <div className="space-y-5 p-5">
-        <p className="text-bone/45 text-sm leading-relaxed">
+        <p className="text-bone/55 text-sm leading-relaxed">
           {t("operators.intro")}
         </p>
 
@@ -54,7 +54,7 @@ export default function OperatorPanel({
             placeholder={t("operators.emailPlaceholder")}
             aria-label={t("operators.emailLabel")}
             autoComplete="off"
-            className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
+            className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
           />
           <input
             type="password"
@@ -65,12 +65,12 @@ export default function OperatorPanel({
             placeholder={t("operators.passwordPlaceholder")}
             aria-label={t("operators.passwordLabel")}
             autoComplete="new-password"
-            className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
+            className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
           />
           <GrantButton />
         </form>
 
-        <p className="text-bone/30 text-xs leading-relaxed">
+        <p className="text-bone/56 text-xs leading-relaxed">
           {t("operators.passwordHint")}
         </p>
 
@@ -92,7 +92,7 @@ export default function OperatorPanel({
           </p>
         )}
 
-        <ul className="divide-bone/6 border-bone/8 divide-y border-t pt-1">
+        <ul className="divide-bone/6 border-bone/12 divide-y border-t pt-1">
           {operators.map((operator) => {
             const isSelf = operator.id === currentOperatorId;
 
@@ -110,12 +110,12 @@ export default function OperatorPanel({
                   <span className="text-bone/90 block truncate text-sm">
                     {operator.name ?? "—"}
                     {isSelf && (
-                      <span className="text-gold/60 ms-2 text-xs">
+                      <span className="text-gold/70 ms-2 text-xs">
                         {t("common.you")}
                       </span>
                     )}
                   </span>
-                  <span dir="ltr" className="text-bone/40 block truncate text-start text-xs">
+                  <span dir="ltr" className="text-bone/50 block truncate text-start text-xs">
                     {operator.email}
                   </span>
                 </span>
@@ -127,7 +127,7 @@ export default function OperatorPanel({
                  * refuses it too, so this only hides a button that would fail.
                  */}
                 {isSelf ? (
-                  <span className="text-bone/25 text-xs">
+                  <span className="text-bone/52 text-xs">
                     {t("operators.locked")}
                   </span>
                 ) : (
@@ -146,7 +146,7 @@ export default function OperatorPanel({
           })}
 
           {operators.length === 0 && (
-            <li className="text-bone/40 py-4 text-sm">
+            <li className="text-bone/50 py-4 text-sm">
               {t("operators.empty")}
             </li>
           )}

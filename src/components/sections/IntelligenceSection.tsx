@@ -43,13 +43,13 @@ export default async function IntelligenceSection({
 
       <div className="relative z-10 mx-auto max-w-7xl">
         <Reveal>
-          <p className="text-gold/80 text-xs tracking-[0.35em] uppercase">
+          <p className="text-gold text-3xl font-semibold tracking-[0.1em] uppercase sm:text-4xl lg:text-5xl">
             {t("eyebrow")}
           </p>
-          <Heading className="font-display text-bone mt-6 max-w-3xl text-4xl leading-[1.15] font-light text-balance sm:text-5xl lg:text-6xl">
+          <Heading className="font-display text-bone mt-5 max-w-3xl text-2xl leading-snug font-normal text-balance sm:text-3xl lg:text-4xl">
             {t("title")}
           </Heading>
-          <p className="text-bone/60 mt-6 max-w-2xl text-base leading-relaxed text-pretty">
+          <p className="text-bone/70 mt-6 max-w-2xl text-base leading-relaxed text-pretty">
             {t("subtitle")}
           </p>
         </Reveal>

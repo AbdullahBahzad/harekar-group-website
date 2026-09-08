@@ -25,8 +25,7 @@
   "hero": {
     "eyebrow": "Security & Operational Services",
     "title": "Protection built on discipline.",
-    "subtitle": "Harekar Group delivers security, emergency response, and operational support for organizations that cannot afford uncertainty.",
-    "scroll": "Scroll"
+    "subtitle": "Harekar Group delivers security, emergency response, and operational support for organizations that cannot afford uncertainty."
   },
   "proof": {
     "stats": {
@@ -77,7 +76,9 @@
     "title": "A full operational spectrum.",
     "subtitle": "Thirteen service lines, delivered under one command structure and one standard of accountability.",
     "ctaTitle": "Tell us what you need to protect.",
-    "orbitHint": "Scroll to rotate",
+    "orbitHint": "Swipe or use the arrows",
+    "orbitPrev": "Previous service",
+    "orbitNext": "Next service",
     "groups": {
       "all": "All services",
       "protection": "Protection & guarding",
@@ -235,7 +236,7 @@
     }
   },
   "faq": {
-    "eyebrow": "Frequently Asked Questions",
+    "eyebrow": "FAQ",
     "title": "Answers, before you ask.",
     "subtitle": "The questions we field most often about coverage, personnel and response. If yours is not here, our team will answer it directly.",
     "expandAll": "Expand all",
@@ -289,7 +290,7 @@
     }
   },
   "contact": {
-    "eyebrow": "Start a conversation",
+    "eyebrow": "Contact",
     "title": "Request a quote.",
     "subtitle": "Tell us about the site, the risk, and the timeline. A member of our team will respond directly.",
     "locationLabel": "Our offices",
@@ -805,6 +806,18 @@
       "MODERATE": "Moderate",
       "HIGH": "High",
       "CRITICAL": "Critical"
+    }
+  },
+  "error": {
+    "title": "Something went wrong",
+    "body": "This page could not be loaded. The failure has been recorded. Try again, or return to the homepage.",
+    "retry": "Try again",
+    "home": "Return home",
+    "reference": "Reference {digest}",
+    "notFound": {
+      "eyebrow": "404",
+      "title": "Page not found",
+      "body": "The page you are looking for has moved or no longer exists."
     }
   }
 }

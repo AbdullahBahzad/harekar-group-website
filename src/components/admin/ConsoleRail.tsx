@@ -176,7 +176,7 @@ export default function ConsoleRail({
     <nav className="flex flex-1 flex-col gap-5 overflow-y-auto">
       {groups.map((group) => (
         <div key={group.labelKey}>
-          <p className="text-bone/35 px-3 pb-1.5 text-[11px] tracking-[0.14em] uppercase">
+          <p className="text-bone/60 px-3 pb-1.5 text-[11px] tracking-[0.14em] uppercase">
             {t(`nav.groups.${group.labelKey}`)}
           </p>
           <div className="flex flex-col gap-0.5">
@@ -194,10 +194,10 @@ export default function ConsoleRail({
                     "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-150",
                     active
                       ? "bg-gold/12 text-gold"
-                      : "text-bone/60 hover:text-bone hover:bg-bone/[0.05]",
+                      : "text-bone/70 hover:text-bone hover:bg-bone/[0.05]",
                   )}
                 >
-                  <span className={cn("size-5 shrink-0", active ? "text-gold" : "text-bone/40")}>
+                  <span className={cn("size-5 shrink-0", active ? "text-gold" : "text-bone/50")}>
                     {station.icon}
                   </span>
                   <span className="flex-1 truncate">
@@ -221,7 +221,7 @@ export default function ConsoleRail({
   );
 
   const footer = (onNavigate?: () => void) => (
-    <div className="border-bone/8 space-y-3 border-t pt-4">
+    <div className="border-bone/12 space-y-3 border-t pt-4">
       {/*
        * The language control lives with the operator's own settings rather
        * than in the nav list: switching language is something you do once, not
@@ -236,12 +236,12 @@ export default function ConsoleRail({
         className="h-11 w-full justify-between rounded-lg px-3"
       />
 
-      <p className="text-bone/45 truncate px-3 text-xs">{operatorLabel}</p>
+      <p className="text-bone/55 truncate px-3 text-xs">{operatorLabel}</p>
 
       <Link
         href="/"
         onClick={onNavigate}
-        className="text-bone/45 hover:text-gold flex min-h-11 items-center gap-2 px-3 text-sm transition-colors"
+        className="text-bone/55 hover:text-gold flex min-h-11 items-center gap-2 px-3 text-sm transition-colors"
       >
         {/* Points back the way you came, which is the other way under RTL. */}
         <span aria-hidden className="inline-block rtl:rotate-180">
@@ -254,7 +254,7 @@ export default function ConsoleRail({
         <input type="hidden" name="locale" value={locale} />
         <button
           type="submit"
-          className="border-bone/15 text-bone/55 hover:border-status-critical/50 hover:text-status-critical min-h-11 w-full cursor-pointer rounded-md border text-sm transition-colors"
+          className="border-bone/20 text-bone/65 hover:border-status-critical/50 hover:text-status-critical min-h-11 w-full cursor-pointer rounded-md border text-sm transition-colors"
         >
           {t("nav.signOut")}
         </button>
@@ -265,7 +265,7 @@ export default function ConsoleRail({
   return (
     <>
       {/* ---- desktop / tablet: persistent sidebar ---- */}
-      <aside className="border-bone/8 bg-ink/60 sticky top-0 hidden h-svh w-64 shrink-0 flex-col gap-6 border-e p-4 md:flex">
+      <aside className="border-bone/12 bg-ink/60 sticky top-0 hidden h-svh w-64 shrink-0 flex-col gap-6 border-e p-4 md:flex">
         {brand}
         {nav()}
         {footer()}
@@ -320,7 +320,7 @@ function MobileNav({
 
   return (
     <div className="md:hidden">
-      <div className="border-bone/8 bg-ink/80 sticky top-0 z-40 flex items-center justify-between border-b px-4 py-3 backdrop-blur-xl">
+      <div className="border-bone/12 bg-ink/80 sticky top-0 z-40 flex items-center justify-between border-b px-4 py-3 backdrop-blur-xl">
         {brand}
         <button
           type="button"
@@ -328,7 +328,7 @@ function MobileNav({
           aria-label={t("nav.openMenu")}
           aria-expanded={open}
           aria-haspopup="dialog"
-          className="border-bone/15 text-bone/70 relative flex size-11 cursor-pointer items-center justify-center rounded-lg border"
+          className="border-bone/20 text-bone/70 relative flex size-11 cursor-pointer items-center justify-center rounded-lg border"
         >
           <svg viewBox="0 0 20 20" className="size-4.5" fill="none" aria-hidden>
             <path d="M3 5.5h14M3 10h14M3 14.5h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -356,7 +356,7 @@ function MobileNav({
               role="dialog"
               aria-modal="true"
               aria-label={t("nav.drawerLabel")}
-              className="border-bone/10 absolute inset-y-0 start-0 flex w-[85vw] max-w-xs flex-col gap-6 border-e p-4"
+              className="border-bone/14 absolute inset-y-0 start-0 flex w-[85vw] max-w-xs flex-col gap-6 border-e p-4"
               style={{ background: "#000" }}
               variants={{
                 hidden: { x: reduceMotion ? 0 : offscreen, opacity: reduceMotion ? 0 : 1 },
@@ -370,7 +370,7 @@ function MobileNav({
                   type="button"
                   onClick={onClose}
                   aria-label={t("nav.closeMenu")}
-                  className="border-bone/15 text-bone/70 hover:border-gold hover:text-gold flex size-9 cursor-pointer items-center justify-center rounded-full border transition-colors"
+                  className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold flex size-9 cursor-pointer items-center justify-center rounded-full border transition-colors"
                 >
                   <svg viewBox="0 0 20 20" className="size-3.5" fill="none" aria-hidden>
                     <path d="M5 5l10 10M15 5 5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

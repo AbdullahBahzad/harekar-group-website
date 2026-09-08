@@ -64,10 +64,10 @@ export default function AboutSection({
     <section id="about" className="relative scroll-mt-24 px-6 py-28">
       <div className="mx-auto max-w-6xl">
         <Reveal>
-          <p className="text-gold/80 text-xs tracking-[0.35em] uppercase">
+          <p className="text-gold text-3xl font-semibold tracking-[0.1em] uppercase sm:text-4xl lg:text-5xl">
             {p("aboutEyebrow", t("eyebrow"))}
           </p>
-          <Heading className="font-display text-bone mt-6 max-w-3xl text-4xl leading-[1.15] font-light text-balance sm:text-5xl lg:text-6xl">
+          <Heading className="font-display text-bone mt-5 max-w-3xl text-2xl leading-snug font-normal text-balance sm:text-3xl lg:text-4xl">
             {p("aboutTitle", t("title"))}
           </Heading>
         </Reveal>
@@ -76,7 +76,7 @@ export default function AboutSection({
         <div className="mt-10 max-w-3xl space-y-6">
           {paragraphs.map((paragraph, i) => (
             <Reveal key={paragraph} delay={0.06 * i}>
-              <p className="text-bone/60 text-base leading-relaxed text-pretty">
+              <p className="text-bone/70 text-base leading-relaxed text-pretty">
                 {p(
                   `aboutBody${paragraph.slice(1)}`,
                   t(`body.${paragraph}`),
@@ -90,11 +90,11 @@ export default function AboutSection({
         <div className="mt-16 grid gap-10 sm:grid-cols-2 sm:gap-12">
           {pillars.map((pillar, i) => (
             <Reveal key={pillar} delay={0.08 * i}>
-              <article className="border-bone/10 h-full border-t pt-8">
-                <h3 className="font-display text-gold text-xl tracking-wide">
+              <article className="border-bone/14 h-full border-t pt-8">
+                <h3 className="font-display text-gold text-3xl font-medium tracking-wide sm:text-4xl">
                   {p(`${pillar}Title`, t(`pillars.${pillar}.title`))}
                 </h3>
-                <p className="text-bone/55 mt-4 text-sm leading-relaxed text-pretty">
+                <p className="text-bone/65 mt-4 text-sm leading-relaxed text-pretty">
                   {p(`${pillar}Body`, t(`pillars.${pillar}.body`))}
                 </p>
               </article>
@@ -104,7 +104,7 @@ export default function AboutSection({
 
         {/* The figures behind the statement. */}
         <Reveal delay={0.1}>
-          <div className="border-bone/10 mt-20 grid grid-cols-2 gap-y-10 border-y py-14 lg:grid-cols-4">
+          <div className="border-bone/14 mt-20 grid grid-cols-2 gap-y-10 border-y py-14 lg:grid-cols-4">
             {stats.map((stat) => {
               const field = statFields[stat];
               // The figure itself (`15+`, `24/7`) isn't per-locale — only its
@@ -121,7 +121,7 @@ export default function AboutSection({
                   <p className="font-display text-gold text-3xl leading-none sm:text-4xl">
                     {value}
                   </p>
-                  <p className="text-bone/50 mt-3 text-xs tracking-[0.18em] uppercase">
+                  <p className="text-bone/58 mt-3 text-xs tracking-[0.18em] uppercase">
                     {p(`${field}Label`, tProof(`stats.${stat}.label`))}
                   </p>
                 </div>

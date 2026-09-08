@@ -28,7 +28,7 @@ export type ConsoleFaqItem = {
 };
 
 const inputClass =
-  "border-bone/12 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
+  "border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
 
 /**
  * The FAQ station. A list on the left, an editor on the right — the same
@@ -60,7 +60,7 @@ export default function FaqConsole({
               setEditing(null);
               setCreating(true);
             }}
-            className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
+            className="border-gold/50 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
           >
             {t("faq.newQuestion")}
           </button>
@@ -68,12 +68,12 @@ export default function FaqConsole({
       >
         {items.length === 0 ? (
           <div className="px-5 py-10 text-center">
-            <p className="text-bone/45 text-sm">{t("faq.empty")}</p>
+            <p className="text-bone/55 text-sm">{t("faq.empty")}</p>
             {canSeed && (
               <form action={seedFromStaticFaq} className="mt-6">
                 <button
                   type="submit"
-                  className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
+                  className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
                 >
                   {t("faq.importExisting", { count: 6 })}
                 </button>
@@ -102,7 +102,7 @@ export default function FaqConsole({
                   </span>
 
                   {!item.published && (
-                    <span className="text-bone/30 text-xs">
+                    <span className="text-bone/56 text-xs">
                       {t("common.hidden")}
                     </span>
                   )}
@@ -124,7 +124,7 @@ export default function FaqConsole({
         />
       ) : (
         <Panel label={t("common.editor")}>
-          <p className="text-bone/45 px-5 py-10 text-center text-sm">
+          <p className="text-bone/55 px-5 py-10 text-center text-sm">
             {t("faq.emptyEditor")}
           </p>
         </Panel>
@@ -150,7 +150,7 @@ function FaqEditor({
         <button
           type="button"
           onClick={onClose}
-          className="text-bone/40 hover:text-bone flex min-h-11 cursor-pointer items-center text-xs transition-colors"
+          className="text-bone/50 hover:text-bone flex min-h-11 cursor-pointer items-center text-xs transition-colors"
         >
           {t("common.close")}
         </button>
@@ -273,18 +273,18 @@ function FaqEditor({
           </label>
 
           <label className="flex items-center gap-2">
-            <span className="text-bone/45 text-xs">{t("common.order")}</span>
+            <span className="text-bone/55 text-xs">{t("common.order")}</span>
             <input
               type="number"
               name="sortOrder"
               dir="ltr"
               defaultValue={item?.sortOrder ?? 0}
-              className="border-bone/12 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
+              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
             />
           </label>
         </div>
 
-        <div className="border-bone/8 flex flex-wrap gap-2 border-t pt-4">
+        <div className="border-bone/12 flex flex-wrap gap-2 border-t pt-4">
           <button
             type="submit"
             className="bg-gold text-ink hover:bg-gold-bright cursor-pointer rounded-full px-5 py-2 text-sm font-medium transition-colors"
@@ -298,7 +298,7 @@ function FaqEditor({
                 type="submit"
                 formAction={toggleFaqPublished}
                 formNoValidate
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
               >
                 {item.published ? t("common.hide") : t("common.show")}
               </button>
@@ -345,27 +345,27 @@ function LocaleBlock({
   const t = useTranslations("admin");
 
   return (
-    <fieldset className="border-bone/8 space-y-2 border-s-2 ps-3">
-      <legend className="text-gold/60 text-xs">
+    <fieldset className="border-bone/12 space-y-2 border-s-2 ps-3">
+      <legend className="text-gold/70 text-xs">
         {locale}
         {!required && (
-          <span className="text-bone/25 ms-2">{t("common.optional")}</span>
+          <span className="text-bone/52 ms-2">{t("common.optional")}</span>
         )}
       </legend>
       <div>
-        <span className="text-bone/40 mb-1 block text-xs">
+        <span className="text-bone/50 mb-1 block text-xs">
           {t("faq.question")}
         </span>
         <div dir={dir}>{question}</div>
       </div>
       <div>
-        <span className="text-bone/40 mb-1 block text-xs">
+        <span className="text-bone/50 mb-1 block text-xs">
           {t("faq.answer")}
         </span>
         <div dir={dir}>{answer}</div>
       </div>
       <div>
-        <span className="text-bone/40 mb-1 block text-xs">
+        <span className="text-bone/50 mb-1 block text-xs">
           {t("faq.bullets")}
         </span>
         <div dir={dir}>{list}</div>
