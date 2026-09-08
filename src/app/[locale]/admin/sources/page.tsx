@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireAdmin } from "@/lib/admin";
 import ReportConsole from "@/components/admin/ReportConsole";
 import { getRecentReports } from "@/lib/dashboard-reports";
+import { listCombinedSources } from "@/lib/report-sources-db";
 
 export default async function SourcesStation({
   params,
@@ -14,6 +15,7 @@ export default async function SourcesStation({
   const t = await getTranslations({ locale, namespace: "admin.reports" });
 
   const { data: reports, preview } = await getRecentReports(30);
+  const sources = await listCombinedSources();
 
   return (
     <>
@@ -26,7 +28,7 @@ export default async function SourcesStation({
         </p>
       </header>
 
-      <ReportConsole reports={reports} canGenerate={!preview} />
+      <ReportConsole reports={reports} canGenerate={!preview} sources={sources} />
     </>
   );
 }

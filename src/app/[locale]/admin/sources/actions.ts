@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import {
   draftReportItems,
+  fetchArticleText,
   THREAT_LEVELS,
   REGIONS,
   type ThreatLevel,
@@ -12,6 +13,12 @@ import {
   type ReportContent,
   type ReportNewsItem,
 } from "@/lib/reports";
+import { fetchHeadlines, type Headline } from "@/lib/headlines";
+import {
+  listCombinedSources,
+  type CombinedSource,
+} from "@/lib/report-sources-db";
+export type { CombinedSource };
 
 /**
  * Every mutation re-checks admin rights.
@@ -72,6 +79,177 @@ export async function generateReportDraft(
   }
 
   return draftReportItems(raw);
+}
+
+export type SourceHeadlines = {
+  name: string;
+  defaultRegion: Region;
+  headlines: Headline[];
+  /** The fetch itself failed (site unreachable, blocked, timed out, ...). */
+  failed: boolean;
+};
+
+/**
+ * The full source list — the eleven built into the app plus whatever an
+ * operator has added — for the console to render its quick-links and
+ * "sources to fetch" picker from. Read-only; adding and removing go through
+ * `addReportSource` / `deleteReportSource` below.
+ */
+export async function listSources(): Promise<CombinedSource[]> {
+  await assertAdmin();
+  return listCombinedSources();
+}
+
+/**
+ * Today's candidate headlines, for the "fetch today's headlines" checklist.
+ *
+ * `sourceUrls`, when given, restricts the fetch to just those sources —
+ * "fetch only Channel8" is the same call as "fetch all eleven", just with a
+ * shorter list. Omitted or empty means every source, built-in and custom.
+ *
+ * Sources are checked in parallel and independently of one another —
+ * `Promise.allSettled`, not `Promise.all` — because one outlet being down or
+ * redesigned should not blank the others; it just comes back `failed` and
+ * the analyst tries again later or skips it for today.
+ */
+export async function fetchAllSourceHeadlines(
+  sourceUrls?: string[],
+): Promise<SourceHeadlines[]> {
+  await assertAdmin();
+
+  const all = await listCombinedSources();
+  const wanted =
+    sourceUrls && sourceUrls.length > 0
+      ? all.filter((source) => sourceUrls.includes(source.url))
+      : all;
+
+  const results = await Promise.allSettled(
+    wanted.map((source) => fetchHeadlines(source.url)),
+  );
+
+  return wanted.map((source, i) => {
+    const result = results[i];
+    const headlines = result.status === "fulfilled" ? result.value : [];
+    return {
+      name: source.name,
+      defaultRegion: source.defaultRegion,
+      headlines,
+      failed: result.status === "rejected" || headlines.length === 0,
+    };
+  });
+}
+
+/** Adds a source an operator wants checked alongside the built-in eleven. */
+export async function addReportSource(formData: FormData) {
+  await assertAdmin();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const rawUrl = String(formData.get("url") ?? "").trim();
+  const defaultRegion = String(formData.get("defaultRegion") ?? "");
+
+  if (!name) throw new Error("A source needs a name");
+  if (!REGIONS.includes(defaultRegion as Region)) {
+    throw new Error("Unknown default region");
+  }
+
+  let url: URL;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    throw new Error(`"${rawUrl}" is not a valid URL`);
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error("A source must be an http or https URL");
+  }
+
+  await prisma.reportSource.create({
+    data: { name, url: url.toString(), defaultRegion },
+  });
+
+  revalidatePath("/[locale]/admin/sources", "page");
+}
+
+export async function deleteReportSource(formData: FormData) {
+  await assertAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) throw new Error("Missing source id");
+
+  await prisma.reportSource.delete({ where: { id } });
+  revalidatePath("/[locale]/admin/sources", "page");
+}
+
+/** One headline the analyst checked in the "fetch today's headlines" list. */
+type HeadlineSelection = { title: string; url: string; region: Region };
+
+/**
+ * Turns checked headlines straight into report-ready items, with no
+ * `ANTHROPIC_API_KEY` involved at all.
+ *
+ * `generateReportDraft` above is the polished path: Claude reads the source
+ * and writes a bulletin-register paragraph. This is the plain one — the
+ * article's own text, lightly cleaned and trimmed to a paragraph — for a
+ * deployment with no key configured, or an operator who would rather not pay
+ * per generation. Either way the result lands in the same review panel and
+ * is edited and approved the same way before `saveReport` ever sees it.
+ */
+export async function pullHeadlineItems(
+  selections: HeadlineSelection[],
+): Promise<ReportNewsItem[]> {
+  await assertAdmin();
+
+  if (selections.length === 0) throw new Error("Nothing selected");
+  if (selections.some((s) => !REGIONS.includes(s.region))) {
+    throw new Error("Unknown region on a selected headline");
+  }
+
+  return Promise.all(
+    selections.map(async (selection) => {
+      const text = await fetchArticleText(selection.url);
+      return {
+        title: selection.title,
+        body: text
+          ? toParagraph(text)
+          : "(Could not retrieve the article text — write a summary here.)",
+        url: selection.url,
+        region: selection.region,
+      };
+    }),
+  );
+}
+
+/**
+ * Cuts fetched article text down to a bulletin-length body.
+ *
+ * `fetchArticleText` already returns real paragraphs (`article-extract.ts`),
+ * separated by blank lines — so this takes whole paragraphs from the top
+ * rather than a raw character-count slice, which used to risk cutting a
+ * paragraph in half regardless of where the sentence itself ended. Only
+ * when even the first paragraph alone runs past the limit does it fall back
+ * to trimming at the nearest sentence boundary inside that one paragraph.
+ */
+function toParagraph(text: string, maxLen = 900): string {
+  const paragraphs = text.split(/\n\s*\n/).filter(Boolean);
+  if (paragraphs.length === 0) return "";
+
+  let result = "";
+  for (const paragraph of paragraphs) {
+    const next = result ? `${result}\n\n${paragraph}` : paragraph;
+    if (next.length > maxLen) break;
+    result = next;
+  }
+
+  if (result) return result;
+
+  // Even the first paragraph alone exceeds maxLen — trim just that one.
+  const slice = paragraphs[0].slice(0, maxLen);
+  const lastBreak = Math.max(
+    slice.lastIndexOf(". "),
+    slice.lastIndexOf("! "),
+    slice.lastIndexOf("? "),
+  );
+  return lastBreak > maxLen * 0.4
+    ? slice.slice(0, lastBreak + 1)
+    : slice.trimEnd() + "…";
 }
 
 /**

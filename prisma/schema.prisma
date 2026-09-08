@@ -324,6 +324,26 @@ enum ThreatLevel {
 }
 
 /**
+ * A source an operator added beyond the fixed eleven built into the app
+ * (`src/data/report-sources.ts`). Merged with that list wherever headlines
+ * are fetched from "the sources" — see `report-sources-db.ts`.
+ *
+ * No `region` enum here for the same reason `DailyReport.content` has none:
+ * `Region` has always been a TS-level constant (`REGIONS` in
+ * `report-shape.ts`), never a database enum, so a source's default region is
+ * stored as the same plain string and validated the same way on the way in.
+ */
+model ReportSource {
+  id            String   @id @default(cuid())
+  name          String
+  url           String   @unique
+  defaultRegion String   @default("IRAQ")
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+/**
  * ---- site content -----------------------------------------------------------
  */
 
