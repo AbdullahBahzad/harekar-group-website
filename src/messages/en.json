@@ -756,6 +756,7 @@
       "headlinesFailed": "Could not fetch headlines",
       "sourceUnavailable": "— unavailable right now",
       "useSelected": "{count, plural, =0 {Use selected} one {Use # selected} other {Use # selected}}",
+      "useOne": "Use",
       "pulling": "Pulling…",
       "pullFailed": "Could not pull the selected stories",
       "sources": "Sources",

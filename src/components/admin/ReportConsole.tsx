@@ -80,6 +80,9 @@ export default function ReportConsole({
   >(new Map());
   const [isFetchingHeadlines, startHeadlinesTransition] = useTransition();
   const [isPullingHeadlines, startPullTransition] = useTransition();
+  // Which single headline's one-click "Use" button is in flight, if any —
+  // separate from `checkedHeadlines`, which drives the batch flow instead.
+  const [pullingUrl, setPullingUrl] = useState<string | null>(null);
 
   const [date, setDate] = useState(today());
   const [kurdistanThreat, setKurdistanThreat] =
@@ -171,6 +174,30 @@ export default function ReportConsole({
         setCheckedHeadlines(new Map());
       } catch {
         setErrorKey("reports.pullFailed");
+      }
+    });
+  }
+
+  /**
+   * The one-click path for "just this one": no checkbox, no batch button —
+   * pull this single story straight into the review panel.
+   */
+  function handleUseOneHeadline(
+    defaultRegion: Region,
+    headline: { title: string; url: string },
+  ) {
+    setErrorKey(null);
+    setPullingUrl(headline.url);
+    startPullTransition(async () => {
+      try {
+        const items = await pullHeadlineItems([
+          { ...headline, region: defaultRegion },
+        ]);
+        setDraftItems((prev) => [...(prev ?? []), ...items]);
+      } catch {
+        setErrorKey("reports.pullFailed");
+      } finally {
+        setPullingUrl(null);
       }
     });
   }
@@ -370,6 +397,21 @@ export default function ReportConsole({
                                     ))}
                                   </select>
                                 )}
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleUseOneHeadline(
+                                      group.defaultRegion,
+                                      headline,
+                                    )
+                                  }
+                                  disabled={isPullingHeadlines}
+                                  className="border-gold/30 text-gold/80 hover:bg-gold hover:text-ink shrink-0 cursor-pointer border px-1.5 py-0.5 text-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                                >
+                                  {pullingUrl === headline.url
+                                    ? t("reports.pulling")
+                                    : t("reports.useOne")}
+                                </button>
                               </li>
                             );
                           })}

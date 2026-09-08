@@ -756,6 +756,7 @@
       "headlinesFailed": "تعذّر جلب العناوين",
       "sourceUnavailable": "— غير متاح حالياً",
       "useSelected": "استخدام المحدد ({count})",
+      "useOne": "استخدام",
       "pulling": "جارٍ السحب…",
       "pullFailed": "تعذّر سحب الأخبار المحددة",
       "sources": "المصادر",

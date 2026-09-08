@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import { safeFetchText } from "@/lib/safe-fetch";
+import { sortByRelevance } from "@/lib/headline-relevance";
 
 export type Headline = { title: string; url: string };
 
@@ -33,8 +34,13 @@ function looksLikeArticlePath(pathname: string): boolean {
   return hyphens >= 2 || hasLongDigitRun;
 }
 
-/** Cap per source — a homepage check, not a full crawl. */
-const MAX_HEADLINES_PER_SOURCE = 15;
+/**
+ * Cap per source — a homepage check, not a full crawl. Applied *after*
+ * sorting by relevance (below), so on a source with more candidates than
+ * this a festival story loses its slot to a security one rather than the
+ * cap being a coin flip on homepage position.
+ */
+const MAX_HEADLINES_PER_SOURCE = 20;
 
 /**
  * Pulls candidate headlines off a news homepage.
@@ -47,6 +53,11 @@ const MAX_HEADLINES_PER_SOURCE = 15;
  * anchor's own markup, joining what was several inline elements (a category
  * label, a date, the title) with spaces rather than cheerio's `.text()`,
  * which concatenates them with none.
+ *
+ * The returned list is ordered by `sortByRelevance` (security/political
+ * stories first, festival/sport/culture last) rather than raw homepage
+ * order — nothing is dropped by that sort, only reordered, so a story a
+ * keyword heuristic misjudges is still one scroll away, not gone.
  */
 export async function fetchHeadlines(sourceUrl: string): Promise<Headline[]> {
   const html = await safeFetchText(sourceUrl);
@@ -91,8 +102,6 @@ export async function fetchHeadlines(sourceUrl: string): Promise<Headline[]> {
     if (!seen.has(key)) seen.set(key, title);
   });
 
-  return Array.from(seen, ([url, title]) => ({ title, url })).slice(
-    0,
-    MAX_HEADLINES_PER_SOURCE,
-  );
+  const found = Array.from(seen, ([url, title]) => ({ title, url }));
+  return sortByRelevance(found).slice(0, MAX_HEADLINES_PER_SOURCE);
 }
