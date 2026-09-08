@@ -81,6 +81,7 @@ const nextConfig: NextConfig = {
    */
   images: {
     localPatterns: [
+      { pathname: "/**", search: "" },
       { pathname: "/api/clients/**" },
       { pathname: "/api/services/**" },
     ],

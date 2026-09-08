@@ -12,7 +12,7 @@ const CV_ACCEPT = ".pdf,.doc,.docx";
 const CV_EXTENSIONS = [".pdf", ".doc", ".docx"];
 
 const fieldClass =
-  "border-bone/20 bg-ink/60 text-bone placeholder:text-bone/52 focus:border-gold focus-visible:ring-gold/30 min-h-11 rounded-lg border px-4 py-3 text-base outline-none transition-colors focus-visible:ring-2 sm:text-sm";
+  "border-bone/20 bg-ink/90 text-bone placeholder:text-bone/52 focus:border-gold focus-visible:ring-gold/30 min-h-11 rounded-lg border px-4 py-3 text-base outline-none transition-colors focus-visible:ring-2 sm:text-sm";
 
 function Field({
   id,
@@ -261,7 +261,7 @@ export default function ApplyForm() {
 
             <label
               htmlFor="cv"
-              className="border-bone/20 hover:border-gold/60 focus-within:border-gold focus-within:ring-gold/30 group flex min-h-11 cursor-pointer items-center gap-4 rounded-lg border border-dashed px-4 py-4 transition-colors focus-within:ring-2"
+              className="border-bone/20 bg-ink/90 hover:border-gold/60 focus-within:border-gold focus-within:ring-gold/30 group flex min-h-11 cursor-pointer items-center gap-4 rounded-lg border border-dashed px-4 py-4 transition-colors focus-within:ring-2"
             >
               <svg
                 viewBox="0 0 24 24"

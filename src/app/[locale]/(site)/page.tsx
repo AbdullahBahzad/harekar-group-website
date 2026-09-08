@@ -6,6 +6,7 @@ import ServicesSection from "@/components/sections/ServicesSection";
 import ClientsSection from "@/components/sections/ClientsSection";
 import FaqSection from "@/components/sections/FaqSection";
 import CareersSection from "@/components/sections/CareersSection";
+import { BackgroundPaths } from "@/components/ui/background-paths";
 import ContactSection from "@/components/sections/ContactSection";
 import { getSiteContent, pick } from "@/lib/site-content";
 import { getPublishedClients } from "@/lib/clients";
@@ -49,7 +50,8 @@ export default async function HomePage({
    * section components are shared, so the two can never drift apart.
    */
   return (
-    <>
+    <div className="relative isolate">
+      <BackgroundPaths fullPage />
       <HeroCinematic overrides={hero} />
       <AboutSection content={content} />
       <IntelligenceSection />
@@ -58,6 +60,6 @@ export default async function HomePage({
       <FaqSection />
       <CareersSection content={content} benefits={benefits} locale={l} />
       <ContactSection content={content} locale={l} />
-    </>
+    </div>
   );
 }

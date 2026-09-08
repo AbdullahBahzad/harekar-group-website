@@ -92,9 +92,7 @@ export default function CareersSection({
             </h3>
           </Reveal>
 
-          <Reveal delay={0.1}>
-            <ApplyForm />
-          </Reveal>
+          <ApplyForm />
         </div>
       </section>
     </>

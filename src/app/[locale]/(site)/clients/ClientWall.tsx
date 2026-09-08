@@ -66,28 +66,15 @@ export default function ClientWall({ logos }: { logos: PublicClientLogo[] }) {
               delay: reduceMotion ? 0 : Math.min(i, 12) * 0.02,
               ease: [0.22, 1, 0.36, 1],
             }}
-            /*
-             * A single-pixel gap over a lit background paints the hairline
-             * grid, so each cell needs no border of its own and adjacent
-             * borders never double up into a 2px seam.
-             */
-            className="bg-bone/10"
+            className="bg-transparent"
           >
             <motion.div
-              className="bg-ink relative overflow-hidden"
+              className="relative overflow-hidden bg-transparent"
               style={{ aspectRatio: String(LOGO_CELL_ASPECT) }}
               initial="rest"
               animate="rest"
               whileHover="hover"
             >
-              {/* Gold wash rising from the base of the cell. */}
-              <motion.span
-                aria-hidden
-                className="from-gold/12 absolute inset-0 bg-gradient-to-t to-transparent"
-                variants={{ rest: { opacity: 0 }, hover: { opacity: 1 } }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              />
-
               {/* Gold rule that draws in along the bottom edge. */}
               <motion.span
                 aria-hidden

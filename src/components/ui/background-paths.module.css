@@ -1,0 +1,52 @@
+.background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  contain: paint;
+}
+
+/* Fixed to the viewport so the decoration fills the screen at every scroll
+   position. The page's isolated stacking context keeps it behind content. */
+.page {
+  position: fixed;
+  z-index: -1;
+  border-radius: 0;
+}
+
+.paths {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Two periods must cover at least two viewports. A minimum wavelength
+     keeps the curves gentle on phones instead of squeezing them upright. */
+  width: max(200%, 96rem);
+  max-width: none;
+  height: 100%;
+  color: var(--color-gold);
+  opacity: 0.25;
+  transform: translate3d(-25%, 0, 0);
+}
+
+.paths path:nth-child(3n) {
+  stroke: var(--color-gold-bright);
+}
+
+/* The first and last frame show identical geometry. There are no separate
+   sheets entering/exiting, no exposed endpoints, and no opacity resets. */
+@media (prefers-reduced-motion: no-preference) {
+  .paths {
+    animation: left-to-right 32s linear infinite;
+    will-change: transform;
+  }
+}
+
+@keyframes left-to-right {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
