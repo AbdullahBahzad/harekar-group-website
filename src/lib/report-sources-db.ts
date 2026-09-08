@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { orPreview } from "@/lib/admin-preview";
 import { REPORT_SOURCES } from "@/data/report-sources";
 import type { Region } from "@/lib/report-shape";
 
@@ -23,9 +24,17 @@ export type CombinedSource = {
  * like a built-in one from here on.
  */
 export async function listCombinedSources(): Promise<CombinedSource[]> {
-  const custom = await prisma.reportSource.findMany({
-    orderBy: { createdAt: "asc" },
-  });
+  /*
+   * Only the custom half needs the database — the eleven built-in sources
+   * live in code — so in preview mode an unreachable database costs the
+   * operator's own additions, not the whole station. `orPreview` still
+   * rethrows anywhere else, where an empty custom list would silently drop
+   * sources a report is expected to cover.
+   */
+  const { data: custom } = await orPreview(
+    () => prisma.reportSource.findMany({ orderBy: { createdAt: "asc" } }),
+    [],
+  );
 
   const builtIn: CombinedSource[] = REPORT_SOURCES.map((source) => ({
     id: null,

@@ -777,15 +777,14 @@ export default function ReportConsole({
         <Panel label={t("reports.review")}>
           <div className="space-y-4 p-5">
             {!draftItems && (
-<<<<<<< HEAD
-              <p className="text-bone/50 text-sm">
-                {t("reports.reviewEmpty")}
-              </p>
-=======
               <div className="space-y-3">
-                <p className="text-bone/40 text-sm">
+                <p className="text-bone/50 text-sm">
                   {t("reports.reviewEmpty")}
                 </p>
+                {/*
+                 * The way in for an operator with no `ANTHROPIC_API_KEY`: an
+                 * empty review panel is otherwise a dead end for them.
+                 */}
                 <button
                   type="button"
                   onClick={handleAddManualItem}
@@ -794,7 +793,6 @@ export default function ReportConsole({
                   {t("reports.addManualItem")}
                 </button>
               </div>
->>>>>>> c91932fdb4a1a5dc0fdf298e7b5c24a96d8791c1
             )}
 
             {draftItems && (
@@ -869,11 +867,11 @@ export default function ReportConsole({
                       className="border-bone/14 space-y-2 border p-3"
                     >
                       <div className="flex items-center gap-2">
-<<<<<<< HEAD
-                        <span className="text-gold/78 text-xs">
-                          {t(`reports.regions.${item.region}`)}
-                        </span>
-=======
+                        {/*
+                         * Editable, not a label: a hand-written item starts on
+                         * KURDISTAN, and a drafted one can be filed under the
+                         * wrong region, so the operator needs to move it.
+                         */}
                         <select
                           value={item.region}
                           onChange={(e) =>
@@ -889,7 +887,6 @@ export default function ReportConsole({
                             </option>
                           ))}
                         </select>
->>>>>>> c91932fdb4a1a5dc0fdf298e7b5c24a96d8791c1
                         <button
                           type="button"
                           onClick={() =>
@@ -928,9 +925,8 @@ export default function ReportConsole({
                   ))}
                 </div>
 
-<<<<<<< HEAD
-                <div className="border-bone/12 flex gap-2 border-t pt-4">
-=======
+                {/* Same button as the empty state, so items can be added to
+                    a draft that is already under review. */}
                 <button
                   type="button"
                   onClick={handleAddManualItem}
@@ -939,8 +935,7 @@ export default function ReportConsole({
                   {t("reports.addManualItem")}
                 </button>
 
-                <div className="border-bone/8 flex gap-2 border-t pt-4">
->>>>>>> c91932fdb4a1a5dc0fdf298e7b5c24a96d8791c1
+                <div className="border-bone/12 flex gap-2 border-t pt-4">
                   <button
                     type="button"
                     onClick={handleSave}
