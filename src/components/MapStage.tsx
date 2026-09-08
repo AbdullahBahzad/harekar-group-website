@@ -12,7 +12,17 @@ import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "fr
  * to face the viewer. Scroll position drives the whole approach, so scrolling
  * up reverses it naturally.
  */
-export default function MapStage({ children }: { children: ReactNode }) {
+export default function MapStage({
+  children,
+  tilt: allowTilt = true,
+}: {
+  children: ReactNode;
+  /**
+   * Whether the stage tilts. Off for anything the visitor drags or pinches:
+   * a 3D-rotated surface puts every gesture at an angle to the pointer.
+   */
+  tilt?: boolean;
+}) {
   const reduceMotion = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -90,7 +100,7 @@ export default function MapStage({ children }: { children: ReactNode }) {
       {/* The tilting stage carrying the interactive map. */}
       <motion.div
         style={
-          reduceMotion
+          reduceMotion || !allowTilt
             ? undefined
             : {
                 rotateX: tilt,

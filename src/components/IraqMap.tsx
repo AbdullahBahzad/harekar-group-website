@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useSession } from "next-auth/react";
+import { useCallback, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import MarkerReportDialog from "@/components/MarkerReportDialog";
 import {
   euphrates,
   iraqBorder,
@@ -31,26 +30,9 @@ export default function IraqMap({
   markers: IntelMarker[];
 }) {
   const t = useTranslations("intelligence");
-  /*
-   * Entitlement is read from the session for *presentation only*. When the
-   * reports themselves land they must be gated on the server too — anything
-   * decided in the browser can be flipped in the browser.
-   */
-  const { data: session } = useSession();
-  const signedIn = Boolean(session?.user);
-  const isPro = Boolean(session?.user?.isPro);
   const reduceMotion = useReducedMotion();
   const [activeMarker, setActiveMarker] = useState<IntelMarker | null>(null);
-
-  // Close the report dialog on Escape.
-  useEffect(() => {
-    if (!activeMarker) return;
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setActiveMarker(null);
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [activeMarker]);
+  const closeMarker = useCallback(() => setActiveMarker(null), []);
 
   return (
     <>
@@ -346,97 +328,7 @@ export default function IraqMap({
         </div>
       </div>
 
-      <AnimatePresence>
-        {activeMarker && (
-          <motion.div
-            className="fixed inset-0 z-[60] flex items-center justify-center p-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <button
-              type="button"
-              aria-label={t("modal.close")}
-              onClick={() => setActiveMarker(null)}
-              className="bg-ink/80 absolute inset-0 backdrop-blur-sm"
-            />
-
-            <motion.div
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="report-title"
-              initial={
-                reduceMotion ? false : { opacity: 0, y: 18, scale: 0.97 }
-              }
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={
-                reduceMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, y: 12, scale: 0.98 }
-              }
-              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="border-gold/40 bg-surface/95 relative w-full max-w-md rounded-2xl border p-8 shadow-[0_30px_90px_-30px_rgba(0,0,0,0.9)]"
-            >
-              <span className="border-gold/50 text-gold inline-block rounded-full border px-3 py-1 text-[10px] tracking-[0.25em] uppercase">
-                {isPro ? t("modal.badgePro") : t("modal.badge")}
-              </span>
-
-              {/*
-               * The written assessment is present only when the server decided
-               * this reader may have it — an unentitled reader's payload has no
-               * `body` at all, so there is nothing here to reveal. When a
-               * marker simply has not been written up yet, the awaiting-copy
-               * line stands in for a Pro reader, and the upgrade pitch still
-               * shows for everyone else.
-               */}
-              <h2
-                id="report-title"
-                className="font-display text-bone mt-5 text-2xl leading-snug"
-              >
-                {activeMarker.body
-                  ? (activeMarker.headline ?? activeMarker.label)
-                  : isPro
-                    ? t("modal.titlePro", { city: activeMarker.label })
-                    : t("modal.title")}
-              </h2>
-              <p className="text-bone/70 mt-4 text-sm leading-relaxed whitespace-pre-wrap">
-                {activeMarker.body
-                  ? activeMarker.body
-                  : isPro
-                    ? t("modal.bodyPro")
-                    : t("modal.body")}
-              </p>
-
-              <div className="mt-8 flex flex-wrap gap-3">
-                {/*
-                 * Three states, not two. A signed-out visitor is sent to
-                 * register, a signed-in Standard account to the upgrade
-                 * conversation, and a Pro account is not sold anything it
-                 * already has.
-                 *
-                 * UPGRADE_DESTINATION: change this href when the billing /
-                 * pricing flow exists.
-                 */}
-                {!isPro && (
-                  <Link
-                    href={signedIn ? "/pro" : "/register"}
-                    className="bg-gold text-ink hover:bg-gold-bright rounded-full px-6 py-2.5 text-sm font-medium transition-colors"
-                  >
-                    {signedIn ? t("modal.upgrade") : t("modal.createAccount")}
-                  </Link>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setActiveMarker(null)}
-                  className="border-bone/26 text-bone/70 hover:text-bone rounded-full border px-6 py-2.5 text-sm transition-colors"
-                >
-                  {isPro ? t("modal.close") : t("modal.dismiss")}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <MarkerReportDialog marker={activeMarker} onClose={closeMarker} />
     </>
   );
 }

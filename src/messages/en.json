@@ -53,6 +53,9 @@
     "subtitle": "Our teams maintain continuous operational picture across the region. Select a flagged location to review the associated report.",
     "markerLabel": "Flagged location",
     "legendLocked": "Restricted report",
+    "mapUnavailable": "The map could not be loaded. The flagged locations are listed in the daily briefing below.",
+    "zoomOverview": "Zoom in for street detail",
+    "zoomDetail": "Street detail",
     "severity": {
       "clear": "Clear",
       "elevated": "Elevated",
@@ -69,6 +72,11 @@
       "titlePro": "{city} — report unlocked",
       "bodyPro": "Your Pro access covers this report. The full assessment is being prepared for publication and will appear here.",
       "createAccount": "Create an account"
+    },
+    "cta": {
+      "title": "Get the full intelligence picture.",
+      "body": "Pro unlocks every restricted report on the map, plus the complete daily briefing for Kurdistan and Iraq.",
+      "button": "Get Pro"
     }
   },
   "services": {

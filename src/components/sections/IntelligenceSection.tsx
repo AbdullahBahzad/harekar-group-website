@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { getPublishedMarkers } from "@/lib/intel";
-import IraqMap from "@/components/IraqMap";
+import IraqOpenMap from "@/components/IraqOpenMap";
 import MapStage from "@/components/MapStage";
 import Reveal from "@/components/Reveal";
 import ParticleNetwork from "@/components/ui/particle-network";
@@ -60,8 +60,14 @@ export default async function IntelligenceSection({
          * the heading text above it.
          */}
         <div className="mt-14 -mx-3 sm:mx-0">
-          <MapStage>
-            <IraqMap markers={markers} />
+          {/*
+           * Not tilted. `MapStage`'s scroll-driven rotateX is an entrance for a
+           * picture; on a map you drag and pinch it puts the surface at an
+           * angle to the pointer and every gesture lands off target. The radar
+           * geometry behind it still plays.
+           */}
+          <MapStage tilt={false}>
+            <IraqOpenMap markers={markers} />
           </MapStage>
         </div>
       </div>

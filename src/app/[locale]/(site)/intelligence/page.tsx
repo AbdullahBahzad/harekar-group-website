@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import IntelligenceSection from "@/components/sections/IntelligenceSection";
 import DailyReportsSection from "@/components/sections/DailyReportsSection";
+import ProCtaSection from "@/components/sections/ProCtaSection";
 
 export async function generateMetadata({
   params,
@@ -30,6 +31,7 @@ export default async function IntelligencePage({
     <>
       <IntelligenceSection as="h1" />
       <DailyReportsSection />
+      <ProCtaSection />
     </>
   );
 }

@@ -21,16 +21,25 @@ const isDev = process.env.NODE_ENV !== "production";
  * posting a form off-site), and a closed list of where images, fonts and frames
  * may come from at all.
  *
- * The external origins are the two the app genuinely uses: Google Maps, framed
- * on the contact page, and Sanity's image CDN. `next/font` downloads and
- * self-hosts at build time, so Google Fonts is deliberately absent.
+ * The external origins are the three the app genuinely uses: Google Maps,
+ * framed on the contact page; Sanity's image CDN; and the basemap tiles behind
+ * the intelligence map. `next/font` downloads and self-hosts at build time, so
+ * Google Fonts is deliberately absent.
  */
+
+/*
+ * Basemap tiles for the intelligence map. Leaflet itself is bundled, so the
+ * tile images are the only external thing the map needs — named here, or it
+ * renders as an empty grid with no error reported anywhere.
+ */
+const tiles = "https://*.basemaps.cartocdn.com";
+
 const csp = [
   "default-src 'self'",
   // 'unsafe-eval' is dev-only: React Fast Refresh needs it, production does not.
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://cdn.sanity.io",
+  `img-src 'self' data: blob: https://cdn.sanity.io ${tiles}`,
   "font-src 'self' data:",
   // The dev server's HMR socket; nothing else needs an outbound connection.
   `connect-src 'self' https://cdn.sanity.io https://*.api.sanity.io${isDev ? " ws: wss:" : ""}`,

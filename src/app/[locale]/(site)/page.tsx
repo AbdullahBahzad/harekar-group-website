@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import HeroCinematic from "@/components/HeroCinematic";
 import AboutSection from "@/components/sections/AboutSection";
 import IntelligenceSection from "@/components/sections/IntelligenceSection";
+import ProCtaSection from "@/components/sections/ProCtaSection";
 import ServicesSection from "@/components/sections/ServicesSection";
 import ClientsSection from "@/components/sections/ClientsSection";
 import FaqSection from "@/components/sections/FaqSection";
@@ -55,6 +56,13 @@ export default async function HomePage({
       <HeroCinematic overrides={hero} />
       <AboutSection content={content} />
       <IntelligenceSection />
+      {/*
+       * Directly under the map, because the header's "Intelligence" link is an
+       * in-page jump to the section above rather than a route to
+       * `/intelligence` — this is the only intelligence view most visitors
+       * ever land on, so the upgrade has to be offered here too.
+       */}
+      <ProCtaSection />
       <ServicesSection />
       <ClientsSection logos={logos} />
       <FaqSection />

@@ -266,3 +266,69 @@ html::-webkit-scrollbar {
     }
   }
 }
+
+/* ---- intelligence map ----------------------------------------------------
+ *
+ * Leaflet ships its own light chrome, and the map sits inside a dark panel.
+ * These rules re-dress its controls and attribution in the site's palette, and
+ * style the marker glyphs — which Leaflet injects as raw HTML, out of reach of
+ * a component's scoped classes.
+ */
+
+.intel-map {
+  /* Leaflet reads this for the gaps between tiles while they load. */
+  background: var(--color-ink);
+}
+
+.intel-map .leaflet-control-zoom a {
+  background: color-mix(in oklab, var(--color-ink) 88%, transparent);
+  color: var(--color-gold);
+  border-color: color-mix(in oklab, var(--color-gold) 30%, transparent);
+}
+
+.intel-map .leaflet-control-zoom a:hover {
+  background: var(--color-ink);
+  color: var(--color-gold-bright);
+}
+
+.intel-map .leaflet-control-attribution {
+  background: color-mix(in oklab, var(--color-ink) 80%, transparent);
+  color: color-mix(in oklab, var(--color-bone) 55%, transparent);
+}
+
+.intel-map .leaflet-control-attribution a {
+  color: color-mix(in oklab, var(--color-gold) 85%, transparent);
+}
+
+/*
+ * The marker: glyph with its place name beneath. Leaflet sizes the icon box to
+ * `iconSize`, so the label is allowed to overflow it rather than being clipped
+ * to 44px — hence the centring transform instead of a wider box, which would
+ * have enlarged the hit area into its neighbours.
+ */
+.intel-marker__wrap {
+  background: none;
+  border: 0;
+}
+
+.intel-marker {
+  position: relative;
+  width: 44px;
+  height: 44px;
+}
+
+.intel-marker__label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -2px);
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-bone);
+  /* Readable over whatever the tiles put underneath it. */
+  text-shadow:
+    0 0 3px var(--color-ink),
+    0 0 6px var(--color-ink);
+  pointer-events: none;
+}
