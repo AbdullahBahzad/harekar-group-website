@@ -777,24 +777,18 @@ export default function ReportConsole({
         <Panel label={t("reports.review")}>
           <div className="space-y-4 p-5">
             {!draftItems && (
-<<<<<<< HEAD
-              <p className="text-bone/50 text-sm">
-                {t("reports.reviewEmpty")}
-              </p>
-=======
               <div className="space-y-3">
-                <p className="text-bone/40 text-sm">
+                <p className="text-bone/50 text-sm">
                   {t("reports.reviewEmpty")}
                 </p>
                 <button
                   type="button"
                   onClick={handleAddManualItem}
-                  className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                  className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
                 >
                   {t("reports.addManualItem")}
                 </button>
               </div>
->>>>>>> c91932fdb4a1a5dc0fdf298e7b5c24a96d8791c1
             )}
 
             {draftItems && (
@@ -869,11 +863,9 @@ export default function ReportConsole({
                       className="border-bone/14 space-y-2 border p-3"
                     >
                       <div className="flex items-center gap-2">
-<<<<<<< HEAD
-                        <span className="text-gold/78 text-xs">
-                          {t(`reports.regions.${item.region}`)}
-                        </span>
-=======
+                        {/* `min-h-11` rather than `py-1`: this is an
+                            interactive control, so it carries the same 44px
+                            touch target as every other one in the console. */}
                         <select
                           value={item.region}
                           onChange={(e) =>
@@ -881,7 +873,7 @@ export default function ReportConsole({
                               region: e.target.value as Region,
                             })
                           }
-                          className="border-bone/12 bg-ink/60 text-gold/70 focus:border-gold cursor-pointer border px-2 py-1 text-xs outline-none"
+                          className="border-bone/16 bg-ink/60 text-gold/78 focus:border-gold min-h-11 cursor-pointer border px-2 text-xs outline-none"
                         >
                           {REGIONS.map((region) => (
                             <option key={region} value={region}>
@@ -889,7 +881,6 @@ export default function ReportConsole({
                             </option>
                           ))}
                         </select>
->>>>>>> c91932fdb4a1a5dc0fdf298e7b5c24a96d8791c1
                         <button
                           type="button"
                           onClick={() =>
@@ -928,19 +919,15 @@ export default function ReportConsole({
                   ))}
                 </div>
 
-<<<<<<< HEAD
-                <div className="border-bone/12 flex gap-2 border-t pt-4">
-=======
                 <button
                   type="button"
                   onClick={handleAddManualItem}
-                  className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                  className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
                 >
                   {t("reports.addManualItem")}
                 </button>
 
-                <div className="border-bone/8 flex gap-2 border-t pt-4">
->>>>>>> c91932fdb4a1a5dc0fdf298e7b5c24a96d8791c1
+                <div className="border-bone/16 flex gap-2 border-t pt-4">
                   <button
                     type="button"
                     onClick={handleSave}
