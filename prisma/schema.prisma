@@ -191,6 +191,38 @@ model IntelMarker {
   body     String?
 
   /**
+   * ---- incident detail ----------------------------------------------------
+   * The analyst's underlying record for a marker, kept separate from
+   * `headline`/`body` — the write-up shown to readers — because the two
+   * change independently: this is what happened, that is what the map says
+   * about it. None of this is served to the public map or its report dialog.
+   * All optional: a marker can carry only a headline, only these details, or
+   * both.
+   */
+  category      String?
+  incidentType  String?
+  keyPoints     String?
+  occurredAt    DateTime?
+  method        String?
+  actor         String?
+  actorDetail   String?
+  target        String?
+  targetDetail  String?
+  /// Admiralty grade A (completely reliable) through F (cannot be judged).
+  sourceReliability String?
+  /// Admiralty grade 1 (confirmed) through 6 (cannot be judged).
+  infoCredibility   String?
+  facility      String?
+  streetAddress String?
+  city          String?
+  district      String?
+  province      String?
+  sourceName        String?
+  sourceUrl         String?
+  sourcePublishedAt DateTime?
+  sourceText        String?
+
+  /**
    * Whether the marker appears on the public map at all. Draft markers let an
    * analyst stage an assessment and publish it deliberately, rather than the
    * act of saving being the act of broadcasting.

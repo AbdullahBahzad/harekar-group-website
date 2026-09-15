@@ -27,9 +27,69 @@ async function assertAdmin(): Promise<string> {
 
 const SEVERITIES = ["CLEAR", "ELEVATED", "CRITICAL"] as const;
 const ACCESS = ["OPEN", "LOCKED"] as const;
+/** Admiralty source-reliability grades. Empty string means not assessed. */
+const RELIABILITIES = ["", "A", "B", "C", "D", "E", "F"] as const;
+/** Admiralty information-credibility grades. Empty string means not assessed. */
+const CREDIBILITIES = ["", "1", "2", "3", "4", "5", "6"] as const;
 
 type Severity = (typeof SEVERITIES)[number];
 type Access = (typeof ACCESS)[number];
+
+/** Trimmed text field, or `null` when blank — mirrors `headline`/`body`. */
+function optionalText(formData: FormData, key: string): string | null {
+  const value = String(formData.get(key) ?? "").trim();
+  return value || null;
+}
+
+/**
+ * A `datetime-local` input value, or `null` when blank.
+ *
+ * The browser sends this with no timezone offset. It is stored and later
+ * displayed as the wall-clock time the analyst typed, not converted — this
+ * console has one timezone of user, so there is nothing to convert against.
+ */
+function optionalDateTime(formData: FormData, key: string): Date | null {
+  const value = String(formData.get(key) ?? "").trim();
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) throw new Error(`Invalid date: ${key}`);
+  return date;
+}
+
+/** The incident-detail fields, read together since every one is optional. */
+function readIncidentDetail(formData: FormData) {
+  const sourceReliability = String(formData.get("sourceReliability") ?? "");
+  const infoCredibility = String(formData.get("infoCredibility") ?? "");
+  if (!RELIABILITIES.includes(sourceReliability as (typeof RELIABILITIES)[number])) {
+    throw new Error("Unknown source reliability grade");
+  }
+  if (!CREDIBILITIES.includes(infoCredibility as (typeof CREDIBILITIES)[number])) {
+    throw new Error("Unknown information credibility grade");
+  }
+
+  return {
+    category: optionalText(formData, "category"),
+    incidentType: optionalText(formData, "incidentType"),
+    keyPoints: optionalText(formData, "keyPoints"),
+    occurredAt: optionalDateTime(formData, "occurredAt"),
+    method: optionalText(formData, "method"),
+    actor: optionalText(formData, "actor"),
+    actorDetail: optionalText(formData, "actorDetail"),
+    target: optionalText(formData, "target"),
+    targetDetail: optionalText(formData, "targetDetail"),
+    sourceReliability: sourceReliability || null,
+    infoCredibility: infoCredibility || null,
+    facility: optionalText(formData, "facility"),
+    streetAddress: optionalText(formData, "streetAddress"),
+    city: optionalText(formData, "city"),
+    district: optionalText(formData, "district"),
+    province: optionalText(formData, "province"),
+    sourceName: optionalText(formData, "sourceName"),
+    sourceUrl: optionalText(formData, "sourceUrl"),
+    sourcePublishedAt: optionalDateTime(formData, "sourcePublishedAt"),
+    sourceText: optionalText(formData, "sourceText"),
+  };
+}
 
 /**
  * Coordinates are clamped to Iraq's bounding box.
@@ -77,6 +137,7 @@ function readMarkerForm(formData: FormData) {
     headline: headline || null,
     body: body || null,
     published,
+    ...readIncidentDetail(formData),
   };
 }
 

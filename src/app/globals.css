@@ -266,3 +266,132 @@ html::-webkit-scrollbar {
     }
   }
 }
+
+/*
+ * ---- Leaflet: the intelligence map ---------------------------------------
+ * OpenStreetMap tiles, inverted to a dark basemap that matches the brand.
+ * Markers and the country outline live outside `.leaflet-tile-pane`, so this
+ * filter never touches them.
+ */
+.iraq-leaflet {
+  width: 100%;
+  height: 100%;
+}
+.iraq-leaflet .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) saturate(0.5) brightness(0.92)
+    contrast(0.92);
+}
+.iraq-leaflet .leaflet-container {
+  background: var(--color-ink);
+  font-family: inherit;
+  outline: none;
+}
+.iraq-leaflet .leaflet-control-attribution {
+  background: rgb(11 11 11 / 72%);
+  color: var(--color-bone);
+  font-size: 10px;
+}
+.iraq-leaflet .leaflet-control-attribution a {
+  color: var(--color-gold-bright);
+}
+.iraq-leaflet .leaflet-control-zoom a {
+  background: rgb(11 11 11 / 82%);
+  color: var(--color-bone);
+  border-color: color-mix(in oklab, var(--color-bone) 16%, transparent);
+}
+.iraq-leaflet .leaflet-control-zoom a:hover {
+  background: var(--color-gold);
+  color: var(--color-ink);
+}
+
+.harekar-pin-wrap {
+  background: transparent;
+  border: none;
+}
+.harekar-pin {
+  position: absolute;
+  inset: 4.5px;
+  border-radius: 50%;
+  background: var(--tone);
+  box-shadow: 0 0 0 1.6px var(--color-ink);
+}
+.harekar-pin-ring {
+  position: absolute;
+  inset: 1px;
+  border-radius: 50%;
+  border: 1.1px solid var(--tone);
+  box-shadow: 0 0 0 2.2px color-mix(in oklab, var(--color-ink) 55%, transparent);
+}
+.harekar-pin-pulse {
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  border: 1.2px solid var(--tone);
+  animation: harekar-pulse 2.2s ease-out infinite;
+}
+@keyframes harekar-pulse {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .harekar-pin-pulse {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+.harekar-pin-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--color-bone);
+  font-size: 11px;
+  font-weight: 500;
+  text-shadow:
+    0 1px 3px rgb(0 0 0 / 90%),
+    0 0 6px rgb(0 0 0 / 70%);
+  padding: 0 !important;
+}
+.harekar-pin-label::before {
+  display: none;
+}
+.harekar-pin-selected {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1px dashed var(--color-gold-bright);
+}
+.harekar-pin-locked {
+  position: absolute;
+  inset: 1px;
+  border-radius: 50%;
+  background: var(--color-ink);
+  border: 1.4px solid var(--tone);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.harekar-pin-locked-glyph {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--tone);
+}
+.harekar-pin-draft {
+  position: absolute;
+  inset: 1px;
+  border-radius: 50%;
+  border: 1.4px dashed var(--color-gold-bright);
+}
+.harekar-pin-draft-dot {
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: var(--color-gold-bright);
+}

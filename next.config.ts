@@ -21,16 +21,18 @@ const isDev = process.env.NODE_ENV !== "production";
  * posting a form off-site), and a closed list of where images, fonts and frames
  * may come from at all.
  *
- * The external origins are the two the app genuinely uses: Google Maps, framed
- * on the contact page, and Sanity's image CDN. `next/font` downloads and
- * self-hosts at build time, so Google Fonts is deliberately absent.
+ * The external origins are the ones the app genuinely uses: Google Maps,
+ * framed on the contact page; Sanity's image CDN; and OpenStreetMap's tile
+ * server, which paints the intelligence map's real basemap. `next/font`
+ * downloads and self-hosts at build time, so Google Fonts is deliberately
+ * absent.
  */
 const csp = [
   "default-src 'self'",
   // 'unsafe-eval' is dev-only: React Fast Refresh needs it, production does not.
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://cdn.sanity.io",
+  "img-src 'self' data: blob: https://cdn.sanity.io https://tile.openstreetmap.org",
   "font-src 'self' data:",
   // The dev server's HMR socket; nothing else needs an outbound connection.
   `connect-src 'self' https://cdn.sanity.io https://*.api.sanity.io${isDev ? " ws: wss:" : ""}`,

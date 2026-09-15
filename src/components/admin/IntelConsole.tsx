@@ -1,21 +1,19 @@
 "use client";
 
-import { useOptimistic, useRef, useState, useTransition } from "react";
+import { useCallback, useMemo, useOptimistic, useState, useTransition } from "react";
+import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { formatDate } from "@/lib/admin-format";
-import {
-  IRAQ_BOUNDS,
-  MAP_HEIGHT,
-  MAP_WIDTH,
-  euphrates,
-  iraqBorder,
-  project,
-  tigris,
-  toPath,
-} from "@/data/iraq";
 import { cn } from "@/lib/utils";
 import Panel from "@/components/admin/Panel";
+import type { LeafletPin } from "@/components/IraqLeafletMap";
+
+// See the matching comment in `IraqMap.tsx` — Leaflet cannot be evaluated
+// during server render.
+const IraqLeafletMap = dynamic(() => import("@/components/IraqLeafletMap"), {
+  ssr: false,
+});
 import {
   createMarker,
   deleteMarker,
@@ -37,6 +35,30 @@ export type ConsoleMarker = {
   published: boolean;
   updatedAt: string;
   updatedByName: string | null;
+  /**
+   * The analyst's underlying record, distinct from `headline`/`body` — see
+   * the schema comment on `IntelMarker`. None of this reaches the public map.
+   */
+  category: string | null;
+  incidentType: string | null;
+  keyPoints: string | null;
+  occurredAt: string | null;
+  method: string | null;
+  actor: string | null;
+  actorDetail: string | null;
+  target: string | null;
+  targetDetail: string | null;
+  sourceReliability: string | null;
+  infoCredibility: string | null;
+  facility: string | null;
+  streetAddress: string | null;
+  city: string | null;
+  district: string | null;
+  province: string | null;
+  sourceName: string | null;
+  sourceUrl: string | null;
+  sourcePublishedAt: string | null;
+  sourceText: string | null;
 };
 
 const severityTone = {
@@ -57,9 +79,9 @@ type Draft = { longitude: number; latitude: number };
  * editing a country's threat picture should be pointing at the country, not
  * typing latitudes into a table.
  *
- * The same `iraqBorder` and `project()` the public map uses are used here, so
- * a pin placed in the console lands on precisely the same pixel out on the
- * site. There is no second copy of the country's shape to drift.
+ * The same `IraqLeafletMap` the public map uses is used here, so a pin
+ * placed in the console lands on precisely the same real-world spot out on
+ * the site. There is no second copy of the country's geometry to drift.
  */
 export default function IntelConsole({
   markers,
@@ -70,12 +92,10 @@ export default function IntelConsole({
 }) {
   const t = useTranslations("admin");
   const reduceMotion = useReducedMotion();
-  const svgRef = useRef<SVGSVGElement>(null);
   const [, startTransition] = useTransition();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
-  const [dragging, setDragging] = useState<string | null>(null);
 
   /*
    * Optimistic positions so a dragged pin tracks the pointer immediately.
@@ -92,54 +112,41 @@ export default function IntelConsole({
 
   const selected = optimistic.find((marker) => marker.id === selectedId) ?? null;
 
-  /**
-   * Turns a pointer position into lon/lat.
-   *
-   * Reads through the SVG's own viewBox rather than the element's pixel box,
-   * because the map is fluid — a fixed pixel assumption would misplace every
-   * marker at any width other than the one it was written against.
-   */
-  function pointerToCoordinates(event: React.PointerEvent): Draft | null {
-    const svg = svgRef.current;
-    if (!svg) return null;
+  const handleMoveMarker = useCallback(
+    (id: string, latitude: number, longitude: number) => {
+      startTransition(async () => {
+        applyOptimistic({ id, longitude, latitude });
+        await moveMarker(id, longitude, latitude);
+      });
+    },
+    [applyOptimistic],
+  );
 
-    const rect = svg.getBoundingClientRect();
-    const xRatio = (event.clientX - rect.left) / rect.width;
-    const yRatio = (event.clientY - rect.top) / rect.height;
-
-    // The viewBox is inset by 20 units on each side; undo that before scaling.
-    const x = xRatio * (MAP_WIDTH + 40) - 20;
-    const y = yRatio * (MAP_HEIGHT + 40) - 20;
-
-    const lonScale =
-      (IRAQ_BOUNDS.maxLon - IRAQ_BOUNDS.minLon) / MAP_WIDTH;
-    const latScale =
-      (IRAQ_BOUNDS.maxLat - IRAQ_BOUNDS.minLat) / MAP_HEIGHT;
-
-    return {
-      longitude: IRAQ_BOUNDS.minLon + x * lonScale,
-      latitude: IRAQ_BOUNDS.maxLat - y * latScale,
-    };
-  }
-
-  function handleMapClick(event: React.PointerEvent) {
-    if (dragging) return;
-    const point = pointerToCoordinates(event);
-    if (!point) return;
-    setSelectedId(null);
-    setDraft(point);
-  }
-
-  function handleDragEnd(event: React.PointerEvent, id: string) {
-    const point = pointerToCoordinates(event);
-    setDragging(null);
-    if (!point) return;
-
-    startTransition(async () => {
-      applyOptimistic({ id, ...point });
-      await moveMarker(id, point.longitude, point.latitude);
-    });
-  }
+  const pins = useMemo<LeafletPin[]>(
+    () =>
+      optimistic.map((marker) => ({
+        id: marker.id,
+        lat: marker.latitude,
+        lng: marker.longitude,
+        tone: severityTone[marker.severity],
+        dim: !marker.published,
+        // Repurposed here for "gated" rather than severity: the console has
+        // its own dedicated colour-by-severity dot, so the ring is free to
+        // flag the one other thing worth a glance on the map itself.
+        ring: marker.access === "LOCKED",
+        selected: marker.id === selectedId,
+        label:
+          marker.label +
+          (!marker.published ? ` ·${t("intelligence.draftSuffix")}` : ""),
+        draggable: true,
+        onClick: () => {
+          setDraft(null);
+          setSelectedId(marker.id);
+        },
+        onDragEnd: (lat, lng) => handleMoveMarker(marker.id, lat, lng),
+      })),
+    [optimistic, selectedId, t, handleMoveMarker],
+  );
 
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
@@ -153,156 +160,19 @@ export default function IntelConsole({
         }
       >
         <div className="p-3 sm:p-5">
-          {/*
-           * `dir="ltr"` on the map itself, and only here.
-           *
-           * The country's geometry is geographic, not typographic — mirroring
-           * it would put Erbil west of Baghdad. SVG `<text>` does inherit
-           * `direction`, and every pin's label is drawn at a hard-coded `+11`
-           * offset to the right of its dot, so an inherited RTL would anchor
-           * labels on the wrong side of the pin they name. Arabic and Kurdish
-           * place names still shape right-to-left inside their own run.
-           */}
-          <svg
-            ref={svgRef}
-            // CSS rather than `dir`: React's SVG typings carry no `dir` prop,
-            // and `direction` is what `<text>` inherits either way.
-            style={{ direction: "ltr" }}
-            viewBox={`-20 -20 ${MAP_WIDTH + 40} ${MAP_HEIGHT + 40}`}
-            className={cn(
-              "block h-auto w-full touch-none select-none",
-              dragging ? "cursor-grabbing" : "cursor-crosshair",
-            )}
-            onPointerDown={handleMapClick}
-            role="application"
-            aria-label={t("intelligence.mapLabel")}
-          >
-            <defs>
-              {/* Cool plate, so gold pins read as the live layer above it. */}
-              <linearGradient id="console-fill" x1="0" y1="0" x2="0.6" y2="1">
-                <stop offset="0%" stopColor="rgba(197,156,64,0.16)" />
-                <stop offset="100%" stopColor="rgba(197,156,64,0.05)" />
-              </linearGradient>
-            </defs>
-
-            <path d={toPath(iraqBorder, true)} fill="url(#console-fill)" />
-            <path
-              d={toPath(iraqBorder, true)}
-              fill="none"
-              stroke="var(--color-gold)"
-              strokeOpacity="0.55"
-              strokeWidth="1.2"
-              strokeLinejoin="round"
+          <div className="aspect-square w-full overflow-hidden rounded-xl">
+            <IraqLeafletMap
+              markers={pins}
+              draftPoint={
+                draft ? { lat: draft.latitude, lng: draft.longitude } : null
+              }
+              onMapClick={(lat, lng) => {
+                setSelectedId(null);
+                setDraft({ longitude: lng, latitude: lat });
+              }}
+              ariaLabel={t("intelligence.mapLabel")}
             />
-
-            {[tigris, euphrates].map((river, index) => (
-              <path
-                key={index}
-                d={toPath(river)}
-                fill="none"
-                stroke="var(--color-bone)"
-                strokeOpacity="0.14"
-                strokeWidth="1"
-                strokeLinecap="round"
-              />
-            ))}
-
-            {/* Draft pin — dashed, because it does not exist yet. */}
-            {draft && (
-              <g style={{ pointerEvents: "none" }}>
-                <circle
-                  cx={project([draft.longitude, draft.latitude]).x}
-                  cy={project([draft.longitude, draft.latitude]).y}
-                  r="9"
-                  fill="none"
-                  stroke="var(--color-gold-bright)"
-                  strokeWidth="1.2"
-                  strokeDasharray="3 3"
-                />
-                <circle
-                  cx={project([draft.longitude, draft.latitude]).x}
-                  cy={project([draft.longitude, draft.latitude]).y}
-                  r="2.5"
-                  fill="var(--color-gold-bright)"
-                />
-              </g>
-            )}
-
-            {optimistic.map((marker) => {
-              const { x, y } = project([marker.longitude, marker.latitude]);
-              const tone = severityTone[marker.severity];
-              const isSelected = marker.id === selectedId;
-
-              return (
-                <g
-                  key={marker.id}
-                  className="cursor-grab"
-                  onPointerDown={(event) => {
-                    event.stopPropagation();
-                    setDraft(null);
-                    setSelectedId(marker.id);
-                    setDragging(marker.id);
-                    (event.target as Element).setPointerCapture?.(
-                      event.pointerId,
-                    );
-                  }}
-                  onPointerUp={(event) => {
-                    event.stopPropagation();
-                    if (dragging === marker.id) handleDragEnd(event, marker.id);
-                  }}
-                >
-                  {/* Selection ring, and the draft/unpublished cue. */}
-                  {isSelected && (
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r="13"
-                      fill="none"
-                      stroke="var(--color-gold-bright)"
-                      strokeWidth="1"
-                      strokeDasharray="2 3"
-                    />
-                  )}
-
-                  <circle cx={x} cy={y} r="14" fill="transparent" />
-
-                  <circle
-                    cx={x}
-                    cy={y}
-                    r="4.5"
-                    fill={marker.published ? tone : "var(--color-ink)"}
-                    stroke={tone}
-                    strokeWidth="1.6"
-                  />
-
-                  {marker.access === "LOCKED" && (
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r="8"
-                      fill="none"
-                      stroke={tone}
-                      strokeOpacity="0.6"
-                      strokeWidth="1"
-                    />
-                  )}
-
-                  <text
-                    x={x + 11}
-                    y={y + 3.5}
-                    fontSize="8.5"
-                    fontWeight="500"
-                    fill="var(--color-bone)"
-                    fillOpacity={marker.published ? 0.85 : 0.4}
-                    style={{ pointerEvents: "none" }}
-                  >
-                    {marker.label}
-                    {!marker.published && ` ·${t("intelligence.draftSuffix")}`}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
+          </div>
 
           <p className="text-bone/56 mt-3 text-xs">
             {t("intelligence.mapHint")}
@@ -510,6 +380,224 @@ function MarkerEditor({
           />
         </Field>
 
+        {/*
+         * The analyst's underlying record. Collapsed by default — every field
+         * here is optional and most markers will only ever need the headline
+         * and assessment above; this is for the ones that need a paper trail.
+         */}
+        <details className="border-bone/12 border-t pt-4">
+          <summary className="text-bone/55 hover:text-bone cursor-pointer text-xs select-none">
+            {t("intelligence.incidentDetails")}
+          </summary>
+
+          <div className="mt-4 space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t("intelligence.category")}>
+                <input
+                  name="category"
+                  defaultValue={marker?.category ?? ""}
+                  autoComplete="off"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                />
+              </Field>
+              <Field label={t("intelligence.incidentType")}>
+                <input
+                  name="incidentType"
+                  defaultValue={marker?.incidentType ?? ""}
+                  autoComplete="off"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                />
+              </Field>
+            </div>
+
+            <Field label={t("intelligence.occurredAt")}>
+              <input
+                type="datetime-local"
+                name="occurredAt"
+                defaultValue={toLocalInput(marker?.occurredAt ?? null)}
+                dir="ltr"
+                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+              />
+            </Field>
+
+            <Field label={t("intelligence.keyPoints")} hint={t("intelligence.keyPointsHint")}>
+              <textarea
+                name="keyPoints"
+                defaultValue={marker?.keyPoints ?? ""}
+                rows={3}
+                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
+              />
+            </Field>
+
+            <Field label={t("intelligence.method")}>
+              <input
+                name="method"
+                defaultValue={marker?.method ?? ""}
+                autoComplete="off"
+                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+              />
+            </Field>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t("intelligence.actor")}>
+                <input
+                  name="actor"
+                  defaultValue={marker?.actor ?? ""}
+                  autoComplete="off"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                />
+              </Field>
+              <Field label={t("intelligence.actorDetail")}>
+                <input
+                  name="actorDetail"
+                  defaultValue={marker?.actorDetail ?? ""}
+                  autoComplete="off"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t("intelligence.target")}>
+                <input
+                  name="target"
+                  defaultValue={marker?.target ?? ""}
+                  autoComplete="off"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                />
+              </Field>
+              <Field label={t("intelligence.targetDetail")}>
+                <input
+                  name="targetDetail"
+                  defaultValue={marker?.targetDetail ?? ""}
+                  autoComplete="off"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t("intelligence.sourceReliability")}>
+                <select
+                  name="sourceReliability"
+                  defaultValue={marker?.sourceReliability ?? ""}
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+                >
+                  <option value="">{t("intelligence.notAssessed")}</option>
+                  <option value="A">{t("intelligence.reliabilityA")}</option>
+                  <option value="B">{t("intelligence.reliabilityB")}</option>
+                  <option value="C">{t("intelligence.reliabilityC")}</option>
+                  <option value="D">{t("intelligence.reliabilityD")}</option>
+                  <option value="E">{t("intelligence.reliabilityE")}</option>
+                  <option value="F">{t("intelligence.reliabilityF")}</option>
+                </select>
+              </Field>
+              <Field label={t("intelligence.infoCredibility")}>
+                <select
+                  name="infoCredibility"
+                  defaultValue={marker?.infoCredibility ?? ""}
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+                >
+                  <option value="">{t("intelligence.notAssessed")}</option>
+                  <option value="1">{t("intelligence.credibility1")}</option>
+                  <option value="2">{t("intelligence.credibility2")}</option>
+                  <option value="3">{t("intelligence.credibility3")}</option>
+                  <option value="4">{t("intelligence.credibility4")}</option>
+                  <option value="5">{t("intelligence.credibility5")}</option>
+                  <option value="6">{t("intelligence.credibility6")}</option>
+                </select>
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t("intelligence.facility")}>
+                <input
+                  name="facility"
+                  defaultValue={marker?.facility ?? ""}
+                  autoComplete="off"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                />
+              </Field>
+              <Field label={t("intelligence.city")}>
+                <input
+                  name="city"
+                  defaultValue={marker?.city ?? ""}
+                  autoComplete="off"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                />
+              </Field>
+            </div>
+
+            <Field label={t("intelligence.streetAddress")}>
+              <input
+                name="streetAddress"
+                defaultValue={marker?.streetAddress ?? ""}
+                autoComplete="off"
+                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+              />
+            </Field>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t("intelligence.district")}>
+                <input
+                  name="district"
+                  defaultValue={marker?.district ?? ""}
+                  autoComplete="off"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                />
+              </Field>
+              <Field label={t("intelligence.province")}>
+                <input
+                  name="province"
+                  defaultValue={marker?.province ?? ""}
+                  autoComplete="off"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t("intelligence.sourceName")}>
+                <input
+                  name="sourceName"
+                  defaultValue={marker?.sourceName ?? ""}
+                  autoComplete="off"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                />
+              </Field>
+              <Field label={t("intelligence.sourcePublishedAt")}>
+                <input
+                  type="datetime-local"
+                  name="sourcePublishedAt"
+                  defaultValue={toLocalInput(marker?.sourcePublishedAt ?? null)}
+                  dir="ltr"
+                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                />
+              </Field>
+            </div>
+
+            <Field label={t("intelligence.sourceUrl")}>
+              <input
+                type="url"
+                name="sourceUrl"
+                defaultValue={marker?.sourceUrl ?? ""}
+                dir="ltr"
+                autoComplete="off"
+                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+              />
+            </Field>
+
+            <Field label={t("intelligence.sourceText")}>
+              <textarea
+                name="sourceText"
+                defaultValue={marker?.sourceText ?? ""}
+                rows={3}
+                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
+              />
+            </Field>
+          </div>
+        </details>
+
         <label className="flex cursor-pointer items-center gap-2.5">
           <input
             type="checkbox"
@@ -576,17 +664,35 @@ function MarkerEditor({
 
 function Field({
   label,
+  hint,
   children,
 }: {
   label: string;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
     <label className="block">
-      <span className="text-bone/55 mb-1.5 block text-xs">
+      <span className="text-bone/55 mb-1.5 flex items-baseline gap-2 text-xs">
         {label}
+        {hint && <span className="text-bone/35">{hint}</span>}
       </span>
       {children}
     </label>
   );
+}
+
+/**
+ * An ISO timestamp as a `datetime-local` input value ("YYYY-MM-DDTHH:mm").
+ *
+ * The input reads and writes in the browser's local wall-clock time with no
+ * timezone info either way, so this only has to line up years/months/etc —
+ * not convert anything — with what `optionalDateTime` parses back out of it.
+ */
+function toLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
