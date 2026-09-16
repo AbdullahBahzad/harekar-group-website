@@ -90,6 +90,17 @@ export default function IraqLeafletMap({
       iraqBorder.map(([lng, lat]) => [lat, lng] as [number, number]),
     );
 
+    /*
+     * Leaflet's own stylesheet paints `.leaflet-container` a flat #ddd, and
+     * it wins over the equivalent override in globals.css regardless of
+     * selector specificity — Tailwind v4 emits authored CSS inside a
+     * cascade layer, and an unlayered stylesheet (this plain `import
+     * "leaflet.css"` above) always beats any layered rule. An inline style
+     * has no such competition. Transparent so the masked area (see below)
+     * shows the card behind the map instead of Leaflet's placeholder tone.
+     */
+    container.style.background = "transparent";
+
     const map = L.map(container, {
       zoomControl: false,
       attributionControl: true,
@@ -108,33 +119,6 @@ export default function IraqLeafletMap({
         '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
     }).addTo(map);
 
-    if (maskOutside) {
-      /*
-       * A polygon with two rings: a huge outer square and Iraq as a hole cut
-       * out of it. Leaflet fills by the even-odd rule, so what's left
-       * painted is everything *except* Iraq — neighbouring countries read as
-       * the site's own background instead of a competing map.
-       */
-      L.polygon(
-        [
-          [
-            [85, -170],
-            [85, 170],
-            [-85, 170],
-            [-85, -170],
-          ],
-          iraqBorder.map(([lng, lat]) => [lat, lng] as [number, number]),
-        ],
-        {
-          color: "transparent",
-          fillColor: "var(--color-ink)",
-          fillOpacity: 1,
-          stroke: false,
-          interactive: false,
-        },
-      ).addTo(map);
-    }
-
     L.polygon(
       iraqBorder.map(([lng, lat]) => [lat, lng] as [number, number]),
       {
@@ -151,6 +135,47 @@ export default function IraqLeafletMap({
     map.fitBounds(bounds, { padding: [24, 24] });
     map.setMinZoom(map.getBoundsZoom(bounds, false, L.point(24, 24)));
 
+    /*
+     * Neighbouring countries are hidden by clipping the map's own panned
+     * content to Iraq's silhouette, rather than painting an opaque shape
+     * over it. A fill has to be a solid colour and so always reads as a
+     * rectangle behind the country; clipping removes the tiles outside the
+     * border entirely, letting the card's own background show there
+     * instead — the same effect as a die-cut window rather than a sticker.
+     *
+     * Only the panned content (`mapPane`) is clipped, not the container —
+     * the zoom control and attribution live in a sibling pane and must stay
+     * fully visible regardless of where Iraq currently sits in the frame.
+     */
+    if (maskOutside) {
+      const mapPane = map.getPane("mapPane");
+      const updateClip = () => {
+        if (!mapPane) return;
+        const size = map.getSize();
+        if (size.x === 0 || size.y === 0) return;
+        /*
+         * `clip-path`'s percentages resolve against the clipped element's
+         * *own* box — and `mapPane` is absolutely positioned holding only
+         * absolutely positioned children, so left to itself it has no
+         * reliable box to measure against. Pinning it to the container's
+         * pixel size gives the clip a real reference frame; the tiles and
+         * markers inside are still positioned independently of it, same
+         * as always, so this doesn't move anything.
+         */
+        mapPane.style.width = `${size.x}px`;
+        mapPane.style.height = `${size.y}px`;
+        const points = iraqBorder
+          .map(([lng, lat]) => map.latLngToContainerPoint([lat, lng]))
+          .map((p) => `${(p.x / size.x) * 100}% ${(p.y / size.y) * 100}%`)
+          .join(", ");
+        const clip = `polygon(${points})`;
+        mapPane.style.clipPath = clip;
+        mapPane.style.setProperty("-webkit-clip-path", clip);
+      };
+      updateClip();
+      map.on("move zoom resize", updateClip);
+    }
+
     layerRef.current = L.layerGroup().addTo(map);
 
     map.on("click", (event: L.LeafletMouseEvent) => {
@@ -158,10 +183,14 @@ export default function IraqLeafletMap({
     });
 
     // Leaflet sizes itself from the container's box at creation time; this
-    // frame runs after the surrounding CSS grid has settled.
-    requestAnimationFrame(() => map.invalidateSize());
+    // frame runs after the surrounding CSS grid has settled. Cancelled on
+    // cleanup — React's dev-mode double-invoke can tear the map down (via
+    // `map.remove()` below) before this frame fires, and an `invalidateSize`
+    // on an already-removed map throws trying to read its own DOM position.
+    const sizeFrame = requestAnimationFrame(() => map.invalidateSize());
 
     return () => {
+      cancelAnimationFrame(sizeFrame);
       map.remove();
       mapRef.current = null;
       layerRef.current = null;

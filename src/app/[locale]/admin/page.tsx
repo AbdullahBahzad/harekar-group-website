@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
-import { requireAdmin } from "@/lib/admin";
+import { requireReportsAccess } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import Panel from "@/components/admin/Panel";
@@ -48,7 +49,14 @@ export default async function DashboardStation({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const operator = await requireAdmin(locale);
+  /*
+   * The Dashboard is a full-admin page like any other — reached through
+   * `requireReportsAccess` only so a reports-only operator lands somewhere
+   * coherent right after signing in (their `next` param points here) instead
+   * of bouncing straight to `/` and looking like the login failed.
+   */
+  const operator = await requireReportsAccess(locale);
+  if (!operator.isAdmin) redirect(`/${locale}/admin/sources`);
   const t = await getTranslations({ locale, namespace: "admin" });
 
   const { data: revenue } = await getRevenueSummary(locale);

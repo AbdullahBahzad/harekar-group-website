@@ -25,21 +25,28 @@ import {
 export type { CombinedSource };
 
 /**
- * Every mutation re-checks admin rights.
+ * Every mutation re-checks console rights.
  *
  * A server action is a public HTTP endpoint. Guarding only the page that
  * renders the form leaves the action itself callable by anyone who can read
  * its id out of the page source — the check has to live on the action.
+ *
+ * Wider than the other stations' `assertAdmin`: a reports-only operator
+ * (`canManageReports`) may call these actions too, matching the page's own
+ * `requireReportsAccess` gate. Named for what it actually checks so that
+ * distinction stays visible at every call site below.
  */
-async function assertAdmin(): Promise<string> {
+async function assertReportsAccess(): Promise<string> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Not authenticated");
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { isAdmin: true },
+    select: { isAdmin: true, canManageReports: true },
   });
-  if (!user?.isAdmin) throw new Error("Not authorised");
+  if (!user?.isAdmin && !user?.canManageReports) {
+    throw new Error("Not authorised");
+  }
 
   return session.user.id;
 }
@@ -63,7 +70,7 @@ function revalidateReports() {
 export async function generateReportDraft(
   formData: FormData,
 ): Promise<ReportNewsItem[]> {
-  await assertAdmin();
+  await assertReportsAccess();
 
   const urls = formData.getAll("itemUrl").map(String);
   const notes = formData.getAll("itemNotes").map(String);
@@ -100,7 +107,7 @@ export type SourceHeadlines = {
  * `addReportSource` / `deleteReportSource` below.
  */
 export async function listSources(): Promise<CombinedSource[]> {
-  await assertAdmin();
+  await assertReportsAccess();
   return listCombinedSources();
 }
 
@@ -119,7 +126,7 @@ export async function listSources(): Promise<CombinedSource[]> {
 export async function fetchAllSourceHeadlines(
   sourceUrls?: string[],
 ): Promise<SourceHeadlines[]> {
-  await assertAdmin();
+  await assertReportsAccess();
 
   const all = await listCombinedSources();
   const wanted =
@@ -145,7 +152,7 @@ export async function fetchAllSourceHeadlines(
 
 /** Adds a source an operator wants checked alongside the built-in eleven. */
 export async function addReportSource(formData: FormData) {
-  await assertAdmin();
+  await assertReportsAccess();
 
   const name = String(formData.get("name") ?? "").trim();
   const rawUrl = String(formData.get("url") ?? "").trim();
@@ -174,7 +181,7 @@ export async function addReportSource(formData: FormData) {
 }
 
 export async function deleteReportSource(formData: FormData) {
-  await assertAdmin();
+  await assertReportsAccess();
   const id = String(formData.get("id") ?? "");
   if (!id) throw new Error("Missing source id");
 
@@ -199,7 +206,7 @@ type HeadlineSelection = { title: string; url: string; region: Region };
 export async function pullHeadlineItems(
   selections: HeadlineSelection[],
 ): Promise<ReportNewsItem[]> {
-  await assertAdmin();
+  await assertReportsAccess();
 
   if (selections.length === 0) throw new Error("Nothing selected");
   if (selections.some((s) => !REGIONS.includes(s.region))) {
@@ -369,7 +376,7 @@ function readSourceUrl(value: string | undefined, index: number): string | null 
 
 /** Persists a report the admin has reviewed and approved. */
 export async function saveReport(formData: FormData) {
-  const operatorId = await assertAdmin();
+  const operatorId = await assertReportsAccess();
   const meta = readMeta(formData);
 
   const titles = formData.getAll("finalTitle").map(String);
@@ -430,7 +437,7 @@ export async function saveReport(formData: FormData) {
 }
 
 export async function deleteReport(formData: FormData) {
-  await assertAdmin();
+  await assertReportsAccess();
   const id = String(formData.get("id") ?? "");
   if (!id) throw new Error("Missing report id");
 

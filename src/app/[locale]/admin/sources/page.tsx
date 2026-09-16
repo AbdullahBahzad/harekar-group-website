@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { requireAdmin } from "@/lib/admin";
+import { requireReportsAccess } from "@/lib/admin";
 import ReportConsole from "@/components/admin/ReportConsole";
 import { getRecentReports } from "@/lib/dashboard-reports";
 import { listCombinedSources } from "@/lib/report-sources-db";
@@ -11,7 +11,8 @@ export default async function SourcesStation({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireAdmin(locale);
+  // The one station a reports-only operator may open — see `lib/admin.ts`.
+  await requireReportsAccess(locale);
   const t = await getTranslations({ locale, namespace: "admin.reports" });
 
   const { data: reports, preview } = await getRecentReports(30);

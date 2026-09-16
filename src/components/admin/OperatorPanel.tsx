@@ -6,9 +6,11 @@ import { useTranslations } from "next-intl";
 import Panel from "@/components/admin/Panel";
 import {
   grantAdminByEmail,
-  toggleUserAdmin,
+  revokeOperatorAccess,
+  setOperatorRole,
   type OperatorFormState,
 } from "@/app/[locale]/admin/accounts/actions";
+import { OPERATOR_ROLES, type OperatorRole } from "@/lib/operator-role";
 
 const initialState: OperatorFormState = { status: "idle" };
 
@@ -16,6 +18,7 @@ export type Operator = {
   id: string;
   name: string | null;
   email: string;
+  role: OperatorRole;
 };
 
 /**
@@ -67,11 +70,26 @@ export default function OperatorPanel({
             autoComplete="new-password"
             className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
           />
+          <select
+            name="role"
+            defaultValue={state.role ?? "admin"}
+            aria-label={t("operators.roleLabel")}
+            className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-11 cursor-pointer border px-3 py-2 text-xs outline-none"
+          >
+            {OPERATOR_ROLES.map((role) => (
+              <option key={role} value={role}>
+                {t(`operators.role.${role}`)}
+              </option>
+            ))}
+          </select>
           <GrantButton />
         </form>
 
         <p className="text-bone/56 text-xs leading-relaxed">
           {t("operators.passwordHint")}
+        </p>
+        <p className="text-bone/56 text-xs leading-relaxed">
+          {t("operators.roleHint")}
         </p>
 
         {/*
@@ -120,26 +138,43 @@ export default function OperatorPanel({
                   </span>
                 </span>
 
+                <span className="border-bone/20 text-bone/65 shrink-0 border px-2 py-0.5 text-[11px]">
+                  {t(`operators.role.${operator.role}`)}
+                </span>
+
                 {/*
-                 * No control on your own row. Revoking your own access is
+                 * No controls on your own row. Changing your own access is
                  * almost always a misclick, and on a single-operator
-                 * deployment it locks the console permanently — the action
-                 * refuses it too, so this only hides a button that would fail.
+                 * deployment it locks the console permanently — the actions
+                 * refuse it too, so this only hides buttons that would fail.
                  */}
                 {isSelf ? (
                   <span className="text-bone/52 text-xs">
                     {t("operators.locked")}
                   </span>
                 ) : (
-                  <form action={toggleUserAdmin}>
-                    <input type="hidden" name="id" value={operator.id} />
-                    <button
-                      type="submit"
-                      className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
-                    >
-                      {t("operators.revoke")}
-                    </button>
-                  </form>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <form action={setOperatorRole}>
+                      <input type="hidden" name="id" value={operator.id} />
+                      <button
+                        type="submit"
+                        className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
+                      >
+                        {operator.role === "admin"
+                          ? t("operators.makeReportsOnly")
+                          : t("operators.makeFullAdmin")}
+                      </button>
+                    </form>
+                    <form action={revokeOperatorAccess}>
+                      <input type="hidden" name="id" value={operator.id} />
+                      <button
+                        type="submit"
+                        className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
+                      >
+                        {t("operators.revoke")}
+                      </button>
+                    </form>
+                  </div>
                 )}
               </li>
             );

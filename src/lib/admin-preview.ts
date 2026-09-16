@@ -124,17 +124,17 @@ export const sampleApplications = [
 export const sampleUsers = [
   {
     id: "u1", name: "Abdullah Bahzad", email: "abdulla.amedii@gmail.com",
-    isPro: true, isAdmin: true, proUntil: null, createdAt: ago(30),
+    isPro: true, isAdmin: true, canManageReports: false, proUntil: null, createdAt: ago(30),
     orders: [] as { amountMinor: number; currency: string }[],
   },
   {
     id: "u2", name: "Zagros Energy", email: "ops@zagros.example.com",
-    isPro: false, isAdmin: false, proUntil: new Date(Date.now() + 21 * day),
+    isPro: false, isAdmin: false, canManageReports: false, proUntil: new Date(Date.now() + 21 * day),
     createdAt: ago(12), orders: [{ amountMinor: 250_000, currency: "USD" }],
   },
   {
     id: "u3", name: "Omar Faridun", email: "omar@example.com",
-    isPro: false, isAdmin: false, proUntil: null, createdAt: ago(2),
+    isPro: false, isAdmin: false, canManageReports: false, proUntil: null, createdAt: ago(2),
     orders: [] as { amountMinor: number; currency: string }[],
   },
 ];

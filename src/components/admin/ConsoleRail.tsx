@@ -143,11 +143,19 @@ const groups: Group[] = [
 export default function ConsoleRail({
   counts,
   operatorLabel,
+  restrictedToReports,
   locale,
   signOutAction,
 }: {
   counts: Record<string, number>;
   operatorLabel: string;
+  /**
+   * A reports-only operator's whole console is the Sources/Reports station —
+   * every other link would 404 into a redirect the moment they clicked it
+   * (each of those pages still enforces `requireAdmin` on its own), so they
+   * are not shown at all rather than shown and refused.
+   */
+  restrictedToReports?: boolean;
   locale: string;
   signOutAction: (formData: FormData) => void | Promise<void>;
 }) {
@@ -156,6 +164,10 @@ export default function ConsoleRail({
   const router = useRouter();
   const activeLocale = useLocale() as Locale;
   const [open, setOpen] = useState(false);
+
+  const visibleGroups = restrictedToReports
+    ? groups.filter((group) => group.labelKey === "sources")
+    : groups;
 
   // next-intl's `usePathname` already returns the path with the locale prefix
   // stripped, so there is nothing to trim off by hand.
@@ -174,7 +186,7 @@ export default function ConsoleRail({
 
   const nav = (onNavigate?: () => void) => (
     <nav className="flex flex-1 flex-col gap-5 overflow-y-auto">
-      {groups.map((group) => (
+      {visibleGroups.map((group) => (
         <div key={group.labelKey}>
           <p className="text-bone/60 px-3 pb-1.5 text-[11px] tracking-[0.14em] uppercase">
             {t(`nav.groups.${group.labelKey}`)}

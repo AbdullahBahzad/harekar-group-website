@@ -3,22 +3,26 @@
 import { useState } from "react";
 
 /**
- * Copies the current page's URL — the point of a shareable report link is
- * that it works from wherever it is pasted, so there is nothing for this to
- * compute; `location.href` already is the answer.
+ * Copies a shareable URL — the current page's by default, since the point
+ * of a shareable report link is that it works from wherever it is pasted,
+ * so `location.href` is usually already the answer. The map's side panel
+ * passes a specific marker's report URL instead, since the page it's on
+ * (the map itself) isn't the thing being shared.
  */
 export default function CopyLinkButton({
   label,
   copiedLabel,
+  url,
 }: {
   label: string;
   copiedLabel: string;
+  url?: string;
 }) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(url ?? window.location.href);
       setCopied(true);
       setTimeout(() => setCopied(false), 2200);
     } catch {

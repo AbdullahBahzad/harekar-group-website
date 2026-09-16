@@ -63,8 +63,15 @@ model User {
   /// team. Independent of anything purchased, so revoking a payment never
   /// removes access that was never paid for.
   isPro         Boolean   @default(false)
-  /// Console access. Granted by hand — there is no self-serve path to it.
+  /// Full console access. Granted by hand — there is no self-serve path to it.
   isAdmin       Boolean   @default(false)
+  /**
+   * Narrow console access: the Sources/Reports station only, nothing else.
+   * Independent of `isAdmin` — a full admin already has this implicitly and
+   * the flag is never read for one. For an operator whose whole job is
+   * filing the Daily Security Report, not the rest of the console.
+   */
+  canManageReports Boolean @default(false)
   /// Expiry of *purchased* Pro. Null means nothing has been bought.
   proUntil      DateTime?
   createdAt     DateTime  @default(now())

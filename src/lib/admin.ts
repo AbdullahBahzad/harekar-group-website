@@ -17,21 +17,22 @@ import { prisma } from "@/lib/prisma";
 const previewUnlocked =
   process.env.NODE_ENV !== "production" && process.env.ADMIN_PREVIEW === "1";
 
+export type ConsoleOperator = {
+  id: string;
+  name: string | null;
+  email: string;
+  isAdmin: boolean;
+  canManageReports: boolean;
+};
+
 /**
- * The console's front door.
+ * The shared lookup behind both gates below.
  *
- * Every admin page calls this before rendering anything. `isAdmin` is read
- * from the database on each request rather than from the session token — the
- * token is only refreshed every 24 hours, and an administrator whose access
- * has been revoked must lose it immediately, not tomorrow. One indexed lookup
- * per admin page view is a fair price for that.
- *
- * A signed-out visitor is sent to sign in, carrying `next` so they land back
- * here afterwards. A signed-in non-admin is sent home rather than to an
- * "access denied" screen, which would confirm the console exists at this
- * address.
+ * One query, one preview fallback, one "outage locks the console" rule —
+ * `requireAdmin` and `requireReportsAccess` differ only in which flag they
+ * accept, not in how the operator is found.
  */
-export async function requireAdmin(locale: string) {
+async function loadOperator(locale: string): Promise<ConsoleOperator> {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -41,12 +42,19 @@ export async function requireAdmin(locale: string) {
     redirect(toLogin(locale));
   }
 
-  let user;
   try {
-    user = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { id: true, name: true, email: true, isAdmin: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isAdmin: true,
+        canManageReports: true,
+      },
     });
+    if (!user) redirect(`/${locale}`);
+    return user;
   } catch (error) {
     /*
      * The database is the only authority on who is an administrator, so an
@@ -56,10 +64,45 @@ export async function requireAdmin(locale: string) {
     if (!previewUnlocked) throw error;
     return PREVIEW_OPERATOR;
   }
+}
 
-  if (!user?.isAdmin) redirect(`/${locale}`);
+/**
+ * The console's front door — full access only.
+ *
+ * Every page except the Sources/Reports station calls this before rendering
+ * anything. Read from the database on each request rather than from the
+ * session token — the token is only refreshed every 24 hours, and an
+ * administrator whose access has been revoked must lose it immediately, not
+ * tomorrow. One indexed lookup per admin page view is a fair price for that.
+ *
+ * A signed-out visitor is sent to sign in, carrying `next` so they land back
+ * here afterwards. A signed-in non-admin — including a reports-only operator,
+ * who belongs on their one station and nowhere else in the console — is sent
+ * home rather than to an "access denied" screen, which would confirm the
+ * console exists at this address.
+ */
+export async function requireAdmin(locale: string): Promise<ConsoleOperator> {
+  const operator = await loadOperator(locale);
+  if (!operator.isAdmin) redirect(`/${locale}`);
+  return operator;
+}
 
-  return user;
+/**
+ * The narrower front door: full admins and reports-only operators alike.
+ *
+ * Used by the console layout itself (so a reports-only operator can reach
+ * their one station at all) and by the Sources/Reports station's own page.
+ * Every *other* page still calls `requireAdmin` above and stays closed to a
+ * reports-only operator — this function does not widen anything else.
+ */
+export async function requireReportsAccess(
+  locale: string,
+): Promise<ConsoleOperator> {
+  const operator = await loadOperator(locale);
+  if (!operator.isAdmin && !operator.canManageReports) {
+    redirect(`/${locale}`);
+  }
+  return operator;
 }
 
 /** Sign-in URL that returns the operator to the console afterwards. */
@@ -68,11 +111,12 @@ function toLogin(locale: string) {
 }
 
 /** Stands in for a signed-in administrator while the console is previewed. */
-const PREVIEW_OPERATOR = {
+const PREVIEW_OPERATOR: ConsoleOperator = {
   id: "preview-operator",
   name: "Preview",
   email: "preview@localhost",
   isAdmin: true,
+  canManageReports: false,
 };
 
 /**

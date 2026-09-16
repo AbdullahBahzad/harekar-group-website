@@ -149,6 +149,24 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  /*
+   * Printing (including "Save as PDF") drops every CSS background colour by
+   * default — real content like the map's OSM tiles and SVG border survive
+   * because they aren't `background-color`, but the page's own dark ground
+   * around them turns white. This opts every element back in; it has no
+   * effect on screen, only on a printed or PDF-exported page.
+   */
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+  /*
+   * Windows/Chrome "Forced colors" (high-contrast) mode rewrites every
+   * background-color, text-color and border-color to a small system
+   * palette, turning the whole page white-on-black-on-blue-links except
+   * for real images like the map's tiles. The brand is meant to look the
+   * same everywhere, so this keeps the site's own palette active instead
+   * of letting that mode override it. Inherited, so it cascades from here.
+   */
+  forced-color-adjust: none;
 }
 
 /*
@@ -282,7 +300,14 @@ html::-webkit-scrollbar {
     contrast(0.92);
 }
 .iraq-leaflet .leaflet-container {
-  background: var(--color-ink);
+  /*
+   * Transparent, not ink: when `maskOutside` clips the map's content to
+   * Iraq's silhouette (see IraqLeafletMap.tsx), a solid container colour
+   * would still paint a rectangle behind the clip, recreating the exact
+   * "black box" the clip exists to avoid. The card wrapping the map
+   * supplies its own backdrop instead.
+   */
+  background: transparent;
   font-family: inherit;
   outline: none;
 }

@@ -29,6 +29,7 @@ export default async function AccountsStation({
       email: true,
       isPro: true,
       isAdmin: true,
+      canManageReports: true,
       proUntil: true,
       createdAt: true,
       orders: {
@@ -59,11 +60,12 @@ export default async function AccountsStation({
       <div className="mb-5">
         <OperatorPanel
           operators={users
-            .filter((user) => user.isAdmin)
+            .filter((user) => user.isAdmin || user.canManageReports)
             .map((user) => ({
               id: user.id,
               name: user.name,
               email: user.email,
+              role: user.isAdmin ? ("admin" as const) : ("reports" as const),
             }))}
           currentOperatorId={operator.id}
         />
@@ -117,6 +119,9 @@ export default async function AccountsStation({
                       }
                     />
                     {user.isAdmin && <Tag on label={t("accounts.console")} />}
+                    {!user.isAdmin && user.canManageReports && (
+                      <Tag on label={t("accounts.reportsOnly")} />
+                    )}
                     {paid > 0 && (
                       <span className="text-bone/60 text-xs tabular-nums">
                         {t("accounts.paidCount", { count: paid })}

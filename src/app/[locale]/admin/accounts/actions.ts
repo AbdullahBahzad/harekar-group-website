@@ -7,6 +7,15 @@ import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { extendProUntil } from "@/lib/entitlement";
 import { locales } from "@/i18n/routing";
+/*
+ * Type-only re-export is fine from a "use server" file — it erases at
+ * compile time, so it is not really an export at all by the time this rule
+ * is checked. `OPERATOR_ROLES` itself, a real runtime value, cannot follow
+ * it here; `OperatorPanel` imports that constant straight from
+ * `operator-role.ts` instead — see that file's doc comment for why.
+ */
+import { OPERATOR_ROLES, type OperatorRole } from "@/lib/operator-role";
+export type { OperatorRole };
 
 /** Same cost factor as registration — one password-hashing policy, not two. */
 const BCRYPT_ROUNDS = 12;
@@ -120,6 +129,11 @@ export async function toggleUserAdmin(formData: FormData) {
 
 /* ---- operators ----------------------------------------------------------- */
 
+/** The two flags a role expands to, ready to spread into a Prisma write. */
+function roleFlags(role: OperatorRole) {
+  return { isAdmin: role === "admin", canManageReports: role === "reports" };
+}
+
 export type OperatorFormState = {
   status: "idle" | "error" | "success";
   /*
@@ -136,14 +150,17 @@ export type OperatorFormState = {
   /*
    * Echoed back on failure. React 19 resets uncontrolled fields once an action
    * completes, so without this a rejected grant costs the operator the address
-   * they just typed.
+   * and role they just chose.
    */
   email?: string;
+  role?: OperatorRole;
 };
 
 /**
  * Grants console access by email — to an existing account, or to a brand new
- * one, created here with the password supplied alongside it.
+ * one, created here with the password supplied alongside it. The role picked
+ * in the form decides which of the two access flags the account gets; see
+ * `roleFlags`.
  *
  * The password is mandatory, not an optional extra: this is the only place
  * an operator account gets a password set on it through the console, so
@@ -151,10 +168,10 @@ export type OperatorFormState = {
  * known credentials rather than depending on whether the person happened to
  * register on the public site first.
  *
- * An email that already belongs to an admin is refused rather than silently
- * rewriting their password — the button says "grant access", and resetting
- * someone else's credentials is a deliberate act this form does not do by
- * accident.
+ * An email that already belongs to an operator — of either role — is refused
+ * rather than silently rewriting their password — the button says "grant
+ * access", and resetting someone else's credentials is a deliberate act this
+ * form does not do by accident.
  */
 export async function grantAdminByEmail(
   _prevState: OperatorFormState,
@@ -172,15 +189,19 @@ export async function grantAdminByEmail(
     .trim()
     .toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const rawRole = String(formData.get("role") ?? "admin");
+  const role: OperatorRole = OPERATOR_ROLES.includes(rawRole as OperatorRole)
+    ? (rawRole as OperatorRole)
+    : "admin";
 
   if (!email) {
-    return { status: "error", messageKey: "enterEmail" };
+    return { status: "error", messageKey: "enterEmail", role };
   }
   if (!password) {
-    return { status: "error", messageKey: "enterPassword", email };
+    return { status: "error", messageKey: "enterPassword", email, role };
   }
   if (password.length < MIN_PASSWORD_LENGTH) {
-    return { status: "error", messageKey: "errorPasswordShort", email };
+    return { status: "error", messageKey: "errorPasswordShort", email, role };
   }
 
   /*
@@ -192,13 +213,13 @@ export async function grantAdminByEmail(
   try {
     const user = await prisma.user.findUnique({
       where: { email },
-      select: { id: true, name: true, isAdmin: true },
+      select: { id: true, name: true, isAdmin: true, canManageReports: true },
     });
 
     if (!user) {
       const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
       const created = await prisma.user.create({
-        data: { email, passwordHash, isAdmin: true },
+        data: { email, passwordHash, ...roleFlags(role) },
       });
 
       revalidateAccounts();
@@ -209,12 +230,13 @@ export async function grantAdminByEmail(
       };
     }
 
-    if (user.isAdmin) {
+    if (user.isAdmin || user.canManageReports) {
       return {
         status: "error",
         messageKey: "alreadyOperator",
         values: { who: user.name ?? email },
         email,
+        role,
       };
     }
 
@@ -222,7 +244,7 @@ export async function grantAdminByEmail(
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { isAdmin: true, passwordHash },
+      data: { ...roleFlags(role), passwordHash },
     });
 
     revalidateAccounts();
@@ -237,8 +259,56 @@ export async function grantAdminByEmail(
       status: "error",
       messageKey: "databaseUnreachable",
       email,
+      role,
     };
   }
+}
+
+/**
+ * Switches an existing operator between the two roles — "reports" if they
+ * are currently "admin" and back again. Self-protected the same way
+ * `toggleUserAdmin` is: changing your own access on a single-operator
+ * deployment can lock the console with no way back in.
+ */
+export async function setOperatorRole(formData: FormData) {
+  const operatorId = await assertAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) throw new Error("Missing user id");
+  if (id === operatorId) throw new Error("You cannot change your own access");
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { isAdmin: true },
+  });
+  if (!user) throw new Error("Unknown user");
+
+  await prisma.user.update({
+    where: { id },
+    data: roleFlags(user.isAdmin ? "reports" : "admin"),
+  });
+
+  revalidateAccounts();
+}
+
+/**
+ * Removes console access entirely — both flags off. Distinct from
+ * `toggleUserAdmin`, which only ever touches `isAdmin` and is used by the
+ * general account register; this is the Operators panel's own "remove"
+ * action and has to clear `canManageReports` too, or a reports-only
+ * operator's access would survive being "revoked".
+ */
+export async function revokeOperatorAccess(formData: FormData) {
+  const operatorId = await assertAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) throw new Error("Missing user id");
+  if (id === operatorId) throw new Error("You cannot change your own access");
+
+  await prisma.user.update({
+    where: { id },
+    data: { isAdmin: false, canManageReports: false },
+  });
+
+  revalidateAccounts();
 }
 
 /**

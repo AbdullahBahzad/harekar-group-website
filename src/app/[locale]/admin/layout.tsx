@@ -6,7 +6,7 @@ import {
   getTranslations,
   setRequestLocale,
 } from "next-intl/server";
-import { requireAdmin } from "@/lib/admin";
+import { requireReportsAccess } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import ConsoleRail from "@/components/admin/ConsoleRail";
 import { orPreview } from "@/lib/admin-preview";
@@ -40,7 +40,13 @@ export default async function AdminLayout({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const operator = await requireAdmin(locale);
+  /*
+   * The looser of the two gates: a reports-only operator has to get past
+   * this layout to reach their one station at all. Every individual page
+   * except Sources/Reports still calls the strict `requireAdmin` itself, so
+   * this alone does not widen what a reports-only operator can open.
+   */
+  const operator = await requireReportsAccess(locale);
   const t = await getTranslations({ locale, namespace: "admin" });
 
   /*
@@ -90,6 +96,7 @@ export default async function AdminLayout({
             "/admin/accounts": pending,
           }}
           operatorLabel={operator.name ?? operator.email}
+          restrictedToReports={!operator.isAdmin}
           locale={locale}
           signOutAction={signOutOperator}
         />
