@@ -69,6 +69,19 @@
       "titlePro": "{city} — التقرير مفتوح",
       "bodyPro": "صلاحية برو لديك تشمل هذا التقرير. التقييم الكامل قيد الإعداد للنشر وسيظهر هنا.",
       "createAccount": "إنشاء حساب"
+    },
+    "panel": {
+      "close": "إغلاق",
+      "title": "{count, plural, one {حادثة واحدة في هذا الموقع} other {# حوادث في هذا الموقع}}",
+      "viewFullReport": "التقرير الكامل"
+    },
+    "report": {
+      "backToMap": "العودة إلى الخريطة",
+      "notFoundTitle": "التقرير غير موجود",
+      "resolved": "مُغلَق",
+      "updated": "آخر تحديث {date}",
+      "copyLink": "نسخ الرابط",
+      "linkCopied": "تم نسخ الرابط"
     }
   },
   "services": {
@@ -649,6 +662,10 @@
       "markerCount": "{count} مؤشر",
       "mapLabel": "خريطة المعلومات الأمنية. انقر لوضع مؤشر.",
       "mapHint": "انقر على الأرض للوضع · اسحب المؤشر لتحريكه · اختره للتعديل",
+      "latitude": "خط العرض",
+      "longitude": "خط الطول",
+      "goToCoordinates": "الانتقال إلى الإحداثيات",
+      "coordinatesInvalid": "أدخل خط عرض وخط طول صحيحين.",
       "assessment": "التقييم",
       "newMarker": "مؤشر جديد",
       "emptyEditor": "اختر مؤشراً لتعديل تقييمه، أو انقر في أي مكان على الخريطة لوضع مؤشر جديد.",
@@ -656,6 +673,7 @@
       "emptyRegister": "لا توجد مؤشرات بعد.",
       "draftSuffix": "مسودة",
       "proTag": "PRO",
+      "resolvedTag": "مُغلَق",
       "location": "الموقع",
       "severity": "درجة الخطورة",
       "access": "الوصول",
@@ -663,6 +681,9 @@
       "accessLocked": "لمشتركي Pro فقط",
       "headline": "العنوان الرئيسي",
       "publishToMap": "نشره على الخريطة العامة",
+      "markResolved": "مُغلَق — خارج الخريطة النشطة",
+      "resolve": "إغلاق",
+      "reopen": "إعادة فتح",
       "coordinates": "{lat}°شمالاً · {lon}°شرقاً",
       "updatedAt": "حُدّث في {date}",
       "updatedBy": "بواسطة {who}",
@@ -837,6 +858,42 @@
         "MODERATE": "متوسط",
         "HIGH": "مرتفع",
         "CRITICAL": "حرج"
+      },
+      "governorateMatrix": "مصفوفة مخاطر المحافظات",
+      "governorateDriverPlaceholder": "ما الذي يحرّك هذا التقييم",
+      "trend": {
+        "RISING": "متصاعد",
+        "STABLE": "مستقر",
+        "EASING": "متراجع"
+      },
+      "regionGroups": {
+        "BAGHDAD": "بغداد",
+        "CENTRAL": "وسط العراق",
+        "SOUTHERN": "جنوب العراق",
+        "BASRA": "البصرة",
+        "NORTHERN": "شمال العراق",
+        "KURDISTAN_REGION": "إقليم كردستان العراق"
+      },
+      "governorateNames": {
+        "BAGHDAD": "بغداد",
+        "WASIT": "واسط",
+        "SALAH_AL_DIN": "صلاح الدين",
+        "DIYALA": "ديالى",
+        "ANBAR": "الأنبار",
+        "BABIL": "بابل",
+        "KARBALA": "كربلاء",
+        "NAJAF": "النجف",
+        "QADISIYAH": "القادسية",
+        "MUTHANNA": "المثنى",
+        "DHI_QAR": "ذي قار",
+        "MAYSAN": "ميسان",
+        "BASRA": "البصرة",
+        "NINAWA": "نينوى",
+        "KIRKUK": "كركوك",
+        "ERBIL": "أربيل",
+        "SULAYMANIYAH": "السليمانية",
+        "DUHOK": "دهوك",
+        "HALABJA": "حلبجة"
       }
     }
   },

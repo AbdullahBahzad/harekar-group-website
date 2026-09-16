@@ -21,6 +21,12 @@ export type LeafletPin = {
   locked?: boolean;
   /** Console only — a dashed selection ring around the pin being edited. */
   selected?: boolean;
+  /**
+   * How many reports share this pin's spot — the public map groups markers
+   * at (near enough) the same coordinates into one pin rather than stacking
+   * them illegibly. Shown as a small badge when greater than 1.
+   */
+  count?: number;
   label?: string;
   draggable?: boolean;
   onClick?: () => void;
@@ -172,20 +178,28 @@ export default function IraqLeafletMap({
 
     for (const pin of markers) {
       const size = pin.locked ? 26 : 18;
+      const countBadge =
+        pin.count && pin.count > 1
+          ? `<b class="harekar-pin-count">${pin.count > 99 ? "99+" : pin.count}</b>`
+          : "";
       const icon = L.divIcon({
-        className: "harekar-pin-wrap",
+        className: pin.onClick
+          ? "harekar-pin-wrap harekar-pin-clickable"
+          : "harekar-pin-wrap",
         html: pin.locked
           ? `
             ${pin.pulse ? `<span class="harekar-pin-pulse" style="--tone:${pin.tone}"></span>` : ""}
             <span class="harekar-pin-locked" style="--tone:${pin.tone}">
               <span class="harekar-pin-locked-glyph" aria-hidden="true">!</span>
             </span>
+            ${countBadge}
           `
           : `
             ${pin.pulse ? `<span class="harekar-pin-pulse" style="--tone:${pin.tone}"></span>` : ""}
             ${pin.selected ? `<span class="harekar-pin-selected"></span>` : ""}
             ${pin.ring ? `<span class="harekar-pin-ring" style="--tone:${pin.tone}"></span>` : ""}
             <span class="harekar-pin" style="--tone:${pin.tone};${pin.dim ? "background:var(--color-ink);" : ""}"></span>
+            ${countBadge}
           `,
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2],

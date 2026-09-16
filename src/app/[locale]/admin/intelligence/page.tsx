@@ -43,6 +43,8 @@ export default async function IntelligenceStation({
         headline: marker.headline,
         body: marker.body,
         published: marker.published,
+        resolved: marker.resolved,
+        revision: marker.revision,
         updatedAt: marker.updatedAt.toISOString(),
         updatedByName:
           marker.updatedBy?.name ?? marker.updatedBy?.email ?? null,
@@ -78,6 +80,8 @@ export default async function IntelligenceStation({
       headline: marker.headline,
       body: marker.body,
       published: marker.published,
+      resolved: false,
+      revision: 1,
       updatedAt: marker.updatedAt.toISOString(),
       updatedByName: marker.updatedBy?.name ?? null,
       // The sample set is illustrative markers only — incident detail is a

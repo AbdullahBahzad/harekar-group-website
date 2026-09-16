@@ -23,9 +23,69 @@ export type ReportNewsItem = {
   region: Region;
 };
 
+/**
+ * The direction a governorate's risk rating has moved since the prior
+ * report — orthogonal to the rating itself, the same way `MarkerSeverity`
+ * and `MarkerAccess` vary independently on the intelligence map.
+ */
+export const RISK_TRENDS = ["RISING", "STABLE", "EASING"] as const;
+export type RiskTrend = (typeof RISK_TRENDS)[number];
+
+/**
+ * Iraq's 19 governorates, grouped the way the report's own regional
+ * sections read — Baghdad and Basra stand alone, the rest cluster into
+ * central, southern, northern and the Kurdistan Region.
+ */
+export const REGION_GROUPS = [
+  "BAGHDAD",
+  "CENTRAL",
+  "SOUTHERN",
+  "BASRA",
+  "NORTHERN",
+  "KURDISTAN_REGION",
+] as const;
+export type RegionGroup = (typeof REGION_GROUPS)[number];
+
+export const GOVERNORATES = [
+  { key: "BAGHDAD", group: "BAGHDAD" },
+  { key: "WASIT", group: "CENTRAL" },
+  { key: "SALAH_AL_DIN", group: "CENTRAL" },
+  { key: "DIYALA", group: "CENTRAL" },
+  { key: "ANBAR", group: "CENTRAL" },
+  { key: "BABIL", group: "CENTRAL" },
+  { key: "KARBALA", group: "CENTRAL" },
+  { key: "NAJAF", group: "SOUTHERN" },
+  { key: "QADISIYAH", group: "SOUTHERN" },
+  { key: "MUTHANNA", group: "SOUTHERN" },
+  { key: "DHI_QAR", group: "SOUTHERN" },
+  { key: "MAYSAN", group: "SOUTHERN" },
+  { key: "BASRA", group: "BASRA" },
+  { key: "NINAWA", group: "NORTHERN" },
+  { key: "KIRKUK", group: "NORTHERN" },
+  { key: "ERBIL", group: "KURDISTAN_REGION" },
+  { key: "SULAYMANIYAH", group: "KURDISTAN_REGION" },
+  { key: "DUHOK", group: "KURDISTAN_REGION" },
+  { key: "HALABJA", group: "KURDISTAN_REGION" },
+] as const satisfies { key: string; group: RegionGroup }[];
+export type GovernorateKey = (typeof GOVERNORATES)[number]["key"];
+
+/** One row of the governorate risk matrix. */
+export type GovernorateRiskEntry = {
+  governorate: GovernorateKey;
+  risk: ThreatLevel;
+  trend: RiskTrend;
+  /** What is driving the rating — the "why", one or two sentences. */
+  driver: string;
+};
+
 /** Shape of `DailyReport.content` in the database. */
 export type ReportContent = {
   items: ReportNewsItem[];
+  /**
+   * Optional: reports saved before this matrix existed have none, and an
+   * analyst may still choose to skip it for a quiet week.
+   */
+  governorates?: GovernorateRiskEntry[];
 };
 
 /**

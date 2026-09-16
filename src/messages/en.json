@@ -69,6 +69,19 @@
       "titlePro": "{city} — report unlocked",
       "bodyPro": "Your Pro access covers this report. The full assessment is being prepared for publication and will appear here.",
       "createAccount": "Create an account"
+    },
+    "panel": {
+      "close": "Close",
+      "title": "{count, plural, one {1 incident at this location} other {# incidents at this location}}",
+      "viewFullReport": "Full report"
+    },
+    "report": {
+      "backToMap": "Back to the map",
+      "notFoundTitle": "Report not found",
+      "resolved": "Resolved",
+      "updated": "Updated {date}",
+      "copyLink": "Copy link",
+      "linkCopied": "Link copied"
     }
   },
   "services": {
@@ -649,6 +662,10 @@
       "markerCount": "{count} markers",
       "mapLabel": "Intelligence map. Click to place a marker.",
       "mapHint": "Click ground to place · drag a pin to move · select to edit",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "goToCoordinates": "Go to coordinates",
+      "coordinatesInvalid": "Enter a valid latitude and longitude.",
       "assessment": "Assessment",
       "newMarker": "New marker",
       "emptyEditor": "Select a marker to edit its assessment, or click anywhere on the map to place a new one.",
@@ -656,6 +673,7 @@
       "emptyRegister": "No markers yet.",
       "draftSuffix": "draft",
       "proTag": "PRO",
+      "resolvedTag": "Resolved",
       "location": "Location",
       "severity": "Severity",
       "access": "Access",
@@ -663,6 +681,9 @@
       "accessLocked": "Pro only",
       "headline": "Headline",
       "publishToMap": "Publish to the public map",
+      "markResolved": "Resolved — off the active map",
+      "resolve": "Resolve",
+      "reopen": "Reopen",
       "coordinates": "{lat}°N · {lon}°E",
       "updatedAt": "updated {date}",
       "updatedBy": "by {who}",
@@ -837,6 +858,42 @@
         "MODERATE": "Moderate",
         "HIGH": "High",
         "CRITICAL": "Critical"
+      },
+      "governorateMatrix": "Governorate risk matrix",
+      "governorateDriverPlaceholder": "What is driving this rating",
+      "trend": {
+        "RISING": "Rising",
+        "STABLE": "Stable",
+        "EASING": "Easing"
+      },
+      "regionGroups": {
+        "BAGHDAD": "Baghdad",
+        "CENTRAL": "Central Iraq",
+        "SOUTHERN": "Southern Iraq",
+        "BASRA": "Basra",
+        "NORTHERN": "Northern Iraq",
+        "KURDISTAN_REGION": "Kurdistan Region of Iraq"
+      },
+      "governorateNames": {
+        "BAGHDAD": "Baghdad",
+        "WASIT": "Wasit",
+        "SALAH_AL_DIN": "Salah al-Din",
+        "DIYALA": "Diyala",
+        "ANBAR": "Anbar",
+        "BABIL": "Babil",
+        "KARBALA": "Karbala",
+        "NAJAF": "Najaf",
+        "QADISIYAH": "Qadisiyah",
+        "MUTHANNA": "Muthanna",
+        "DHI_QAR": "Dhi Qar",
+        "MAYSAN": "Maysan",
+        "BASRA": "Basra",
+        "NINAWA": "Ninawa",
+        "KIRKUK": "Kirkuk",
+        "ERBIL": "Erbil",
+        "SULAYMANIYAH": "Sulaymaniyah",
+        "DUHOK": "Duhok",
+        "HALABJA": "Halabja"
       }
     }
   },

@@ -121,6 +121,7 @@ function readMarkerForm(formData: FormData) {
   const headline = String(formData.get("headline") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
   const published = formData.get("published") === "on";
+  const resolved = formData.get("resolved") === "on";
 
   if (!label) throw new Error("A marker needs a label");
   if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
@@ -137,6 +138,7 @@ function readMarkerForm(formData: FormData) {
     headline: headline || null,
     body: body || null,
     published,
+    resolved,
     ...readIncidentDetail(formData),
   };
 }
@@ -177,12 +179,34 @@ export async function updateMarker(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   if (!id) throw new Error("Missing marker id");
 
+  /*
+   * The revision the editor was opened at, not the current one — that is the
+   * entire mechanism. A save carries the value it last *read*, and the write
+   * below only succeeds if the row is still at that value, so two operators
+   * opening the same marker and saving in turn get one success and one
+   * rejection instead of the second silently discarding the first's edit.
+   */
+  const expectedRevision = Number(formData.get("revision"));
+  if (!Number.isInteger(expectedRevision)) {
+    throw new Error("Missing marker revision");
+  }
+
   const data = readMarkerForm(formData);
 
-  await prisma.intelMarker.update({
-    where: { id },
-    data: { ...data, updatedById: operatorId },
+  const result = await prisma.intelMarker.updateMany({
+    where: { id, revision: expectedRevision },
+    data: { ...data, updatedById: operatorId, revision: { increment: 1 } },
   });
+  if (result.count === 0) {
+    const stillExists = await prisma.intelMarker.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!stillExists) throw new Error("Unknown marker");
+    throw new Error(
+      "This marker changed in another session. Refresh and try again.",
+    );
+  }
 
   revalidateIntel();
 }
@@ -210,7 +234,39 @@ export async function toggleMarkerPublished(formData: FormData) {
 
   await prisma.intelMarker.update({
     where: { id },
-    data: { published: !marker.published, updatedById: operatorId },
+    data: {
+      published: !marker.published,
+      updatedById: operatorId,
+      revision: { increment: 1 },
+    },
+  });
+
+  revalidateIntel();
+}
+
+/**
+ * Resolves or reopens a marker without going through the full editor — the
+ * one-click counterpart to the "Edit / resolve" button on the reference
+ * project's incident cards.
+ */
+export async function toggleMarkerResolved(formData: FormData) {
+  const operatorId = await assertAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) throw new Error("Missing marker id");
+
+  const marker = await prisma.intelMarker.findUnique({
+    where: { id },
+    select: { resolved: true },
+  });
+  if (!marker) throw new Error("Unknown marker");
+
+  await prisma.intelMarker.update({
+    where: { id },
+    data: {
+      resolved: !marker.resolved,
+      updatedById: operatorId,
+      revision: { increment: 1 },
+    },
   });
 
   revalidateIntel();
@@ -244,7 +300,11 @@ export async function moveMarker(
 
   await prisma.intelMarker.update({
     where: { id },
-    data: { ...clampCoordinates(longitude, latitude), updatedById: operatorId },
+    data: {
+      ...clampCoordinates(longitude, latitude),
+      updatedById: operatorId,
+      revision: { increment: 1 },
+    },
   });
 
   revalidateIntel();

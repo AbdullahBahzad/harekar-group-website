@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { formatDate } from "@/lib/admin-format";
 import { cn } from "@/lib/utils";
+import { IRAQ_BOUNDS } from "@/data/iraq";
 import Panel from "@/components/admin/Panel";
 import type { LeafletPin } from "@/components/IraqLeafletMap";
 
@@ -20,6 +21,7 @@ import {
   moveMarker,
   seedFromStaticMarkers,
   toggleMarkerPublished,
+  toggleMarkerResolved,
   updateMarker,
 } from "@/app/[locale]/admin/intelligence/actions";
 
@@ -33,6 +35,10 @@ export type ConsoleMarker = {
   headline: string | null;
   body: string | null;
   published: boolean;
+  /** Closed out — see the schema comment on `IntelMarker.resolved`. */
+  resolved: boolean;
+  /** The value this row was read at — carried back on save; see `updateMarker`. */
+  revision: number;
   updatedAt: string;
   updatedByName: string | null;
   /**
@@ -75,9 +81,10 @@ type Draft = { longitude: number; latitude: number };
  *
  * The map is the control surface, not an illustration of one. Clicking empty
  * ground starts a marker there; dragging a pin moves it; selecting one opens
- * its assessment beside the map. That directness is the point — an operator
- * editing a country's threat picture should be pointing at the country, not
- * typing latitudes into a table.
+ * its assessment beside the map. Typing exact coordinates is the third way
+ * in — for a location given as numbers (a report, a grid reference) rather
+ * than a place to eyeball on screen — and it goes through the same `draft`
+ * state a click does, so the two are never out of sync with each other.
  *
  * The same `IraqLeafletMap` the public map uses is used here, so a pin
  * placed in the console lands on precisely the same real-world spot out on
@@ -96,6 +103,42 @@ export default function IntelConsole({
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
+
+  // The "enter coordinates" fallback to clicking the map — kept as raw
+  // strings so a partial or momentarily invalid number (a bare "-", a typo)
+  // doesn't fight the input while the operator is still typing it.
+  const [coordLat, setCoordLat] = useState("");
+  const [coordLng, setCoordLng] = useState("");
+  const [coordError, setCoordError] = useState(false);
+
+  function handleGoToCoordinates(event: React.FormEvent) {
+    event.preventDefault();
+    const latitude = Number(coordLat);
+    const longitude = Number(coordLng);
+    if (
+      !coordLat.trim() ||
+      !coordLng.trim() ||
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude)
+    ) {
+      setCoordError(true);
+      return;
+    }
+    setCoordError(false);
+    setSelectedId(null);
+    setDraft({
+      latitude: Math.min(
+        IRAQ_BOUNDS.maxLat,
+        Math.max(IRAQ_BOUNDS.minLat, latitude),
+      ),
+      longitude: Math.min(
+        IRAQ_BOUNDS.maxLon,
+        Math.max(IRAQ_BOUNDS.minLon, longitude),
+      ),
+    });
+    setCoordLat("");
+    setCoordLng("");
+  }
 
   /*
    * Optimistic positions so a dragged pin tracks the pointer immediately.
@@ -129,7 +172,7 @@ export default function IntelConsole({
         lat: marker.latitude,
         lng: marker.longitude,
         tone: severityTone[marker.severity],
-        dim: !marker.published,
+        dim: !marker.published || marker.resolved,
         // Repurposed here for "gated" rather than severity: the console has
         // its own dedicated colour-by-severity dot, so the ring is free to
         // flag the one other thing worth a glance on the map itself.
@@ -137,7 +180,8 @@ export default function IntelConsole({
         selected: marker.id === selectedId,
         label:
           marker.label +
-          (!marker.published ? ` ·${t("intelligence.draftSuffix")}` : ""),
+          (!marker.published ? ` ·${t("intelligence.draftSuffix")}` : "") +
+          (marker.resolved ? ` ·${t("intelligence.resolvedTag")}` : ""),
         draggable: true,
         onClick: () => {
           setDraft(null);
@@ -170,6 +214,7 @@ export default function IntelConsole({
                 setSelectedId(null);
                 setDraft({ longitude: lng, latitude: lat });
               }}
+              maskOutside
               ariaLabel={t("intelligence.mapLabel")}
             />
           </div>
@@ -177,6 +222,60 @@ export default function IntelConsole({
           <p className="text-bone/56 mt-3 text-xs">
             {t("intelligence.mapHint")}
           </p>
+
+          {/*
+           * The typed-coordinate fallback to clicking the map — for a
+           * location handed over as numbers rather than one worth eyeballing
+           * on screen. Feeds the same `draft` state a click does, so the
+           * pending pin appears on the map exactly as it would from a click,
+           * ready to fill in and save below.
+           */}
+          <form
+            onSubmit={handleGoToCoordinates}
+            className="border-bone/12 mt-4 flex flex-wrap items-end gap-2 border-t pt-4"
+          >
+            <Field label={t("intelligence.latitude")}>
+              <input
+                type="number"
+                step="any"
+                inputMode="decimal"
+                dir="ltr"
+                value={coordLat}
+                onChange={(e) => {
+                  setCoordLat(e.target.value);
+                  setCoordError(false);
+                }}
+                placeholder="35.4700"
+                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-32 border px-3 py-2 text-sm outline-none transition-colors"
+              />
+            </Field>
+            <Field label={t("intelligence.longitude")}>
+              <input
+                type="number"
+                step="any"
+                inputMode="decimal"
+                dir="ltr"
+                value={coordLng}
+                onChange={(e) => {
+                  setCoordLng(e.target.value);
+                  setCoordError(false);
+                }}
+                placeholder="44.3900"
+                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-32 border px-3 py-2 text-sm outline-none transition-colors"
+              />
+            </Field>
+            <button
+              type="submit"
+              className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer border px-4 py-2 text-xs transition-colors"
+            >
+              {t("intelligence.goToCoordinates")}
+            </button>
+            {coordError && (
+              <p className="text-status-critical w-full text-xs">
+                {t("intelligence.coordinatesInvalid")}
+              </p>
+            )}
+          </form>
         </div>
       </Panel>
 
@@ -199,6 +298,9 @@ export default function IntelConsole({
             ) : draft ? (
               <MarkerEditor
                 draft={draft}
+                onDraftMove={(patch) =>
+                  setDraft((current) => (current ? { ...current, ...patch } : current))
+                }
                 onClose={() => setDraft(null)}
               />
             ) : (
@@ -272,6 +374,11 @@ export default function IntelConsole({
                       {t("intelligence.proTag")}
                     </span>
                   )}
+                  {marker.resolved && (
+                    <span className="text-bone/45 text-xs">
+                      {t("intelligence.resolvedTag")}
+                    </span>
+                  )}
                 </button>
               </li>
             ))}
@@ -287,17 +394,41 @@ export default function IntelConsole({
 function MarkerEditor({
   marker,
   draft,
+  onDraftMove,
   onClose,
 }: {
   marker?: ConsoleMarker;
   draft?: Draft;
+  /**
+   * Only present for a new, unsaved marker — lets typing coordinates here
+   * move the pending pin on the map live, the same way a click placed it.
+   * An existing marker's position still changes on typing, it just takes
+   * effect on Save like any other field, rather than live like a drag.
+   */
+  onDraftMove?: (patch: Partial<Draft>) => void;
   onClose: () => void;
 }) {
   const t = useTranslations("admin");
   const locale = useLocale();
   const editing = Boolean(marker);
-  const longitude = marker?.longitude ?? draft?.longitude ?? 0;
-  const latitude = marker?.latitude ?? draft?.latitude ?? 0;
+  const initialLongitude = marker?.longitude ?? draft?.longitude ?? 0;
+  const initialLatitude = marker?.latitude ?? draft?.latitude ?? 0;
+  /*
+   * Local, editable, and text rather than number — typing a coordinate is a
+   * third way to place a marker alongside clicking and dragging, so these
+   * can no longer be the read-only hidden fields they were. Text avoids a
+   * controlled `type="number"` input fighting the user over "-" or "35." on
+   * the way to a real value, which `valueAsNumber` turns into `NaN` mid-edit.
+   * `key={selected?.id ?? ...}` on this component in the parent remounts it
+   * per target, so plain `useState` is enough here; there is no stale-prop
+   * case to guard against.
+   */
+  const [latitudeText, setLatitudeText] = useState(String(initialLatitude));
+  const [longitudeText, setLongitudeText] = useState(String(initialLongitude));
+  // For display only (the coordinates line below) — a mid-edit, not-yet-
+  // valid string falls back to the last known-good value rather than NaN.
+  const latitude = Number(latitudeText) || initialLatitude;
+  const longitude = Number(longitudeText) || initialLongitude;
 
   return (
     <Panel
@@ -324,8 +455,49 @@ function MarkerEditor({
         className="space-y-4 p-5"
       >
         {marker && <input type="hidden" name="id" value={marker.id} />}
-        <input type="hidden" name="longitude" value={longitude} />
-        <input type="hidden" name="latitude" value={latitude} />
+        {/*
+         * The revision this form was opened at, not "current" — `updateMarker`
+         * rejects the save if the row has moved on since, rather than one
+         * operator's edit silently discarding another's. See the schema
+         * comment on `IntelMarker.revision`.
+         */}
+        {marker && (
+          <input type="hidden" name="revision" value={marker.revision} />
+        )}
+        <div className="grid grid-cols-2 gap-3">
+          <Field label={t("intelligence.latitude")}>
+            <input
+              type="number"
+              step="any"
+              inputMode="decimal"
+              dir="ltr"
+              name="latitude"
+              value={latitudeText}
+              onChange={(e) => {
+                setLatitudeText(e.target.value);
+                const next = e.target.valueAsNumber;
+                if (!Number.isNaN(next)) onDraftMove?.({ latitude: next });
+              }}
+              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+            />
+          </Field>
+          <Field label={t("intelligence.longitude")}>
+            <input
+              type="number"
+              step="any"
+              inputMode="decimal"
+              dir="ltr"
+              name="longitude"
+              value={longitudeText}
+              onChange={(e) => {
+                setLongitudeText(e.target.value);
+                const next = e.target.valueAsNumber;
+                if (!Number.isNaN(next)) onDraftMove?.({ longitude: next });
+              }}
+              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+            />
+          </Field>
+        </div>
 
         <Field label={t("intelligence.location")}>
           <input
@@ -598,17 +770,37 @@ function MarkerEditor({
           </div>
         </details>
 
-        <label className="flex cursor-pointer items-center gap-2.5">
-          <input
-            type="checkbox"
-            name="published"
-            defaultChecked={marker?.published ?? false}
-            className="accent-gold size-4 cursor-pointer"
-          />
-          <span className="text-bone/70 text-xs">
-            {t("intelligence.publishToMap")}
-          </span>
-        </label>
+        <div className="flex flex-wrap gap-x-6 gap-y-2.5">
+          <label className="flex cursor-pointer items-center gap-2.5">
+            <input
+              type="checkbox"
+              name="published"
+              defaultChecked={marker?.published ?? false}
+              className="accent-gold size-4 cursor-pointer"
+            />
+            <span className="text-bone/70 text-xs">
+              {t("intelligence.publishToMap")}
+            </span>
+          </label>
+
+          {/*
+           * Independent of `published` — see the schema comment on
+           * `IntelMarker.resolved`. A marker can be published and resolved
+           * at once: it stays reachable at its report link, it just drops
+           * off the active map.
+           */}
+          <label className="flex cursor-pointer items-center gap-2.5">
+            <input
+              type="checkbox"
+              name="resolved"
+              defaultChecked={marker?.resolved ?? false}
+              className="accent-gold size-4 cursor-pointer"
+            />
+            <span className="text-bone/70 text-xs">
+              {t("intelligence.markResolved")}
+            </span>
+          </label>
+        </div>
 
         <p className="text-bone/52 text-xs tabular-nums">
           {t("intelligence.coordinates", {
@@ -641,6 +833,16 @@ function MarkerEditor({
                 className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 {marker.published ? t("common.withdraw") : t("common.publish")}
+              </button>
+
+              <button
+                type="submit"
+                formAction={toggleMarkerResolved}
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+              >
+                {marker.resolved
+                  ? t("intelligence.reopen")
+                  : t("intelligence.resolve")}
               </button>
 
               {/*

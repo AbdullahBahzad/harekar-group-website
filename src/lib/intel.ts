@@ -25,7 +25,10 @@ export async function getPublishedMarkers(
 ): Promise<IntelMarker[]> {
   try {
     const rows = await prisma.intelMarker.findMany({
-      where: { published: true },
+      // A resolved marker stays reachable at its own report link (see
+      // `getPublishedMarkerById`) but drops off the *active* picture — the
+      // map is where operators look for what is current, not an archive.
+      where: { published: true, resolved: false },
       orderBy: [{ sortOrder: "asc" }, { label: "asc" }],
       select: {
         id: true,
@@ -65,5 +68,72 @@ export async function getPublishedMarkers(
   } catch (error) {
     console.error("Falling back to static intel markers", error);
     return staticMarkers;
+  }
+}
+
+/** A single marker's full, shareable report — see `report/[id]/page.tsx`. */
+export type MarkerReport = {
+  id: string;
+  label: string;
+  coordinates: [number, number];
+  severity: IntelMarker["severity"];
+  access: IntelMarker["access"];
+  resolved: boolean;
+  updatedAt: Date;
+  headline?: string | null;
+  body?: string | null;
+};
+
+/**
+ * One marker's report, for its own shareable page.
+ *
+ * Deliberately narrower than the admin console's view of the same row: the
+ * analyst's underlying record (category, method, source grading, and the
+ * rest of the incident-detail fields) is never served here either, for the
+ * same reason it is withheld from the map's own dialog — see the schema
+ * comment on `IntelMarker`. A link to this page carries only what the public
+ * map already carries, just for one marker instead of the whole picture.
+ *
+ * Unlike `getPublishedMarkers`, a resolved marker still resolves here — the
+ * link stays good after the incident is closed out, matching "resolved
+ * reports remain in history" rather than 404ing the moment they are.
+ */
+export async function getPublishedMarkerById(
+  id: string,
+  entitled = false,
+): Promise<MarkerReport | null> {
+  try {
+    const row = await prisma.intelMarker.findFirst({
+      where: { id, published: true },
+      select: {
+        id: true,
+        label: true,
+        longitude: true,
+        latitude: true,
+        severity: true,
+        access: true,
+        resolved: true,
+        updatedAt: true,
+        headline: true,
+        body: true,
+      },
+    });
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      label: row.label,
+      coordinates: [row.longitude, row.latitude],
+      severity: row.severity.toLowerCase() as IntelMarker["severity"],
+      access: row.access.toLowerCase() as IntelMarker["access"],
+      resolved: row.resolved,
+      updatedAt: row.updatedAt,
+      ...(entitled || row.access === "OPEN"
+        ? { headline: row.headline, body: row.body }
+        : {}),
+    };
+  } catch (error) {
+    console.error("Could not load marker report", error);
+    return null;
   }
 }

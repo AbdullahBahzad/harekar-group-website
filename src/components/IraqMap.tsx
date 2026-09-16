@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { rtlLocales, type Locale } from "@/i18n/routing";
 import {
   severityColor,
   type IntelMarker,
@@ -24,6 +25,35 @@ const IraqLeafletMap = dynamic(() => import("@/components/IraqLeafletMap"), {
 });
 
 const severityOrder: MarkerSeverity[] = ["clear", "elevated", "critical"];
+const severityRank: Record<MarkerSeverity, number> = {
+  clear: 0,
+  elevated: 1,
+  critical: 2,
+};
+
+type MarkerGroup = {
+  key: string;
+  lat: number;
+  lng: number;
+  markers: IntelMarker[];
+};
+
+/**
+ * Markers within ~11m of each other share one pin — two reports at the same
+ * facility should read as one flagged location with a count, not two dots
+ * fighting for the same pixel.
+ */
+function groupByLocation(markers: IntelMarker[]): MarkerGroup[] {
+  const groups = new Map<string, MarkerGroup>();
+  for (const marker of markers) {
+    const [lng, lat] = marker.coordinates;
+    const key = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+    const group = groups.get(key);
+    if (group) group.markers.push(marker);
+    else groups.set(key, { key, lat, lng, markers: [marker] });
+  }
+  return Array.from(groups.values());
+}
 
 export default function IraqMap({
   markers,
@@ -42,38 +72,59 @@ export default function IraqMap({
    * decided in the browser can be flipped in the browser.
    */
   const { data: session } = useSession();
-  const signedIn = Boolean(session?.user);
   const isPro = Boolean(session?.user?.isPro);
   const reduceMotion = useReducedMotion();
-  const [activeMarker, setActiveMarker] = useState<IntelMarker | null>(null);
+  const [activeGroupKey, setActiveGroupKey] = useState<string | null>(null);
+  /*
+   * The panel is docked at the logical trailing edge (`inset-e-0`), which
+   * Tailwind flips per direction on its own — but a `motion.div`'s `x`
+   * transform is a raw pixel/percent offset with no idea which edge that is,
+   * so the slide-in direction has to be told explicitly.
+   */
+  const isRtl = rtlLocales.includes(useLocale() as Locale);
+  const offscreenX = isRtl ? "-100%" : "100%";
 
-  // Close the report dialog on Escape.
+  const groups = useMemo(() => groupByLocation(markers), [markers]);
+  const activeGroup = groups.find((g) => g.key === activeGroupKey) ?? null;
+
+  // Close the side panel on Escape.
   useEffect(() => {
-    if (!activeMarker) return;
+    if (!activeGroup) return;
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setActiveMarker(null);
+      if (event.key === "Escape") setActiveGroupKey(null);
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [activeMarker]);
+  }, [activeGroup]);
 
   const pins = useMemo<LeafletPin[]>(
     () =>
-      markers.map((marker) => {
-        const locked = marker.access === "locked";
+      groups.map((group) => {
+        const topSeverity = group.markers.reduce<MarkerSeverity>(
+          (top, marker) =>
+            severityRank[marker.severity] > severityRank[top]
+              ? marker.severity
+              : top,
+          "clear",
+        );
+        const locked = group.markers.some((m) => m.access === "locked");
         return {
-          id: marker.id,
-          lat: marker.coordinates[1],
-          lng: marker.coordinates[0],
-          tone: severityColor[marker.severity],
-          label: marker.label,
-          ring: !locked && marker.severity !== "clear",
+          id: group.key,
+          lat: group.lat,
+          lng: group.lng,
+          tone: severityColor[topSeverity],
+          // A shared label for two different reports would misname one of
+          // them, so the permanent tooltip only appears for a lone marker —
+          // the count badge carries the rest.
+          label: group.markers.length === 1 ? group.markers[0].label : undefined,
+          count: group.markers.length,
+          ring: !locked && topSeverity !== "clear",
           locked,
           pulse: locked && !reduceMotion,
-          onClick: locked ? () => setActiveMarker(marker) : undefined,
+          onClick: () => setActiveGroupKey(group.key),
         };
       }),
-    [markers, reduceMotion],
+    [groups, reduceMotion],
   );
 
   return (
@@ -132,92 +183,105 @@ export default function IraqMap({
         </div>
       </div>
 
+      {/*
+       * The side panel: a browsing list for whatever is flagged at one spot.
+       * Reading one report in full — and the only place a link to it can be
+       * shared — is a step further, at its own page; see
+       * `intelligence/report/[id]`.
+       */}
       <AnimatePresence>
-        {activeMarker && (
+        {activeGroup && (
           <motion.div
-            className="fixed inset-0 z-[60] flex items-center justify-center p-6"
+            className="fixed inset-0 z-[60]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <button
               type="button"
-              aria-label={t("modal.close")}
-              onClick={() => setActiveMarker(null)}
-              className="bg-ink/80 absolute inset-0 backdrop-blur-sm"
+              aria-label={t("panel.close")}
+              onClick={() => setActiveGroupKey(null)}
+              className="bg-ink/70 absolute inset-0 backdrop-blur-sm"
             />
 
             <motion.div
               role="dialog"
               aria-modal="true"
-              aria-labelledby="report-title"
-              initial={
-                reduceMotion ? false : { opacity: 0, y: 18, scale: 0.97 }
-              }
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={
-                reduceMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, y: 12, scale: 0.98 }
-              }
+              aria-labelledby="panel-title"
+              initial={reduceMotion ? false : { x: offscreenX }}
+              animate={{ x: 0 }}
+              exit={reduceMotion ? { opacity: 0 } : { x: offscreenX }}
               transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-              className="border-gold/40 bg-surface/95 relative w-full max-w-md rounded-2xl border p-8 shadow-[0_30px_90px_-30px_rgba(0,0,0,0.9)]"
+              className="border-gold/40 bg-surface/95 absolute inset-y-0 inset-e-0 flex w-full max-w-md flex-col border-s shadow-[-30px_0_90px_-30px_rgba(0,0,0,0.9)]"
             >
-              <span className="border-gold/50 text-gold inline-block rounded-full border px-3 py-1 text-[10px] tracking-[0.25em] uppercase">
-                {isPro ? t("modal.badgePro") : t("modal.badge")}
-              </span>
-
-              {/*
-               * The written assessment is present only when the server decided
-               * this reader may have it — an unentitled reader's payload has no
-               * `body` at all, so there is nothing here to reveal. When a
-               * marker simply has not been written up yet, the awaiting-copy
-               * line stands in for a Pro reader, and the upgrade pitch still
-               * shows for everyone else.
-               */}
-              <h2
-                id="report-title"
-                className="font-display text-bone mt-5 text-2xl leading-snug"
-              >
-                {activeMarker.body
-                  ? (activeMarker.headline ?? activeMarker.label)
-                  : isPro
-                    ? t("modal.titlePro", { city: activeMarker.label })
-                    : t("modal.title")}
-              </h2>
-              <p className="text-bone/70 mt-4 text-sm leading-relaxed whitespace-pre-wrap">
-                {activeMarker.body
-                  ? activeMarker.body
-                  : isPro
-                    ? t("modal.bodyPro")
-                    : t("modal.body")}
-              </p>
-
-              <div className="mt-8 flex flex-wrap gap-3">
-                {/*
-                 * Three states, not two. A signed-out visitor is sent to
-                 * register, a signed-in Standard account to the upgrade
-                 * conversation, and a Pro account is not sold anything it
-                 * already has.
-                 *
-                 * UPGRADE_DESTINATION: change this href when the billing /
-                 * pricing flow exists.
-                 */}
-                {!isPro && (
-                  <Link
-                    href={signedIn ? "/pro" : "/register"}
-                    className="bg-gold text-ink hover:bg-gold-bright rounded-full px-6 py-2.5 text-sm font-medium transition-colors"
-                  >
-                    {signedIn ? t("modal.upgrade") : t("modal.createAccount")}
-                  </Link>
-                )}
+              <div className="border-bone/12 flex items-center justify-between border-b px-6 py-5">
+                <h2
+                  id="panel-title"
+                  className="font-display text-bone text-lg leading-snug"
+                >
+                  {t("panel.title", { count: activeGroup.markers.length })}
+                </h2>
                 <button
                   type="button"
-                  onClick={() => setActiveMarker(null)}
-                  className="border-bone/26 text-bone/70 hover:text-bone rounded-full border px-6 py-2.5 text-sm transition-colors"
+                  onClick={() => setActiveGroupKey(null)}
+                  aria-label={t("panel.close")}
+                  className="text-bone/50 hover:text-bone flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-xl transition-colors"
                 >
-                  {isPro ? t("modal.close") : t("modal.dismiss")}
+                  ×
                 </button>
+              </div>
+
+              <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
+                {activeGroup.markers.map((marker) => {
+                  const locked = marker.access === "locked";
+                  const restricted = locked && !marker.body;
+                  return (
+                    <article
+                      key={marker.id}
+                      className="border-bone/14 rounded-xl border p-4"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          aria-hidden
+                          className="size-2 shrink-0 rounded-full"
+                          style={{ background: severityColor[marker.severity] }}
+                        />
+                        <span className="text-bone/85 text-sm font-medium">
+                          {marker.label}
+                        </span>
+                        {restricted && (
+                          <span className="border-gold/50 text-gold ms-auto rounded-full border px-2 py-0.5 text-[10px] tracking-wide uppercase">
+                            {t("modal.badge")}
+                          </span>
+                        )}
+                      </div>
+
+                      {marker.headline && (
+                        <p className="text-bone mt-2 text-sm font-semibold">
+                          {marker.headline}
+                        </p>
+                      )}
+                      {marker.body && (
+                        <p className="text-bone/65 mt-1 line-clamp-2 text-sm leading-relaxed">
+                          {marker.body}
+                        </p>
+                      )}
+                      {restricted && (
+                        <p className="text-bone/55 mt-2 text-sm leading-relaxed">
+                          {isPro ? t("modal.bodyPro") : t("modal.body")}
+                        </p>
+                      )}
+
+                      <Link
+                        href={`/intelligence/report/${marker.id}`}
+                        className="text-gold hover:text-gold-bright mt-3 inline-flex items-center gap-1 text-sm font-medium transition-colors"
+                      >
+                        {t("panel.viewFullReport")}
+                        <span aria-hidden>→</span>
+                      </Link>
+                    </article>
+                  );
+                })}
               </div>
             </motion.div>
           </motion.div>

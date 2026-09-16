@@ -8,8 +8,26 @@ import {
   type PublicReport,
   type PublicReportSummary,
 } from "@/lib/reports-public";
-import type { ThreatLevel } from "@/lib/report-shape";
+import {
+  GOVERNORATES,
+  REGION_GROUPS,
+  type ThreatLevel,
+} from "@/lib/report-shape";
 import Reveal from "@/components/Reveal";
+
+/** Matches `RISK_COLOR` in the PDF matrix — the same scale, read consistently. */
+const riskColor: Record<ThreatLevel, string> = {
+  LOW: "#3f7d55",
+  MODERATE: "#b58a2e",
+  HIGH: "#c06a2c",
+  CRITICAL: "#b23b34",
+};
+/** Matches `TREND_COLOR` in the PDF matrix. */
+const trendColor: Record<"RISING" | "STABLE" | "EASING", string> = {
+  RISING: "#c0645c",
+  STABLE: "#b0a37e",
+  EASING: "#6fa377",
+};
 
 /** Threat colours, matching the map's severity scale rather than inventing one. */
 const threatColor: Record<ThreatLevel, string> = {
@@ -41,6 +59,13 @@ function isFull(
  */
 export default async function DailyReportsSection() {
   const t = await getTranslations("reports");
+  /*
+   * The governorate matrix's vocabulary (names, risk levels, trends) lives
+   * under `admin.reports` rather than duplicated here — the console and this
+   * public view describe the exact same rows, so one translated set serves
+   * both.
+   */
+  const tm = await getTranslations("admin.reports");
   const locale = await getLocale();
 
   const session = await auth();
@@ -144,6 +169,69 @@ export default async function DailyReportsSection() {
                         </p>
                       </article>
                     ))}
+
+                    {report.content.governorates &&
+                      report.content.governorates.length > 0 && (
+                        <div className="border-bone/12 space-y-4 border-t pt-6">
+                          <h3 className="text-bone text-sm font-semibold">
+                            {tm("governorateMatrix")}
+                          </h3>
+                          {REGION_GROUPS.map((group) => {
+                            const rows = GOVERNORATES.filter(
+                              (g) => g.group === group,
+                            )
+                              .map(({ key }) =>
+                                report.content.governorates?.find(
+                                  (row) => row.governorate === key,
+                                ),
+                              )
+                              .filter((row) => row !== undefined);
+                            if (rows.length === 0) return null;
+
+                            return (
+                              <div key={group}>
+                                <p className="text-gold/72 text-[11px] font-medium tracking-wide uppercase">
+                                  {tm(`regionGroups.${group}`)}
+                                </p>
+                                <ul className="mt-1.5 space-y-1.5">
+                                  {rows.map((row) => (
+                                    <li
+                                      key={row.governorate}
+                                      className="text-bone/72 text-sm leading-relaxed"
+                                    >
+                                      <span className="text-bone/90 font-medium">
+                                        {tm(
+                                          `governorateNames.${row.governorate}`,
+                                        )}
+                                      </span>{" "}
+                                      <span
+                                        className="text-xs font-semibold"
+                                        style={{ color: riskColor[row.risk] }}
+                                      >
+                                        {tm(`threat.${row.risk}`)}
+                                      </span>{" "}
+                                      <span
+                                        className="text-xs"
+                                        style={{
+                                          color: trendColor[row.trend],
+                                        }}
+                                      >
+                                        · {tm(`trend.${row.trend}`)}
+                                      </span>
+                                      {row.driver && (
+                                        <span className="text-bone/60">
+                                          {" "}
+                                          — {row.driver}
+                                        </span>
+                                      )}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
 
                     <dl className="text-bone/55 grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
                       {report.politicalKurdistan && (

@@ -8,8 +8,12 @@ import {
   fetchArticleText,
   THREAT_LEVELS,
   REGIONS,
+  RISK_TRENDS,
+  GOVERNORATES,
   type ThreatLevel,
   type Region,
+  type RiskTrend,
+  type GovernorateKey,
   type ReportContent,
   type ReportNewsItem,
 } from "@/lib/reports";
@@ -300,6 +304,43 @@ function readMeta(formData: FormData) {
 }
 
 /**
+ * The governorate risk matrix, submitted as three parallel arrays in the
+ * fixed `GOVERNORATES` order rather than one field per governorate — the
+ * console renders every row every time, so position alone identifies which
+ * governorate a value belongs to and there is nothing to key-match.
+ */
+function readGovernorateMatrix(formData: FormData) {
+  const risks = formData.getAll("govRisk").map(String);
+  const trends = formData.getAll("govTrend").map(String);
+  const drivers = formData.getAll("govDriver").map(String);
+
+  // Absent entirely on a report saved before this matrix existed, or a
+  // console build that predates it — not an error, just nothing to store.
+  if (risks.length === 0) return undefined;
+
+  if (risks.length !== GOVERNORATES.length) {
+    throw new Error("The governorate risk matrix is missing rows");
+  }
+
+  return GOVERNORATES.map(({ key }, i) => {
+    const risk = risks[i] as ThreatLevel;
+    const trend = trends[i] as RiskTrend;
+    if (!THREAT_LEVELS.includes(risk)) {
+      throw new Error(`Unknown risk level for ${key}`);
+    }
+    if (!RISK_TRENDS.includes(trend)) {
+      throw new Error(`Unknown trend for ${key}`);
+    }
+    return {
+      governorate: key as GovernorateKey,
+      risk,
+      trend,
+      driver: (drivers[i] ?? "").trim(),
+    };
+  });
+}
+
+/**
  * A source link, or nothing at all.
  *
  * Held in the report's JSON as the item's provenance, so the only two useful
@@ -367,7 +408,9 @@ export async function saveReport(formData: FormData) {
     };
   });
 
-  const content: ReportContent = { items };
+  const governorates = readGovernorateMatrix(formData);
+
+  const content: ReportContent = { items, governorates };
 
   /*
    * Upsert, not create. Saving a day that already has a report is an analyst

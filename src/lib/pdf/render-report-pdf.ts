@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { Font, renderToBuffer } from "@react-pdf/renderer";
 import { ReportDocument, type ReportPdfItem } from "./report-document";
-import type { ThreatLevel } from "@/lib/report-shape";
+import type { GovernorateRiskEntry, ThreatLevel } from "@/lib/report-shape";
 
 /*
  * `@react-pdf/renderer`'s default hyphenation engine dynamically loads a
@@ -36,6 +36,7 @@ export type RenderReportPdfInput = {
   politicalIraq: string | null;
   weather: string | null;
   items: ReportPdfItem[];
+  governorates: GovernorateRiskEntry[];
 };
 
 /** `17 August 2026`, matching the template's own date format. */
@@ -65,6 +66,7 @@ export async function renderReportPdf(
       politicalIraq: report.politicalIraq,
       weather: report.weather,
       items: report.items,
+      governorates: report.governorates,
       logo,
       coverPhoto,
     }),

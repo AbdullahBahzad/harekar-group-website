@@ -229,6 +229,22 @@ model IntelMarker {
    */
   published Boolean @default(false)
 
+  /**
+   * Closed out, independent of `published`: a resolved marker stays in the
+   * register and its full report page keeps resolving, it simply drops off
+   * the *active* operational picture. Reopening it is un-resolving, not
+   * recreating it — the id, and anything linking to it, survive.
+   */
+  resolved Boolean @default(false)
+
+  /**
+   * Optimistic-concurrency guard, bumped on every write. Two operators
+   * editing the same marker is the case this exists for: the second save to
+   * arrive is compared against the revision it was opened at, and rejected
+   * rather than silently overwriting the first — see `updateMarker`.
+   */
+  revision Int @default(1)
+
   /// Ordering on the map and in lists; lower sorts first.
   sortOrder Int @default(0)
 

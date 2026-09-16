@@ -41,6 +41,7 @@ export async function GET(
     politicalIraq: report.politicalIraq,
     weather: report.weather,
     items: content.items,
+    governorates: content.governorates ?? [],
   });
 
   const filename = `harekar-daily-security-report-${report.date

@@ -22,13 +22,21 @@ import {
  * everything but the callable reference from the client bundle no matter
  * what that action's own module imports internally.
  */
-import { REGIONS, THREAT_LEVELS } from "@/lib/report-shape";
+import {
+  REGIONS,
+  THREAT_LEVELS,
+  RISK_TRENDS,
+  GOVERNORATES,
+  REGION_GROUPS,
+} from "@/lib/report-shape";
 import { meetsMinimumSeverity } from "@/lib/headline-relevance";
 import type {
   ConsoleReport,
   Region,
   ReportNewsItem,
   ThreatLevel,
+  RiskTrend,
+  GovernorateKey,
 } from "@/lib/report-shape";
 import type { Headline } from "@/lib/headlines";
 
@@ -118,6 +126,24 @@ export default function ReportConsole({
   const [politicalKurdistan, setPoliticalKurdistan] = useState("Stable");
   const [politicalIraq, setPoliticalIraq] = useState("Acceptable");
   const [weather, setWeather] = useState("");
+
+  type GovernorateRow = { risk: ThreatLevel; trend: RiskTrend; driver: string };
+  const [governorateMatrix, setGovernorateMatrix] = useState<
+    Record<GovernorateKey, GovernorateRow>
+  >(() =>
+    Object.fromEntries(
+      GOVERNORATES.map(({ key }) => [
+        key,
+        { risk: "MODERATE", trend: "STABLE", driver: "" },
+      ]),
+    ) as Record<GovernorateKey, GovernorateRow>,
+  );
+  function updateGovernorate(key: GovernorateKey, patch: Partial<GovernorateRow>) {
+    setGovernorateMatrix((matrix) => ({
+      ...matrix,
+      [key]: { ...matrix[key], ...patch },
+    }));
+  }
 
   function updateSource(key: string, patch: Partial<SourceRow>) {
     setSources((rows) =>
@@ -342,6 +368,14 @@ export default function ReportConsole({
     formData.set("politicalKurdistan", politicalKurdistan);
     formData.set("politicalIraq", politicalIraq);
     formData.set("weather", weather);
+    // Always all 19, in `GOVERNORATES` order — position is how the action
+    // matches each value back to its governorate; see `readGovernorateMatrix`.
+    for (const { key } of GOVERNORATES) {
+      const row = governorateMatrix[key];
+      formData.append("govRisk", row.risk);
+      formData.append("govTrend", row.trend);
+      formData.append("govDriver", row.driver);
+    }
     for (const item of draftItems) {
       formData.append("finalTitle", item.title);
       formData.append("finalBody", item.body);
@@ -855,6 +889,90 @@ export default function ReportConsole({
                     />
                   </Field>
                 </div>
+
+                {/*
+                 * Collapsed by default, same reasoning as the intelligence
+                 * console's "Incident details": every field here is optional
+                 * and most of the console's other work does not touch it, so
+                 * it should not push the items an analyst edits every day
+                 * further down the page.
+                 */}
+                <details className="border-bone/12 border-t pt-4">
+                  <summary className="text-bone/55 hover:text-bone cursor-pointer text-xs select-none">
+                    {t("reports.governorateMatrix")}
+                  </summary>
+
+                  <div className="mt-4 space-y-5">
+                    {REGION_GROUPS.map((group) => (
+                      <div key={group} className="space-y-2">
+                        <h4 className="text-gold/78 text-xs font-medium tracking-wide uppercase">
+                          {t(`reports.regionGroups.${group}`)}
+                        </h4>
+                        <div className="space-y-2">
+                          {GOVERNORATES.filter((g) => g.group === group).map(
+                            ({ key }) => {
+                              const row = governorateMatrix[key];
+                              return (
+                                <div
+                                  key={key}
+                                  className="border-bone/12 space-y-2 border p-2.5"
+                                >
+                                  <div className="grid grid-cols-[1fr_auto_auto] items-center gap-2">
+                                    <span className="text-bone/78 text-sm">
+                                      {t(`reports.governorateNames.${key}`)}
+                                    </span>
+                                    <select
+                                      value={row.risk}
+                                      onChange={(e) =>
+                                        updateGovernorate(key, {
+                                          risk: e.target.value as ThreatLevel,
+                                        })
+                                      }
+                                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-9 cursor-pointer border px-2 text-xs outline-none"
+                                    >
+                                      {THREAT_LEVELS.map((level) => (
+                                        <option key={level} value={level}>
+                                          {t(`reports.threat.${level}`)}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    <select
+                                      value={row.trend}
+                                      onChange={(e) =>
+                                        updateGovernorate(key, {
+                                          trend: e.target.value as RiskTrend,
+                                        })
+                                      }
+                                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-9 cursor-pointer border px-2 text-xs outline-none"
+                                    >
+                                      {RISK_TRENDS.map((trend) => (
+                                        <option key={trend} value={trend}>
+                                          {t(`reports.trend.${trend}`)}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <input
+                                    value={row.driver}
+                                    onChange={(e) =>
+                                      updateGovernorate(key, {
+                                        driver: e.target.value,
+                                      })
+                                    }
+                                    placeholder={t(
+                                      "reports.governorateDriverPlaceholder",
+                                    )}
+                                    className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-2.5 py-1.5 text-xs outline-none transition-colors"
+                                  />
+                                </div>
+                              );
+                            },
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
 
                 <div className="border-bone/12 space-y-3 border-t pt-4">
                   {draftItems.map((item, i) => (

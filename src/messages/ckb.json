@@ -69,6 +69,19 @@
       "titlePro": "{city} — ڕاپۆرت کرایەوە",
       "bodyPro": "دەستپێگەیشتنی پڕۆت ئەم ڕاپۆرتە دەگرێتەوە. هەڵسەنگاندنی تەواو ئامادە دەکرێت و لێرە دەردەکەوێت.",
       "createAccount": "دروستکردنی هەژمار"
+    },
+    "panel": {
+      "close": "داخستن",
+      "title": "{count, plural, one {١ ڕووداو لەم شوێنە} other {# ڕووداو لەم شوێنە}}",
+      "viewFullReport": "ڕاپۆرتی تەواو"
+    },
+    "report": {
+      "backToMap": "گەڕانەوە بۆ نەخشە",
+      "notFoundTitle": "ڕاپۆرت نەدۆزرایەوە",
+      "resolved": "داخراو",
+      "updated": "نوێکراوەتەوە {date}",
+      "copyLink": "کۆپیکردنی بەستەر",
+      "linkCopied": "بەستەر کۆپی کرا"
     }
   },
   "services": {
@@ -649,6 +662,10 @@
       "markerCount": "{count} نیشانە",
       "mapLabel": "نەخشەی زانیاری ئەمنی. کلیک بکە بۆ دانانی نیشانە.",
       "mapHint": "کلیک لەسەر زەوی بۆ دانان · نیشانە ڕابکێشە بۆ جوڵاندن · هەڵیبژێرە بۆ دەستکاری",
+      "latitude": "پانی جوگرافی",
+      "longitude": "درێژی جوگرافی",
+      "goToCoordinates": "چوونە کوردیناتەکان",
+      "coordinatesInvalid": "پانی و درێژی جوگرافی دروست بنووسە.",
       "assessment": "هەڵسەنگاندن",
       "newMarker": "نیشانەی نوێ",
       "emptyEditor": "نیشانەیەک هەڵبژێرە بۆ دەستکاریکردنی هەڵسەنگاندنەکەی، یان لە هەر شوێنێکی نەخشەکە کلیک بکە بۆ دانانی یەکێکی نوێ.",
@@ -656,6 +673,7 @@
       "emptyRegister": "هێشتا هیچ نیشانەیەک نییە.",
       "draftSuffix": "ڕەشنووس",
       "proTag": "PRO",
+      "resolvedTag": "داخراو",
       "location": "شوێن",
       "severity": "ئاستی مەترسی",
       "access": "دەستپێگەیشتن",
@@ -663,6 +681,9 @@
       "accessLocked": "تەنها بۆ Pro",
       "headline": "سەردێڕ",
       "publishToMap": "بڵاوکردنەوەی لە نەخشەی گشتی",
+      "markResolved": "داخراو — لە دەرەوەی نەخشەی چالاک",
+      "resolve": "داخستن",
+      "reopen": "دووبارە کردنەوە",
       "coordinates": "{lat}° باکوور · {lon}° ڕۆژهەڵات",
       "updatedAt": "نوێکرایەوە لە {date}",
       "updatedBy": "لەلایەن {who}",
@@ -837,6 +858,42 @@
         "MODERATE": "مامناوەند",
         "HIGH": "بەرز",
         "CRITICAL": "مەترسیدار"
+      },
+      "governorateMatrix": "خشتەی مەترسی پارێزگاکان",
+      "governorateDriverPlaceholder": "ئەم هەڵسەنگاندنە لەسەر چی بنیاتنراوە",
+      "trend": {
+        "RISING": "بەرزبوونەوە",
+        "STABLE": "جێگیر",
+        "EASING": "کەمبوونەوە"
+      },
+      "regionGroups": {
+        "BAGHDAD": "بەغدا",
+        "CENTRAL": "ناوەڕاستی عێراق",
+        "SOUTHERN": "باشووری عێراق",
+        "BASRA": "بەسرە",
+        "NORTHERN": "باکووری عێراق",
+        "KURDISTAN_REGION": "هەرێمی کوردستانی عێراق"
+      },
+      "governorateNames": {
+        "BAGHDAD": "بەغدا",
+        "WASIT": "واست",
+        "SALAH_AL_DIN": "سەلاحەدین",
+        "DIYALA": "دیالە",
+        "ANBAR": "ئەنبار",
+        "BABIL": "بابل",
+        "KARBALA": "کەربەلا",
+        "NAJAF": "نەجەف",
+        "QADISIYAH": "قادیسییە",
+        "MUTHANNA": "موسەننا",
+        "DHI_QAR": "زیقار",
+        "MAYSAN": "مەیسان",
+        "BASRA": "بەسرە",
+        "NINAWA": "نەینەوا",
+        "KIRKUK": "کەرکووک",
+        "ERBIL": "هەولێر",
+        "SULAYMANIYAH": "سلێمانی",
+        "DUHOK": "دهۆک",
+        "HALABJA": "هەڵەبجە"
       }
     }
   },

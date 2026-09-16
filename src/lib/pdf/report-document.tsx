@@ -8,7 +8,16 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 import { ACRONYM_COLUMNS } from "./acronyms";
-import type { ThreatLevel, Region } from "@/lib/report-shape";
+import {
+  GOVERNORATES,
+  REGION_GROUPS,
+  type GovernorateKey,
+  type GovernorateRiskEntry,
+  type RegionGroup,
+  type RiskTrend,
+  type ThreatLevel,
+  type Region,
+} from "@/lib/report-shape";
 
 /**
  * The Daily Security Report, laid out as the branded PDF that used to be
@@ -33,6 +42,7 @@ export type ReportPdfProps = {
   politicalIraq: string | null;
   weather: string | null;
   items: ReportPdfItem[];
+  governorates: GovernorateRiskEntry[];
   /** Raw image bytes, read from disk by the caller — see `render-report-pdf.ts`. */
   logo: Buffer;
   coverPhoto: Buffer;
@@ -50,8 +60,59 @@ const THREAT_LABEL: Record<ThreatLevel, string> = {
   CRITICAL: "CRITICAL",
 };
 
+const GOVERNORATE_LABEL: Record<GovernorateKey, string> = {
+  BAGHDAD: "Baghdad",
+  WASIT: "Wasit",
+  SALAH_AL_DIN: "Salah al-Din",
+  DIYALA: "Diyala",
+  ANBAR: "Anbar",
+  BABIL: "Babil",
+  KARBALA: "Karbala",
+  NAJAF: "Najaf",
+  QADISIYAH: "Qadisiyah",
+  MUTHANNA: "Muthanna",
+  DHI_QAR: "Dhi Qar",
+  MAYSAN: "Maysan",
+  BASRA: "Basra",
+  NINAWA: "Ninawa",
+  KIRKUK: "Kirkuk",
+  ERBIL: "Erbil",
+  SULAYMANIYAH: "Sulaymaniyah",
+  DUHOK: "Duhok",
+  HALABJA: "Halabja",
+};
+
+const REGION_GROUP_LABEL: Record<RegionGroup, string> = {
+  BAGHDAD: "Baghdad",
+  CENTRAL: "Central Iraq",
+  SOUTHERN: "Southern Iraq",
+  BASRA: "Basra",
+  NORTHERN: "Northern Iraq",
+  KURDISTAN_REGION: "Kurdistan Region of Iraq",
+};
+
+const TREND_LABEL: Record<RiskTrend, string> = {
+  RISING: "Rising",
+  STABLE: "Stable",
+  EASING: "Easing",
+};
+/** Same direction sense as the escalation trigger ladder: red rises, green eases. */
+const TREND_COLOR: Record<RiskTrend, string> = {
+  RISING: "#b23b34",
+  STABLE: "#8a7a52",
+  EASING: "#4d7a52",
+};
+
 const gold = "#a88a4a";
 const ink = "#1a1712";
+
+/** Distinct from the brand palette — these read as a risk scale, not gold accents. */
+const RISK_COLOR: Record<ThreatLevel, string> = {
+  LOW: "#3f7d55",
+  MODERATE: "#b58a2e",
+  HIGH: "#c06a2c",
+  CRITICAL: "#b23b34",
+};
 
 const styles = StyleSheet.create({
   page: {
@@ -131,6 +192,49 @@ const styles = StyleSheet.create({
   contactBlock: { marginTop: 20 },
   contactLine: { fontSize: 9, marginBottom: 2 },
   contactBold: { fontFamily: "Helvetica-Bold" },
+
+  matrixTitle: { fontSize: 14, fontFamily: "Helvetica-Bold", marginBottom: 10 },
+  matrixGroupLabel: {
+    fontSize: 9,
+    fontFamily: "Helvetica-Bold",
+    backgroundColor: "#e9e2d3",
+    padding: 4,
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  matrixHeaderRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: ink,
+    paddingBottom: 3,
+    marginBottom: 2,
+  },
+  matrixHeaderCell: {
+    fontSize: 7,
+    fontFamily: "Helvetica-Bold",
+    color: "#555",
+    textTransform: "uppercase",
+  },
+  matrixRow: {
+    flexDirection: "row",
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#ddd",
+    paddingVertical: 3,
+  },
+  matrixColGovernorate: { width: "20%", fontSize: 8, fontFamily: "Helvetica-Bold" },
+  matrixColRisk: { width: "14%" },
+  matrixColTrend: { width: "14%" },
+  matrixColDriver: { width: "52%", fontSize: 7.5, lineHeight: 1.35 },
+  matrixBadge: {
+    fontSize: 7,
+    fontFamily: "Helvetica-Bold",
+    color: "#fff",
+    paddingVertical: 1.5,
+    paddingHorizontal: 5,
+    borderRadius: 2,
+    alignSelf: "flex-start",
+  },
+  matrixTrendText: { fontSize: 7.5, fontFamily: "Helvetica-Bold" },
 });
 
 export function ReportDocument({
@@ -141,6 +245,7 @@ export function ReportDocument({
   politicalIraq,
   weather,
   items,
+  governorates,
   logo,
   coverPhoto,
 }: ReportPdfProps) {
@@ -153,6 +258,13 @@ export function ReportDocument({
       items: items.filter((item) => item.region === region),
     }))
     .filter((group) => group.items.length > 0);
+
+  const governorateByGroup = REGION_GROUPS.map((group) => ({
+    group,
+    rows: GOVERNORATES.filter((g) => g.group === group)
+      .map(({ key }) => governorates.find((row) => row.governorate === key))
+      .filter((row): row is GovernorateRiskEntry => Boolean(row)),
+  })).filter((group) => group.rows.length > 0);
 
   return (
     <Document
@@ -239,6 +351,66 @@ export function ReportDocument({
           <Text style={styles.footerEmail}>operations@harekargroup.com</Text>
         </View>
       </Page>
+
+      {/* ---- governorate risk matrix ---------------------------------------- */}
+      {governorateByGroup.length > 0 && (
+        <Page size="A4" style={styles.page}>
+          <Text style={styles.matrixTitle}>Governorate Risk Matrix</Text>
+
+          {governorateByGroup.map(({ group, rows }) => (
+            <View key={group} wrap={false}>
+              <Text style={styles.matrixGroupLabel}>
+                {REGION_GROUP_LABEL[group]}
+              </Text>
+
+              <View style={styles.matrixHeaderRow}>
+                <Text style={[styles.matrixHeaderCell, styles.matrixColGovernorate]}>
+                  Governorate
+                </Text>
+                <Text style={[styles.matrixHeaderCell, styles.matrixColRisk]}>
+                  Risk
+                </Text>
+                <Text style={[styles.matrixHeaderCell, styles.matrixColTrend]}>
+                  Trend
+                </Text>
+                <Text style={[styles.matrixHeaderCell, styles.matrixColDriver]}>
+                  Driver
+                </Text>
+              </View>
+
+              {rows.map((row) => (
+                <View key={row.governorate} style={styles.matrixRow} wrap={false}>
+                  <Text style={styles.matrixColGovernorate}>
+                    {GOVERNORATE_LABEL[row.governorate]}
+                  </Text>
+                  <View style={styles.matrixColRisk}>
+                    <Text
+                      style={[
+                        styles.matrixBadge,
+                        { backgroundColor: RISK_COLOR[row.risk] },
+                      ]}
+                    >
+                      {THREAT_LABEL[row.risk]}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[
+                      styles.matrixColTrend,
+                      styles.matrixTrendText,
+                      { color: TREND_COLOR[row.trend] },
+                    ]}
+                  >
+                    {TREND_LABEL[row.trend]}
+                  </Text>
+                  <Text style={styles.matrixColDriver}>
+                    {row.driver || "—"}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ))}
+        </Page>
+      )}
 
       {/* ---- report body ---------------------------------------------------- */}
       <Page size="A4" style={styles.page}>
