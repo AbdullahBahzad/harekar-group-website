@@ -53,17 +53,16 @@ export async function getPublishedMarkers(
       access: row.access.toLowerCase() as IntelMarker["access"],
       /*
        * The assessment is attached here or not at all, and this is the only
-       * place that decides it.
+       * place that decides it. Dropped on the server for a reader without
+       * Pro so it never enters the payload — hiding it in the component
+       * instead would mean the restricted report had already been delivered
+       * to anyone willing to read a network response.
        *
-       * A LOCKED marker's text is dropped on the server for a reader without
-       * Pro, so it never enters the payload — hiding it in the component
-       * instead would mean the restricted report had already been delivered to
-       * anyone willing to read a network response. OPEN markers are readable by
-       * everyone, which is what `access` means.
+       * Every marker is Pro-gated on the public map now, regardless of its
+       * own `access` value — that field still exists for the console's own
+       * use, but no longer excuses a marker from entitlement here.
        */
-      ...(entitled || row.access === "OPEN"
-        ? { headline: row.headline, body: row.body }
-        : {}),
+      ...(entitled ? { headline: row.headline, body: row.body } : {}),
     }));
   } catch (error) {
     console.error("Falling back to static intel markers", error);
@@ -128,9 +127,8 @@ export async function getPublishedMarkerById(
       access: row.access.toLowerCase() as IntelMarker["access"],
       resolved: row.resolved,
       updatedAt: row.updatedAt,
-      ...(entitled || row.access === "OPEN"
-        ? { headline: row.headline, body: row.body }
-        : {}),
+      // Same Pro gate as `getPublishedMarkers` — see the comment there.
+      ...(entitled ? { headline: row.headline, body: row.body } : {}),
     };
   } catch (error) {
     console.error("Could not load marker report", error);

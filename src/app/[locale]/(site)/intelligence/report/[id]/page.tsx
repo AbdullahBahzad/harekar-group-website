@@ -47,7 +47,10 @@ export default async function MarkerReportPage({
   if (!marker) notFound();
 
   const [lng, lat] = marker.coordinates;
-  const restricted = marker.access === "locked" && !marker.body;
+  // Absence of `body` already means "this reader isn't entitled" — every
+  // marker is Pro-gated now, regardless of its own `access` value; see the
+  // comment in `getPublishedMarkerById`.
+  const restricted = !marker.body;
 
   return (
     <section className="mx-auto max-w-3xl px-6 py-24 sm:px-10">

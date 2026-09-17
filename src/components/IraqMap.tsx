@@ -138,7 +138,15 @@ export default function IraqMap({
               : top,
           "clear",
         );
-        const locked = group.markers.some((m) => m.access === "locked");
+        /*
+         * "Locked" here means "this viewer doesn't have the text" — the
+         * server only attaches `body` for an entitled reader (see
+         * `getPublishedMarkers`), so its absence already says everything
+         * `access` used to. Deriving it from the payload instead of the
+         * field means the badge can never show "open" for a marker this
+         * viewer actually can't read, or vice versa.
+         */
+        const locked = group.markers.some((m) => !m.body);
         return {
           id: group.key,
           lat: group.lat,
@@ -332,8 +340,9 @@ export default function IraqMap({
                   ) : (
                     <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
                       {activeGroup?.markers.map((marker) => {
-                      const locked = marker.access === "locked";
-                      const restricted = locked && !marker.body;
+                      // Absence of `body` already means "this viewer isn't
+                      // entitled" — see the comment on `pins` above.
+                      const restricted = !marker.body;
                       return (
                         <article
                           key={marker.id}
