@@ -5,12 +5,13 @@ export type ReportRecipient = {
   id: string;
   email: string;
   name: string | null;
+  tag: string | null;
 };
 
 /** A short sample list so the console still has something to look at when
  * previewing without a database — see `orPreview`. */
 const sampleRecipients: ReportRecipient[] = [
-  { id: "sample-1", email: "client@example.com", name: "Sample Client" },
+  { id: "sample-1", email: "client@example.com", name: "Sample Client", tag: "Duhok" },
 ];
 
 /** The saved mailing list for the Daily Security Report, ordered so a newly
@@ -20,7 +21,7 @@ export async function getReportRecipients() {
     () =>
       prisma.reportRecipient.findMany({
         orderBy: { createdAt: "asc" },
-        select: { id: true, email: true, name: true },
+        select: { id: true, email: true, name: true, tag: true },
       }),
     sampleRecipients,
   );

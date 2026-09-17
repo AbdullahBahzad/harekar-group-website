@@ -877,6 +877,11 @@
       "sendAllEmpty": "Add a client to the mailing list first.",
       "sendAllSent": "Sent to all {count} clients.",
       "sendAllPartial": "Sent to {sent} of {total} clients — check the mail settings for the rest.",
+      "sendAllEmptyTag": "No clients tagged \"{tag}\" yet.",
+      "recipientTagPlaceholder": "Tag (e.g. Duhok)",
+      "sendAllFilterLabel": "Which clients",
+      "sendAllFilterAll": "All clients ({count})",
+      "sendAllFilterTag": "{tag} ({count})",
       "threatSummary": "KRI {kurdistan} · IRQ {iraq}",
       "regions": {
         "KURDISTAN": "Kurdistan",

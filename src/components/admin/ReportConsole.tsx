@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState, useTransition } from "react";
+import { useActionState, useEffect, useMemo, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDate } from "@/lib/admin-format";
@@ -1139,7 +1139,7 @@ export default function ReportConsole({
               >
                 {t("reports.emailReport")}
               </button>
-              <SendAllForm reportId={report.id} recipientCount={recipients.length} />
+              <SendAllForm reportId={report.id} recipients={recipients} />
               <button
                 type="button"
                 onClick={() => handleDelete(report.id)}
@@ -1258,23 +1258,62 @@ const initialSendAllState: SendReportToAllState = { status: "idle" };
  * shows the outcome inline, right next to the button rather than in a
  * separate panel — the report row is what it's acting on.
  */
+/** Distinct tags among the saved recipients, each with how many clients
+ * carry it — "All clients" always leads, since sending to everyone is the
+ * common case and the filter is the exception. */
+function tagFilterOptions(recipients: ReportRecipient[]) {
+  const counts = new Map<string, number>();
+  for (const r of recipients) {
+    if (r.tag) counts.set(r.tag, (counts.get(r.tag) ?? 0) + 1);
+  }
+  return [
+    { value: "", label: null as string | null, count: recipients.length },
+    ...Array.from(counts, ([tag, count]) => ({ value: tag, label: tag, count })),
+  ];
+}
+
 function SendAllForm({
   reportId,
-  recipientCount,
+  recipients,
 }: {
   reportId: string;
-  recipientCount: number;
+  recipients: ReportRecipient[];
 }) {
   const t = useTranslations("admin.reports");
   const [state, formAction] = useActionState(
     sendReportToAllRecipients,
     initialSendAllState,
   );
+  const options = useMemo(() => tagFilterOptions(recipients), [recipients]);
+  const [tag, setTag] = useState("");
+  const selectedCount = options.find((o) => o.value === tag)?.count ?? 0;
 
   return (
     <form action={formAction} className="contents">
       <input type="hidden" name="id" value={reportId} />
-      <SendAllButton disabled={recipientCount === 0} count={recipientCount} />
+      {/*
+       * Only worth showing once there is something to filter by — with no
+       * tagged clients yet this would be a dropdown with one option, which
+       * tells an operator nothing "All clients" doesn't already say.
+       */}
+      {options.length > 1 && (
+        <select
+          name="tag"
+          value={tag}
+          onChange={(event) => setTag(event.target.value)}
+          aria-label={t("sendAllFilterLabel")}
+          className="border-bone/20 bg-ink/60 text-bone/80 focus:border-gold min-h-11 cursor-pointer border px-2 text-xs outline-none"
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label
+                ? t("sendAllFilterTag", { tag: option.label, count: option.count })
+                : t("sendAllFilterAll", { count: option.count })}
+            </option>
+          ))}
+        </select>
+      )}
+      <SendAllButton disabled={selectedCount === 0} count={selectedCount} />
       {state.status !== "idle" && state.messageKey && (
         <p
           role="status"
@@ -1293,9 +1332,8 @@ function SendAllButton({
   disabled,
   count,
 }: {
-  /** No saved recipients yet — disabled rather than hidden, so the button
-   * itself is what tells an operator the mailing list is the thing to fill
-   * in first. */
+  /** No recipients match the current filter — disabled rather than
+   * hidden, so the button itself is what tells an operator why. */
   disabled: boolean;
   count: number;
 }) {
@@ -1356,6 +1394,13 @@ function RecipientsPanel({ recipients }: { recipients: ReportRecipient[] }) {
             aria-label={t("recipientNamePlaceholder")}
             className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
           />
+          <input
+            type="text"
+            name="tag"
+            placeholder={t("recipientTagPlaceholder")}
+            aria-label={t("recipientTagPlaceholder")}
+            className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
+          />
           <button
             type="submit"
             className="bg-gold text-ink hover:bg-gold-bright flex min-h-11 shrink-0 cursor-pointer items-center px-4 text-xs font-medium transition-colors"
@@ -1383,6 +1428,11 @@ function RecipientsPanel({ recipients }: { recipients: ReportRecipient[] }) {
                   {recipient.email}
                 </span>
               </span>
+              {recipient.tag && (
+                <span className="border-gold/40 text-gold shrink-0 rounded-full border px-2 py-0.5 text-[11px]">
+                  {recipient.tag}
+                </span>
+              )}
               <button
                 type="button"
                 onClick={() => handleRemove(recipient.id)}

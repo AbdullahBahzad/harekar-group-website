@@ -877,6 +877,11 @@
       "sendAllEmpty": "سەرەتا کڕیارێک زیاد بکە بۆ لیستی ئیمەیل.",
       "sendAllSent": "نێردرا بۆ هەموو {count} کڕیارەکان.",
       "sendAllPartial": "نێردرا بۆ {sent} لە {total} کڕیار — ڕێکخستنەکانی ئیمەیل بۆ ماوەکە بپشکنە.",
+      "sendAllEmptyTag": "هێشتا هیچ کڕیارێک بە پۆلی \"{tag}\" نییە.",
+      "recipientTagPlaceholder": "پۆل (بۆ نموونە دهۆک)",
+      "sendAllFilterLabel": "کام کڕیارەکان",
+      "sendAllFilterAll": "هەموو کڕیارەکان ({count})",
+      "sendAllFilterTag": "{tag} ({count})",
       "threatSummary": "کوردستان {kurdistan} · عێراق {iraq}",
       "regions": {
         "KURDISTAN": "کوردستان",

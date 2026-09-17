@@ -388,6 +388,13 @@ model ReportRecipient {
   email String  @unique
   name  String?
 
+  /// Free text, e.g. a governorate ("Duhok") or a coverage tier — whatever
+  /// distinguishes one group of clients from another. A plain string rather
+  /// than an enum or a relation: this is the console's own ad-hoc grouping,
+  /// not a fixed list the schema should constrain, and a client only ever
+  /// needs one at a time to answer "who is this report for".
+  tag String?
+
   createdAt DateTime @default(now())
 }
 

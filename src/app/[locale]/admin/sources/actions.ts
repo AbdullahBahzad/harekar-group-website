@@ -557,13 +557,14 @@ export async function addRecipient(formData: FormData) {
   await assertReportsAccess();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const name = String(formData.get("name") ?? "").trim();
+  const tag = String(formData.get("tag") ?? "").trim();
 
   if (!EMAIL_PATTERN.test(email)) throw new Error("Enter a valid email address");
 
   await prisma.reportRecipient.upsert({
     where: { email },
-    update: { name: name || null },
-    create: { email, name: name || null },
+    update: { name: name || null, tag: tag || null },
+    create: { email, name: name || null, tag: tag || null },
   });
 
   revalidateReports();
@@ -608,11 +609,22 @@ export async function sendReportToAllRecipients(
   const id = String(formData.get("id") ?? "");
   if (!id) throw new Error("Missing report id");
 
+  /*
+   * Empty means "every saved client" — the filter narrows the list rather
+   * than replacing a separate "send to all" action, so there is exactly one
+   * send path to keep working instead of two that could drift apart.
+   */
+  const tag = String(formData.get("tag") ?? "").trim();
   const recipients = await prisma.reportRecipient.findMany({
+    where: tag ? { tag } : undefined,
     select: { email: true },
   });
   if (recipients.length === 0) {
-    return { status: "error", messageKey: "sendAllEmpty" };
+    return {
+      status: "error",
+      messageKey: tag ? "sendAllEmptyTag" : "sendAllEmpty",
+      values: tag ? { tag } : undefined,
+    };
   }
 
   let rendered: Awaited<ReturnType<typeof renderSavedReportPdf>>;
