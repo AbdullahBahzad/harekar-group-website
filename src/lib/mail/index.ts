@@ -1,4 +1,5 @@
 import { logTransport } from "./log";
+import { smtpTransport } from "./smtp";
 import type { MailMessage, MailTransport } from "./types";
 
 export type { MailMessage, MailTransport } from "./types";
@@ -13,10 +14,16 @@ export type { MailMessage, MailTransport } from "./types";
  */
 const transports: Record<string, MailTransport> = {
   log: logTransport,
+  smtp: smtpTransport,
 };
 
 function getTransport(): MailTransport {
   const configured = process.env.MAIL_TRANSPORT ?? "log";
+  // `smtp` selected without credentials would otherwise fail on the first
+  // send with a fairly opaque nodemailer error — falling back to `log`
+  // here gives the same loud, once-per-process warning a missing
+  // `MAIL_FROM` already gets, instead of a stack trace three files deep.
+  if (configured === "smtp" && !process.env.SMTP_HOST) return logTransport;
   return transports[configured] ?? logTransport;
 }
 

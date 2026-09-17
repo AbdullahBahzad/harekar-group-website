@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
+import { useFormStatus } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDate } from "@/lib/admin-format";
 import Panel from "@/components/admin/Panel";
@@ -8,12 +9,14 @@ import {
   generateReportDraft,
   saveReport,
   deleteReport,
+  sendReportEmail,
   fetchAllSourceHeadlines,
   pullHeadlineItems,
   addReportSource,
   deleteReportSource,
   type SourceHeadlines,
   type CombinedSource,
+  type SendReportEmailState,
 } from "@/app/[locale]/admin/sources/actions";
 /*
  * From `report-shape`, not `reports`: this is a client component, and
@@ -403,6 +406,8 @@ export default function ReportConsole({
       await deleteReport(formData);
     });
   }
+
+  const [emailOpenId, setEmailOpenId] = useState<string | null>(null);
 
   return (
     <div className="space-y-5">
@@ -1115,17 +1120,122 @@ export default function ReportConsole({
               </a>
               <button
                 type="button"
+                onClick={() =>
+                  setEmailOpenId(emailOpenId === report.id ? null : report.id)
+                }
+                aria-expanded={emailOpenId === report.id}
+                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
+              >
+                {t("reports.emailReport")}
+              </button>
+              <button
+                type="button"
                 onClick={() => handleDelete(report.id)}
                 disabled={isPending}
                 className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors disabled:opacity-40"
               >
                 {t("common.delete")}
               </button>
+
+              {emailOpenId === report.id && (
+                <div className="w-full">
+                  <EmailReportForm
+                    reportId={report.id}
+                    onSent={() => setEmailOpenId(null)}
+                  />
+                </div>
+              )}
             </li>
           ))}
         </ul>
       </Panel>
     </div>
+  );
+}
+
+const initialEmailState: SendReportEmailState = { status: "idle" };
+
+/**
+ * The compose row for emailing one saved report to a client, as the same
+ * branded PDF "Download PDF" produces. Its own component, not inlined in
+ * the list's `.map()`, because `useActionState` needs one call per report
+ * row rather than one shared between all of them.
+ */
+function EmailReportForm({
+  reportId,
+  onSent,
+}: {
+  reportId: string;
+  /** Collapses the row back once a send actually succeeds. */
+  onSent: () => void;
+}) {
+  const t = useTranslations("admin");
+  const [state, formAction] = useActionState(sendReportEmail, initialEmailState);
+
+  // Collapses the row a beat after a successful send, so the confirmation
+  // message is actually readable before the form disappears. Effect, not a
+  // call during render, so it fires once per success rather than on every
+  // re-render while `state.status` stays "success".
+  useEffect(() => {
+    if (state.status !== "success") return;
+    const timer = setTimeout(onSent, 1400);
+    return () => clearTimeout(timer);
+  }, [state.status, onSent]);
+
+  return (
+    <form
+      action={formAction}
+      className="border-bone/12 bg-ink/30 mt-1 flex flex-wrap items-start gap-2 border p-3"
+    >
+      <input type="hidden" name="id" value={reportId} />
+      <input
+        type="email"
+        name="email"
+        dir="ltr"
+        required
+        defaultValue={state.email}
+        placeholder={t("reports.emailPlaceholder")}
+        aria-label={t("reports.emailPlaceholder")}
+        className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
+      />
+      <input
+        type="text"
+        name="note"
+        defaultValue={state.note}
+        placeholder={t("reports.emailNotePlaceholder")}
+        aria-label={t("reports.emailNotePlaceholder")}
+        className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-2 border px-3 py-2 text-start text-xs outline-none transition-colors"
+      />
+      <EmailSendButton />
+
+      {state.status !== "idle" && state.messageKey && (
+        <p
+          role="status"
+          className={`w-full text-xs leading-relaxed ${
+            state.status === "error" ? "text-status-critical" : "text-status-clear"
+          }`}
+        >
+          {t(`reports.${state.messageKey}`, { email: state.email ?? "" })}
+        </p>
+      )}
+    </form>
+  );
+}
+
+/** Disabled and relabelled while the PDF renders and the mail sends — both
+ * take longer than a form submit usually does. */
+function EmailSendButton() {
+  const t = useTranslations("admin.reports");
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="bg-gold text-ink hover:bg-gold-bright flex min-h-11 shrink-0 cursor-pointer items-center px-4 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {pending ? t("emailSending") : t("emailSend")}
+    </button>
   );
 }
 

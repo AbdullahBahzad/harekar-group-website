@@ -22,6 +22,8 @@ import {
   listCombinedSources,
   type CombinedSource,
 } from "@/lib/report-sources-db";
+import { renderReportPdf } from "@/lib/pdf/render-report-pdf";
+import { sendMail } from "@/lib/mail";
 export type { CombinedSource };
 
 /**
@@ -443,4 +445,91 @@ export async function deleteReport(formData: FormData) {
 
   await prisma.dailyReport.delete({ where: { id } });
   revalidateReports();
+}
+
+/** A simple, deliberately permissive check — real validation is the mail
+ * server rejecting the send; this just catches typos before spending a
+ * PDF render on them. */
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export type SendReportEmailState = {
+  status: "idle" | "error" | "success";
+  /** A key under `admin.reports`, not a sentence — see `OperatorFormState`
+   * in `accounts/actions.ts` for why the console does it this way. */
+  messageKey?: string;
+  email?: string;
+  note?: string;
+};
+
+/**
+ * Emails a saved Daily Security Report to a client, as the same branded PDF
+ * the console's own "Download PDF" link produces — one render function, two
+ * ways to get the result, rather than a second copy of the layout.
+ */
+export async function sendReportEmail(
+  _prevState: SendReportEmailState,
+  formData: FormData,
+): Promise<SendReportEmailState> {
+  try {
+    await assertReportsAccess();
+  } catch {
+    return { status: "error", messageKey: "emailNotAuthorised" };
+  }
+
+  const id = String(formData.get("id") ?? "");
+  const email = String(formData.get("email") ?? "").trim();
+  const note = String(formData.get("note") ?? "").trim();
+
+  if (!id) throw new Error("Missing report id");
+  if (!EMAIL_PATTERN.test(email)) {
+    return { status: "error", messageKey: "emailInvalid", email, note };
+  }
+
+  const report = await prisma.dailyReport.findUnique({ where: { id } });
+  if (!report) {
+    return { status: "error", messageKey: "emailReportGone" };
+  }
+
+  const content = report.content as unknown as ReportContent;
+  const dateLabel = report.date.toISOString().slice(0, 10);
+
+  let pdf: Buffer;
+  try {
+    pdf = Buffer.from(
+      await renderReportPdf({
+        date: report.date,
+        kurdistanThreat: report.kurdistanThreat as ThreatLevel,
+        iraqThreat: report.iraqThreat as ThreatLevel,
+        politicalKurdistan: report.politicalKurdistan,
+        politicalIraq: report.politicalIraq,
+        weather: report.weather,
+        items: content.items,
+        governorates: content.governorates ?? [],
+      }),
+    );
+  } catch (error) {
+    console.error("Failed to render report PDF for email", error);
+    return { status: "error", messageKey: "emailFailed", email, note };
+  }
+
+  const sent = await sendMail({
+    to: email,
+    subject: `Harekar Group — Daily Security Report — ${dateLabel}`,
+    text: [
+      note || "Please find attached the Daily Security Report.",
+      "",
+      "— Harekar Group",
+    ].join("\n"),
+    attachment: {
+      filename: `harekar-daily-security-report-${dateLabel}.pdf`,
+      content: pdf,
+      contentType: "application/pdf",
+    },
+  });
+
+  if (!sent) {
+    return { status: "error", messageKey: "emailFailed", email, note };
+  }
+
+  return { status: "success", messageKey: "emailSent", email };
 }

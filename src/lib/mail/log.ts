@@ -42,6 +42,9 @@ export const logTransport: MailTransport = {
         `  to:       ${message.to}`,
         message.replyTo ? `  reply-to: ${message.replyTo}` : null,
         `  subject:  ${message.subject}`,
+        message.attachment
+          ? `  attach:   ${message.attachment.filename} (${message.attachment.content.length} bytes)`
+          : null,
         "  ---",
         message.text.replace(/^/gm, "  "),
       ]
