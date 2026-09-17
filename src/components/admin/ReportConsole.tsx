@@ -10,6 +10,9 @@ import {
   saveReport,
   deleteReport,
   sendReportEmail,
+  addRecipient,
+  removeRecipient,
+  sendReportToAllRecipients,
   fetchAllSourceHeadlines,
   pullHeadlineItems,
   addReportSource,
@@ -17,7 +20,9 @@ import {
   type SourceHeadlines,
   type CombinedSource,
   type SendReportEmailState,
+  type SendReportToAllState,
 } from "@/app/[locale]/admin/sources/actions";
+import type { ReportRecipient } from "@/lib/report-recipients";
 /*
  * From `report-shape`, not `reports`: this is a client component, and
  * `reports.ts` reaches for `node:dns` and the Anthropic SDK at import time.
@@ -69,11 +74,14 @@ export default function ReportConsole({
   reports,
   canGenerate,
   sources: reportSources,
+  recipients,
 }: {
   reports: ConsoleReport[];
   canGenerate: boolean;
   /** The built-in eleven plus whatever an operator has added — see `report-sources-db.ts`. */
   sources: CombinedSource[];
+  /** The saved client mailing list — see `report-recipients.ts`. */
+  recipients: ReportRecipient[];
 }) {
   const t = useTranslations("admin");
   const locale = useLocale();
@@ -1075,6 +1083,9 @@ export default function ReportConsole({
         </Panel>
       </div>
 
+      {/* ---- recipients ----------------------------------------------------- */}
+      <RecipientsPanel recipients={recipients} />
+
       {/* ---- history ------------------------------------------------------ */}
       <Panel label={t("reports.history")}>
         <ul className="divide-bone/6 divide-y">
@@ -1128,6 +1139,7 @@ export default function ReportConsole({
               >
                 {t("reports.emailReport")}
               </button>
+              <SendAllForm reportId={report.id} recipientCount={recipients.length} />
               <button
                 type="button"
                 onClick={() => handleDelete(report.id)}
@@ -1236,6 +1248,154 @@ function EmailSendButton() {
     >
       {pending ? t("emailSending") : t("emailSend")}
     </button>
+  );
+}
+
+const initialSendAllState: SendReportToAllState = { status: "idle" };
+
+/**
+ * The one-click send: fires `sendReportToAllRecipients` for one report and
+ * shows the outcome inline, right next to the button rather than in a
+ * separate panel — the report row is what it's acting on.
+ */
+function SendAllForm({
+  reportId,
+  recipientCount,
+}: {
+  reportId: string;
+  recipientCount: number;
+}) {
+  const t = useTranslations("admin.reports");
+  const [state, formAction] = useActionState(
+    sendReportToAllRecipients,
+    initialSendAllState,
+  );
+
+  return (
+    <form action={formAction} className="contents">
+      <input type="hidden" name="id" value={reportId} />
+      <SendAllButton disabled={recipientCount === 0} count={recipientCount} />
+      {state.status !== "idle" && state.messageKey && (
+        <p
+          role="status"
+          className={`w-full text-xs leading-relaxed ${
+            state.status === "error" ? "text-status-critical" : "text-status-clear"
+          }`}
+        >
+          {t(state.messageKey, state.values)}
+        </p>
+      )}
+    </form>
+  );
+}
+
+function SendAllButton({
+  disabled,
+  count,
+}: {
+  /** No saved recipients yet — disabled rather than hidden, so the button
+   * itself is what tells an operator the mailing list is the thing to fill
+   * in first. */
+  disabled: boolean;
+  count: number;
+}) {
+  const t = useTranslations("admin.reports");
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={disabled || pending}
+      title={disabled ? t("sendAllEmpty") : undefined}
+      className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {pending ? t("emailSending") : t("sendAll", { count })}
+    </button>
+  );
+}
+
+/**
+ * The saved mailing list — add once, then every report's "Send to all"
+ * reaches everyone on it. Its own panel because it manages state
+ * independent of any single report (add/remove happen whether or not a
+ * report is even open), unlike the per-row email forms above.
+ */
+function RecipientsPanel({ recipients }: { recipients: ReportRecipient[] }) {
+  const t = useTranslations("admin.reports");
+  const [isPending, startTransition] = useTransition();
+
+  function handleRemove(id: string) {
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.set("id", id);
+      await removeRecipient(formData);
+    });
+  }
+
+  return (
+    <Panel label={t("recipients")}>
+      <div className="space-y-4 p-4">
+        <p className="text-bone/55 text-sm leading-relaxed">
+          {t("recipientsIntro")}
+        </p>
+
+        <form action={addRecipient} className="flex flex-wrap gap-2">
+          <input
+            type="email"
+            name="email"
+            dir="ltr"
+            required
+            placeholder={t("emailPlaceholder")}
+            aria-label={t("emailPlaceholder")}
+            className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
+          />
+          <input
+            type="text"
+            name="name"
+            placeholder={t("recipientNamePlaceholder")}
+            aria-label={t("recipientNamePlaceholder")}
+            className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
+          />
+          <button
+            type="submit"
+            className="bg-gold text-ink hover:bg-gold-bright flex min-h-11 shrink-0 cursor-pointer items-center px-4 text-xs font-medium transition-colors"
+          >
+            {t("recipientAdd")}
+          </button>
+        </form>
+
+        <ul className="divide-bone/6 border-bone/12 divide-y border-t">
+          {recipients.length === 0 && (
+            <li className="text-bone/50 py-4 text-sm">{t("recipientsEmpty")}</li>
+          )}
+          {recipients.map((recipient) => (
+            <li
+              key={recipient.id}
+              className="flex flex-wrap items-center gap-3 py-2.5"
+            >
+              <span className="min-w-0 flex-1">
+                {recipient.name && (
+                  <span className="text-bone/85 block truncate text-sm">
+                    {recipient.name}
+                  </span>
+                )}
+                <span dir="ltr" className="text-bone/55 block truncate text-start text-xs">
+                  {recipient.email}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => handleRemove(recipient.id)}
+                disabled={isPending}
+                className="border-status-critical/40 text-status-critical hover:bg-status-critical hover:text-ink flex min-h-11 shrink-0 cursor-pointer items-center border px-3 text-xs transition-colors disabled:opacity-40"
+              >
+                {t("recipientRemove")}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Panel>
   );
 }
 

@@ -3,6 +3,7 @@ import { requireReportsAccess } from "@/lib/admin";
 import ReportConsole from "@/components/admin/ReportConsole";
 import { getRecentReports } from "@/lib/dashboard-reports";
 import { listCombinedSources } from "@/lib/report-sources-db";
+import { getReportRecipients } from "@/lib/report-recipients";
 
 export default async function SourcesStation({
   params,
@@ -17,6 +18,7 @@ export default async function SourcesStation({
 
   const { data: reports, preview } = await getRecentReports(30);
   const sources = await listCombinedSources();
+  const { data: recipients } = await getReportRecipients();
 
   return (
     <>
@@ -29,7 +31,12 @@ export default async function SourcesStation({
         </p>
       </header>
 
-      <ReportConsole reports={reports} canGenerate={!preview} sources={sources} />
+      <ReportConsole
+        reports={reports}
+        canGenerate={!preview}
+        sources={sources}
+        recipients={recipients}
+      />
     </>
   );
 }

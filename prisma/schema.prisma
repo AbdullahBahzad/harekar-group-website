@@ -378,6 +378,19 @@ enum ThreatLevel {
   CRITICAL
 }
 
+/// A client's saved address for the Daily Security Report — the console's own
+/// short mailing list, not the public `Client` model (that one is logo
+/// showcase entries and has no email at all). Kept deliberately minimal: an
+/// address, an optional label to tell one client from another in the list,
+/// nothing else — there is no portal, no login, no relationship to `User`.
+model ReportRecipient {
+  id    String  @id @default(cuid())
+  email String  @unique
+  name  String?
+
+  createdAt DateTime @default(now())
+}
+
 /**
  * A source an operator added beyond the fixed eleven built into the app
  * (`src/data/report-sources.ts`). Merged with that list wherever headlines
