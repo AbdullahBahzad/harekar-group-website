@@ -82,6 +82,12 @@ const icon = {
       <path d="M3.75 16.5a6.25 6.25 0 0 1 12.5 0" stroke="currentColor" strokeLinecap="round" />
     </svg>
   ),
+  emailing: (
+    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" aria-hidden>
+      <path d="M17 3 8.5 11.5" stroke="currentColor" strokeLinecap="round" />
+      <path d="m17 3-5.25 14-3.25-5.5L3 8.25 17 3Z" stroke="currentColor" strokeLinejoin="round" />
+    </svg>
+  ),
   reports: (
     <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" aria-hidden>
       <path d="M4.25 16.25V3.75" stroke="currentColor" strokeLinecap="round" />
@@ -123,7 +129,10 @@ const groups: Group[] = [
   },
   {
     labelKey: "sources",
-    stations: [{ href: "/admin/sources", labelKey: "reports", icon: icon.reports }],
+    stations: [
+      { href: "/admin/sources", labelKey: "reports", icon: icon.reports },
+      { href: "/admin/emailing", labelKey: "emailing", icon: icon.emailing },
+    ],
   },
 ];
 
