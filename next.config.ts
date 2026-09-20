@@ -1,9 +1,17 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
-const isDev = process.env.NODE_ENV !== "production";
+/*
+ * Whether this is the dev server is decided by the phase Next passes to the
+ * config (see the default export), not by `NODE_ENV`. `NODE_ENV` is inherited
+ * from whatever launched the terminal, and a stray `production` there made the
+ * dev server ship a production CSP: no `unsafe-eval`, so React's dev build
+ * threw "eval() is not supported", and no `ws:`, so hot reload could not
+ * connect. The phase cannot be wrong that way.
+ */
 
 /**
  * Content Security Policy.
@@ -27,7 +35,7 @@ const isDev = process.env.NODE_ENV !== "production";
  * downloads and self-hosts at build time, so Google Fonts is deliberately
  * absent.
  */
-const csp = [
+const buildCsp = (isDev: boolean) => [
   "default-src 'self'",
   // 'unsafe-eval' is dev-only: React Fast Refresh needs it, production does not.
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
@@ -44,8 +52,8 @@ const csp = [
   "worker-src 'self' blob:",
 ].join("; ");
 
-const securityHeaders = [
-  { key: "Content-Security-Policy", value: csp },
+const buildSecurityHeaders = (isDev: boolean) => [
+  { key: "Content-Security-Policy", value: buildCsp(isDev) },
   // Redundant with frame-ancestors for modern browsers; kept for older ones.
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -67,9 +75,9 @@ const securityHeaders = [
       ]),
 ];
 
-const nextConfig: NextConfig = {
+const buildConfig = (isDev: boolean): NextConfig => ({
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [{ source: "/:path*", headers: buildSecurityHeaders(isDev) }];
   },
 
   /*
@@ -101,6 +109,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "6mb",
     },
   },
-};
+});
 
-export default withNextIntl(nextConfig);
+export default (phase: string) =>
+  withNextIntl(buildConfig(phase === PHASE_DEVELOPMENT_SERVER));
