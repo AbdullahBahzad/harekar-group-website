@@ -9,11 +9,18 @@ import ParticleNetwork from "@/components/ui/particle-network";
 /**
  * Shared by the one-page scroll and the standalone /intelligence route.
  * `as` lets the standalone page promote the heading to an h1.
+ *
+ * `calm` strips the decorative effects for that standalone page — the drifting
+ * constellation behind the section and the radar sweep behind the map — because
+ * on a screen that is nothing but the map they read as noise over it. The home
+ * one-pager leaves it off and keeps the full treatment.
  */
 export default async function IntelligenceSection({
   as: Heading = "h2",
+  calm = false,
 }: {
   as?: "h1" | "h2";
+  calm?: boolean;
 }) {
   const t = await getTranslations("intelligence");
 
@@ -39,7 +46,7 @@ export default async function IntelligenceSection({
       style={{ overflowX: "clip" }}
     >
       {/* Live signal field behind the intelligence picture. */}
-      <ParticleNetwork />
+      {!calm && <ParticleNetwork />}
 
       <div className="relative z-10 mx-auto max-w-7xl">
         <Reveal>
@@ -60,7 +67,7 @@ export default async function IntelligenceSection({
          * the heading text above it.
          */}
         <div className="mt-14 -mx-3 sm:mx-0">
-          <MapStage>
+          <MapStage calm={calm}>
             <IraqMap markers={markers} />
           </MapStage>
         </div>

@@ -168,8 +168,12 @@ export default function IraqMap({
 
   return (
     <>
-      <div className="border-bone/14 bg-surface/20 relative overflow-hidden rounded-3xl border p-2 sm:p-8">
+      <div className="border-bone/14 bg-surface/20 relative rounded-3xl border p-2 sm:p-8">
         {/*
+         * No `overflow-hidden` on this frame: the button below straddles its
+         * top edge (`-translate-y-1/2`), and clipping the frame cut it in half.
+         * The map keeps its own clip on the inner box, so nothing else needed it.
+         *
          * The Pro upsell, pinned to the map itself rather than buried below
          * the fold — the restricted markers it's selling are right here.
          * Same button the reports list uses below (`upgrade`/`register`,

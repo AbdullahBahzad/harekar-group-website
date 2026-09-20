@@ -28,7 +28,7 @@ export default async function IntelligencePage({
    */
   return (
     <>
-      <IntelligenceSection as="h1" />
+      <IntelligenceSection as="h1" calm />
       <DailyReportsSection />
     </>
   );

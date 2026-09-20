@@ -11,8 +11,19 @@ import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "fr
  * behind the map while the map itself tilts up from a distant, reclined angle
  * to face the viewer. Scroll position drives the whole approach, so scrolling
  * up reverses it naturally.
+ *
+ * `calm` is for the standalone /intelligence page, where the map is the whole
+ * point of the screen and the radar dressing only competes with it: the rotating
+ * sweep is dropped and the rings and cross-hairs are pulled well back. The home
+ * one-pager keeps the full effect as a scroll-in moment.
  */
-export default function MapStage({ children }: { children: ReactNode }) {
+export default function MapStage({
+  children,
+  calm = false,
+}: {
+  children: ReactNode;
+  calm?: boolean;
+}) {
   const reduceMotion = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -46,7 +57,7 @@ export default function MapStage({ children }: { children: ReactNode }) {
       >
         <svg
           viewBox="0 0 100 100"
-          className="aspect-square w-full opacity-70"
+          className={`aspect-square w-full ${calm ? "opacity-30" : "opacity-70"}`}
           fill="none"
         >
           {[46, 36, 26].map((r) => (
@@ -70,7 +81,7 @@ export default function MapStage({ children }: { children: ReactNode }) {
         </svg>
 
         {/* Slow radar sweep — conic sliver rotating inside the outer ring. */}
-        {!reduceMotion && (
+        {!reduceMotion && !calm && (
           <motion.div
             className="absolute aspect-square w-full rounded-full"
             style={{
