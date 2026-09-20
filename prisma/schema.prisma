@@ -381,12 +381,24 @@ enum ThreatLevel {
 /// A client's saved address for the Daily Security Report — the console's own
 /// short mailing list, not the public `Client` model (that one is logo
 /// showcase entries and has no email at all). Kept deliberately minimal: an
-/// address, an optional label to tell one client from another in the list,
-/// nothing else — there is no portal, no login, no relationship to `User`.
+/// address plus enough to address and group the person — there is no portal,
+/// no login, no relationship to `User`.
 model ReportRecipient {
   id    String  @id @default(cuid())
   email String  @unique
-  name  String?
+
+  /// Split rather than one `name` so the greeting can say "Hi Conno," without
+  /// guessing where a first name ends. Both optional: an address is enough to
+  /// send to, and the greeting falls back to a plain "Hello,".
+  firstName String?
+  lastName  String?
+
+  /// The organisation this person writes on behalf of — the "Companies"
+  /// audience in the Client Emailing station groups on it. Required by the add
+  /// form but nullable here because addresses saved before this column existed
+  /// have none, and inventing a value for them would be worse than showing them
+  /// as unassigned.
+  company String?
 
   /// Free text, e.g. a governorate ("Duhok") or a coverage tier — whatever
   /// distinguishes one group of clients from another. A plain string rather

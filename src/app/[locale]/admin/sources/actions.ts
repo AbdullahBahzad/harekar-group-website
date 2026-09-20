@@ -22,7 +22,7 @@ import {
   listCombinedSources,
   type CombinedSource,
 } from "@/lib/report-sources-db";
-import { renderReportPdf } from "@/lib/pdf/render-report-pdf";
+import { renderSavedReportPdf } from "@/lib/pdf/saved-report";
 import { sendMail } from "@/lib/mail";
 export type { CombinedSource };
 
@@ -462,36 +462,6 @@ export type SendReportEmailState = {
 };
 
 /**
- * Loads a saved report and renders it as the same branded PDF the console's
- * "Download PDF" link produces — shared by every path that emails a report,
- * so a render failure is handled once rather than once per caller.
- */
-async function renderSavedReportPdf(
-  id: string,
-): Promise<{ dateLabel: string; pdf: Buffer } | null> {
-  const report = await prisma.dailyReport.findUnique({ where: { id } });
-  if (!report) return null;
-
-  const content = report.content as unknown as ReportContent;
-  const dateLabel = report.date.toISOString().slice(0, 10);
-
-  const pdf = Buffer.from(
-    await renderReportPdf({
-      date: report.date,
-      kurdistanThreat: report.kurdistanThreat as ThreatLevel,
-      iraqThreat: report.iraqThreat as ThreatLevel,
-      politicalKurdistan: report.politicalKurdistan,
-      politicalIraq: report.politicalIraq,
-      weather: report.weather,
-      items: content.items,
-      governorates: content.governorates ?? [],
-    }),
-  );
-
-  return { dateLabel, pdf };
-}
-
-/**
  * Emails a saved Daily Security Report to a client, as the same branded PDF
  * the console's own "Download PDF" link produces — one render function, two
  * ways to get the result, rather than a second copy of the layout.
@@ -546,132 +516,4 @@ export async function sendReportEmail(
   }
 
   return { status: "success", messageKey: "emailSent", email };
-}
-
-/* ---- report recipients (saved mailing list) ------------------------------ */
-
-/** Persists a client address for future one-click sends. Upsert on email —
- * re-adding an address already on the list just updates its label instead
- * of erroring, so the form never has to ask "do you mean edit or add?". */
-export async function addRecipient(formData: FormData) {
-  await assertReportsAccess();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const name = String(formData.get("name") ?? "").trim();
-  const tag = String(formData.get("tag") ?? "").trim();
-
-  if (!EMAIL_PATTERN.test(email)) throw new Error("Enter a valid email address");
-
-  await prisma.reportRecipient.upsert({
-    where: { email },
-    update: { name: name || null, tag: tag || null },
-    create: { email, name: name || null, tag: tag || null },
-  });
-
-  revalidateReports();
-}
-
-export async function removeRecipient(formData: FormData) {
-  await assertReportsAccess();
-  const id = String(formData.get("id") ?? "");
-  if (!id) throw new Error("Missing recipient id");
-
-  await prisma.reportRecipient.delete({ where: { id } });
-  revalidateReports();
-}
-
-export type SendReportToAllState = {
-  status: "idle" | "error" | "success";
-  messageKey?: string;
-  /** Interpolation values for `messageKey` — e.g. `{ sent: "8", total: "10" }`
-   * for a partial-failure summary. */
-  values?: Record<string, string>;
-};
-
-/**
- * The "one click" send: the same PDF as `sendReportEmail`, but to every
- * saved recipient at once instead of one typed-in address.
- *
- * Renders the PDF exactly once and reuses the buffer for every recipient —
- * the render is the expensive, deterministic part (same report, same
- * bytes every time), so redoing it per address would be pure waste, unlike
- * the send itself which genuinely differs per recipient.
- */
-export async function sendReportToAllRecipients(
-  _prevState: SendReportToAllState,
-  formData: FormData,
-): Promise<SendReportToAllState> {
-  try {
-    await assertReportsAccess();
-  } catch {
-    return { status: "error", messageKey: "emailNotAuthorised" };
-  }
-
-  const id = String(formData.get("id") ?? "");
-  if (!id) throw new Error("Missing report id");
-
-  /*
-   * Empty means "every saved client" — the filter narrows the list rather
-   * than replacing a separate "send to all" action, so there is exactly one
-   * send path to keep working instead of two that could drift apart.
-   */
-  const tag = String(formData.get("tag") ?? "").trim();
-  const recipients = await prisma.reportRecipient.findMany({
-    where: tag ? { tag } : undefined,
-    select: { email: true },
-  });
-  if (recipients.length === 0) {
-    return {
-      status: "error",
-      messageKey: tag ? "sendAllEmptyTag" : "sendAllEmpty",
-      values: tag ? { tag } : undefined,
-    };
-  }
-
-  let rendered: Awaited<ReturnType<typeof renderSavedReportPdf>>;
-  try {
-    rendered = await renderSavedReportPdf(id);
-  } catch (error) {
-    console.error("Failed to render report PDF for bulk email", error);
-    return { status: "error", messageKey: "emailFailed" };
-  }
-  if (!rendered) {
-    return { status: "error", messageKey: "emailReportGone" };
-  }
-
-  const outcomes = await Promise.all(
-    recipients.map((recipient) =>
-      sendMail({
-        to: recipient.email,
-        subject: `Harekar Group — Daily Security Report — ${rendered.dateLabel}`,
-        text: [
-          "Please find attached the Daily Security Report.",
-          "",
-          "— Harekar Group",
-        ].join("\n"),
-        attachment: {
-          filename: `harekar-daily-security-report-${rendered.dateLabel}.pdf`,
-          content: rendered.pdf,
-          contentType: "application/pdf",
-        },
-      }),
-    ),
-  );
-
-  const sentCount = outcomes.filter(Boolean).length;
-
-  if (sentCount === 0) {
-    return { status: "error", messageKey: "emailFailed" };
-  }
-  if (sentCount < recipients.length) {
-    return {
-      status: "success",
-      messageKey: "sendAllPartial",
-      values: { sent: String(sentCount), total: String(recipients.length) },
-    };
-  }
-  return {
-    status: "success",
-    messageKey: "sendAllSent",
-    values: { count: String(sentCount) },
-  };
 }
