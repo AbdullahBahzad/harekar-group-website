@@ -154,26 +154,30 @@ export default function IraqLeafletMap({
         const size = map.getSize();
         if (size.x === 0 || size.y === 0) return;
         /*
-         * `clip-path`'s percentages resolve against the clipped element's
-         * *own* box — and `mapPane` is absolutely positioned holding only
-         * absolutely positioned children, so left to itself it has no
-         * reliable box to measure against. Pinning it to the container's
-         * pixel size gives the clip a real reference frame; the tiles and
-         * markers inside are still positioned independently of it, same
-         * as always, so this doesn't move anything.
+         * The polygon has to be in the pane's *own* coordinate space, because
+         * that is where `clip-path` is evaluated — and Leaflet pans the map by
+         * translating this very pane. Container points (screen space) were
+         * used before, which is only correct while the pane sits at 0,0: after
+         * zooming in and dragging sideways the pane had moved by the drag
+         * distance, the clip was shifted by the same distance a second time,
+         * and the map was cut off well away from where Iraq actually was.
+         *
+         * Layer points are exactly that coordinate space (it is what every
+         * child of this pane is positioned in), so the clip now travels with
+         * the content instead of fighting it. Pixels rather than percentages,
+         * so no reference box is needed and the clip does not depend on the
+         * pane having a size.
          */
-        mapPane.style.width = `${size.x}px`;
-        mapPane.style.height = `${size.y}px`;
         const points = iraqBorder
-          .map(([lng, lat]) => map.latLngToContainerPoint([lat, lng]))
-          .map((p) => `${(p.x / size.x) * 100}% ${(p.y / size.y) * 100}%`)
+          .map(([lng, lat]) => map.latLngToLayerPoint([lat, lng]))
+          .map((p) => `${p.x}px ${p.y}px`)
           .join(", ");
         const clip = `polygon(${points})`;
         mapPane.style.clipPath = clip;
         mapPane.style.setProperty("-webkit-clip-path", clip);
       };
       updateClip();
-      map.on("move zoom resize", updateClip);
+      map.on("move zoom viewreset resize", updateClip);
     }
 
     layerRef.current = L.layerGroup().addTo(map);

@@ -98,7 +98,16 @@ export default function MapStage({
         )}
       </motion.div>
 
-      {/* The tilting stage carrying the interactive map. */}
+      {/*
+       * The tilting stage carrying the interactive map.
+       *
+       * Deliberately not `transformStyle: "preserve-3d"`. Leaflet positions
+       * every pin with `translate3d`, so under `preserve-3d` each one became
+       * its own plane in a 3D rendering context, and Chrome's hit-testing of
+       * those planes fails away from the middle of the map — pins near the
+       * edges drew fine but ignored clicks. The tilt only needs the parent's
+       * `perspective` acting on this one flat element, which it still does.
+       */}
       <motion.div
         style={
           reduceMotion
@@ -108,7 +117,6 @@ export default function MapStage({
                 y: rise,
                 opacity: fade,
                 scale: approach,
-                transformStyle: "preserve-3d",
               }
         }
       >

@@ -372,6 +372,11 @@ html::-webkit-scrollbar {
   border-radius: 50%;
   border: 1.2px solid var(--tone);
   animation: harekar-pulse 2.2s ease-out infinite;
+  /*
+   * A decoration. It scales to 2.6x, and a scaled box still catches clicks —
+   * so without this a pin's halo sat over its neighbours and took their taps.
+   */
+  pointer-events: none;
 }
 @keyframes harekar-pulse {
   0% {
