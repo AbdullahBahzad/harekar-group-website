@@ -111,5 +111,7 @@ const buildConfig = (isDev: boolean): NextConfig => ({
   },
 });
 
-export default (phase: string) =>
+const config = (phase: string) =>
   withNextIntl(buildConfig(phase === PHASE_DEVELOPMENT_SERVER));
+
+export default config;
