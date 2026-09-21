@@ -50,6 +50,32 @@ const wrap = (value: number, n: number) => {
 };
 
 /**
+ * How strongly each card holds the row while it is being dragged. 0 is a free
+ * row; it must stay under 1 or the pull would turn the row back on itself.
+ */
+const MAGNET = 0.55;
+
+/**
+ * The magnetic drag curve. A drag position `x` (in cards) is shown at
+ * `x - MAGNET * sin(2 PI x) / (2 PI)`. That leaves every whole number exactly
+ * where it was, but slows the row to about 45% speed as it passes through one
+ * (it feels held by the card) and speeds it to about 155% between two (it is
+ * let go, and rushes to the next). The result is a drag that catches on each
+ * card like a magnet, rather than sliding past all of them at one flat speed.
+ */
+const detent = (x: number) => x - (MAGNET * Math.sin(2 * Math.PI * x)) / (2 * Math.PI);
+
+/** Where the finger must be for the row to be shown at `y`: the curve backwards. */
+const undetent = (y: number) => {
+  let x = y;
+  // The curve is monotonic, so Newton's method settles in a few steps.
+  for (let i = 0; i < 6; i++) {
+    x -= (detent(x) - y) / (1 - MAGNET * Math.cos(2 * Math.PI * x));
+  }
+  return x;
+};
+
+/**
  * The services slider: a row of tall rounded photo cards, the centre one
  * largest, the ones beside it stepping down in size and turning slightly toward
  * the middle. Drag left or right with a finger or the mouse, use the arrows,
@@ -99,11 +125,16 @@ export default function ServicesSlider({
    * `dragTo`) moves the row with no lag, which a drag needs.
    */
   const target = useMotionValue(0);
+  /*
+   * A little under critically damped, on purpose: the row eases in fast, then
+   * settles onto the card with a small overshoot — the snap of a magnet taking
+   * hold — instead of creeping to a dead stop.
+   */
   const position = useSpring(target, {
-    stiffness: 150,
-    damping: 26,
+    stiffness: 190,
+    damping: 22,
     mass: 1,
-    restDelta: 0.001,
+    restDelta: 0.0005,
   });
 
   const moveTo = useCallback(
@@ -130,7 +161,9 @@ export default function ServicesSlider({
     moved: false,
     pointerId: -1,
     startX: 0,
-    startPosition: 0,
+    // Where the finger has taken the row, before the magnet bends it, in cards.
+    startRaw: 0,
+    raw: 0,
     samples: [] as { x: number; t: number }[],
   });
   const swallowClick = useRef(false);
@@ -144,7 +177,8 @@ export default function ServicesSlider({
       pointerId: event.pointerId,
       startX: event.clientX,
       // From where the row visibly is, so grabbing it mid-glide does not jump.
-      startPosition: position.get(),
+      startRaw: undetent(position.get()),
+      raw: undetent(position.get()),
       samples: [{ x: event.clientX, t: performance.now() }],
     };
   }
@@ -172,13 +206,14 @@ export default function ServicesSlider({
     if (d.samples.length > 6) d.samples.shift();
 
     /*
-     * One card of travel per card-spacing of pointer travel, so the card under
-     * the finger stays under it. Dragging left (a negative `dx`) brings the next
-     * card round.
+     * One card of travel per card-spacing of pointer travel, bent through the
+     * magnet so the row lingers on each card and hurries between them. Dragging
+     * left (a negative `dx`) brings the next card round.
      */
-    const next = d.startPosition - dx / size.gap;
-    target.set(next);
-    position.jump(next);
+    d.raw = d.startRaw - dx / size.gap;
+    const shown = detent(d.raw);
+    target.set(shown);
+    position.jump(shown);
   }
 
   function endDrag(event: React.PointerEvent) {
@@ -204,7 +239,8 @@ export default function ServicesSlider({
       ? 0
       : (last.x - first.x) / Math.max(1, last.t - first.t);
 
-    const here = position.get();
+    // Judged on where the finger took it, not where the magnet showed it.
+    const here = d.raw;
     const projected = here - (velocity * INERTIA_MS) / size.gap;
     const home = Math.round(here);
     const rest = Math.max(
