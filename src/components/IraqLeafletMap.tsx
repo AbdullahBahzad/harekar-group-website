@@ -50,6 +50,7 @@ export default function IraqLeafletMap({
   draftPoint,
   onMapClick,
   maskOutside,
+  fixedView,
   className,
   ariaLabel,
 }: {
@@ -65,6 +66,14 @@ export default function IraqLeafletMap({
    * streets visible for placing pins near a border.
    */
   maskOutside?: boolean;
+  /**
+   * Pins the full-country view in place: while it is showing, the map cannot
+   * be dragged (mouse or touch) or panned from the keyboard. Once zoomed in it
+   * can be dragged to reach other places, and zooming back out returns it to the
+   * original framing. Off by default — the console and the single-report map
+   * both need to pan freely, to place or inspect a pin near an edge.
+   */
+  fixedView?: boolean;
   className?: string;
   ariaLabel?: string;
 }) {
@@ -108,8 +117,18 @@ export default function IraqLeafletMap({
       maxBoundsViscosity: 1,
       zoomSnap: 0.25,
       worldCopyJump: false,
+      dragging: !fixedView,
+      keyboard: !fixedView,
     });
     mapRef.current = map;
+
+    /*
+     * Drops Leaflet's own "flag + Leaflet" prefix — its licence does not ask for
+     * it. The "© OpenStreetMap contributors" credit that follows stays: the map
+     * data and the free tile server both require it be shown, so it is never
+     * removed, only kept small (see the attribution rules in globals.css).
+     */
+    map.attributionControl.setPrefix(false);
 
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 18,
@@ -134,6 +153,34 @@ export default function IraqLeafletMap({
 
     map.fitBounds(bounds, { padding: [24, 24] });
     map.setMinZoom(map.getBoundsZoom(bounds, false, L.point(24, 24)));
+
+    /*
+     * `fixedView`: locked while the whole country is in frame, free to move
+     * once zoomed in. There is nothing to drag toward at the full view, and a
+     * loose map there just drifts off-centre; but zoomed in, the visitor has to
+     * be able to travel across it to reach a place like Duhok. Zooming back out
+     * to the full view puts the country exactly where it started, so it can
+     * never be left stranded off to one side.
+     */
+    if (fixedView) {
+      const homeCenter = map.getCenter();
+      const homeZoom = map.getZoom();
+      const syncFixedView = () => {
+        if (map.getZoom() > map.getMinZoom() + 0.01) {
+          map.dragging.enable();
+          map.keyboard.enable();
+          return;
+        }
+        map.dragging.disable();
+        map.keyboard.disable();
+        const drift = map
+          .latLngToContainerPoint(map.getCenter())
+          .distanceTo(map.latLngToContainerPoint(homeCenter));
+        if (drift > 1) map.setView(homeCenter, homeZoom);
+      };
+      map.on("zoomend", syncFixedView);
+      syncFixedView();
+    }
 
     /*
      * Neighbouring countries are hidden by clipping the map's own panned
@@ -201,7 +248,7 @@ export default function IraqLeafletMap({
     };
     // `maskOutside` is a fixed per-caller choice, not runtime state — see the
     // prop doc. Included so the map does rebuild if a caller ever did change it.
-  }, [maskOutside]);
+  }, [maskOutside, fixedView]);
 
   // Marker layer — rebuilt whenever the pins or the draft point change.
   useEffect(() => {

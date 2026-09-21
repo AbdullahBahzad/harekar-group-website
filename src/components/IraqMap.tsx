@@ -213,7 +213,12 @@ export default function IraqMap({
           className="mx-auto aspect-square w-full overflow-hidden rounded-2xl"
           style={{ maxWidth: "min(84rem, 84svh)" }}
         >
-          <IraqLeafletMap markers={pins} maskOutside ariaLabel={t("title")} />
+          <IraqLeafletMap
+            markers={pins}
+            maskOutside
+            fixedView
+            ariaLabel={t("title")}
+          />
         </div>
 
         <div className="border-bone/14 text-bone/55 mt-6 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 border-t pt-6 text-xs">

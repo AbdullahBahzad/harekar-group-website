@@ -311,13 +311,22 @@ html::-webkit-scrollbar {
   font-family: inherit;
   outline: none;
 }
-.iraq-leaflet .leaflet-control-attribution {
-  background: rgb(11 11 11 / 72%);
-  color: var(--color-bone);
-  font-size: 10px;
+/*
+ * The extra `.leaflet-container` in these selectors is deliberate: Leaflet's own
+ * stylesheet is unlayered and set a light strip on the credit that outranked the
+ * plain `.iraq-leaflet` rule, leaving gold text on white. Naming both classes on
+ * the one element wins on specificity, without `!important`.
+ *
+ * Small and quiet, but present: the OpenStreetMap credit is a licence condition.
+ */
+.iraq-leaflet.leaflet-container .leaflet-control-attribution {
+  background: rgb(11 11 11 / 55%);
+  color: color-mix(in oklab, var(--color-bone) 55%, transparent);
+  font-size: 9px;
+  padding: 1px 6px;
 }
-.iraq-leaflet .leaflet-control-attribution a {
-  color: var(--color-gold-bright);
+.iraq-leaflet.leaflet-container .leaflet-control-attribution a {
+  color: color-mix(in oklab, var(--color-gold-bright) 75%, transparent);
 }
 .iraq-leaflet .leaflet-control-zoom a {
   background: rgb(11 11 11 / 82%);
