@@ -10,6 +10,7 @@ import ContactSection from "@/components/sections/ContactSection";
 import { getSiteContent, pick } from "@/lib/site-content";
 import { getPublishedClients } from "@/lib/clients";
 import { getPublishedCareerBenefits } from "@/lib/career-benefits";
+import { SiteBackdrop } from "@/components/ui/site-backdrop";
 import type { Locale } from "@/i18n/routing";
 
 export default async function HomePage({
@@ -50,6 +51,7 @@ export default async function HomePage({
    */
   return (
     <div className="relative isolate">
+      <SiteBackdrop />
       <HeroCinematic overrides={hero} />
       <AboutSection content={content} />
       <IntelligenceSection />

@@ -1,0 +1,18 @@
+/* Fixed to the viewport, behind everything, never catching a click. The page
+   wrapper is an isolated stacking context, so z-index -1 stays behind content
+   without slipping behind the body. */
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  contain: paint;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
