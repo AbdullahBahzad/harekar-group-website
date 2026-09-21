@@ -31,13 +31,18 @@ const INERTIA_MS = 140;
 const MAX_FLING_CARDS = 3;
 
 /**
- * Accumulated horizontal wheel delta needed to advance one card, and the quiet
- * period afterwards. A trackpad swipe arrives as dozens of `wheel` events with
- * momentum trailing behind it; without a threshold and a cooldown one flick
- * would race through the whole row.
+ * A trackpad swipe arrives as a stream of `wheel` events, with the operating
+ * system's own momentum trailing behind it. The row follows that stream
+ * directly, exactly as it follows a finger, and once the stream has been quiet
+ * for this long the swipe is over and the row settles on the nearest card.
  */
-const WHEEL_STEP_DELTA = 60;
-const WHEEL_COOLDOWN_MS = 420;
+const WHEEL_IDLE_MS = 130;
+
+/** Pixels of trackpad travel per card, a little less than a card's width. */
+const WHEEL_PX_PER_CARD_SCALE = 0.85;
+
+/** The furthest one swipe may carry the row, in cards. */
+const MAX_WHEEL_CARDS = 3;
 
 /**
  * The shortest signed distance, in cards, from the centre to card `i` round a
@@ -118,6 +123,20 @@ export default function ServicesSlider({
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
+
+  /*
+   * Every photo is fetched and decoded as soon as the row mounts, so no card
+   * has to be decoded for the first time while it is sliding into view.
+   */
+  useEffect(() => {
+    for (const service of services) {
+      const image = new Image();
+      image.src = service.imageUrl;
+      image.decode?.().catch(() => {
+        // A photo that fails to decode still shows normally; nothing to do.
+      });
+    }
+  }, [services]);
 
   /*
    * `target` is where the row is heading; `position` is where it is, chasing the
@@ -266,34 +285,57 @@ export default function ServicesSlider({
    * to stop the browser treating the gesture as a horizontal page scroll or a
    * back-navigation. Vertical-dominant wheels are ignored and left to bubble, so
    * scrolling the page over the slider still works.
+   *
+   * A swipe moves the row continuously and through the same magnet as a drag,
+   * rather than triggering one fixed step: a step-per-swipe felt like a switch
+   * being flipped, not a surface being pushed.
    */
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage) return;
 
-    let accumulated = 0;
-    let lockedUntil = 0;
+    let raw = 0;
+    let startRaw = 0;
+    let active = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    function settle() {
+      active = false;
+      moveTo(Math.round(raw));
+    }
 
     function onWheel(event: WheelEvent) {
       if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
 
       event.preventDefault();
 
-      const now = performance.now();
-      if (now < lockedUntil) return;
+      if (!active) {
+        active = true;
+        // From where the row visibly is, so a swipe made mid-glide does not jump.
+        raw = undetent(position.get());
+        startRaw = raw;
+      }
 
-      accumulated += event.deltaX;
-      if (Math.abs(accumulated) < WHEEL_STEP_DELTA) return;
+      raw += event.deltaX / (size.gap * WHEEL_PX_PER_CARD_SCALE);
+      raw = Math.max(
+        startRaw - MAX_WHEEL_CARDS,
+        Math.min(startRaw + MAX_WHEEL_CARDS, raw),
+      );
 
-      step(accumulated > 0 ? 1 : -1);
-      accumulated = 0;
-      // Swallows the momentum tail so one flick advances exactly one card.
-      lockedUntil = now + WHEEL_COOLDOWN_MS;
+      const shown = detent(raw);
+      target.set(shown);
+      position.jump(shown);
+
+      clearTimeout(timer);
+      timer = setTimeout(settle, WHEEL_IDLE_MS);
     }
 
     stage.addEventListener("wheel", onWheel, { passive: false });
-    return () => stage.removeEventListener("wheel", onWheel);
-  }, [step]);
+    return () => {
+      stage.removeEventListener("wheel", onWheel);
+      clearTimeout(timer);
+    };
+  }, [size.gap, moveTo, position, target]);
 
   function handleKeyDown(event: React.KeyboardEvent) {
     if (event.key === "ArrowRight") step(1);
@@ -561,7 +603,10 @@ function SliderCard({
         <img
           src={service.imageUrl}
           alt=""
-          loading="lazy"
+          // Loaded up front and decoded off the main thread. Lazy loading meant a
+          // card arriving from off-screen could pop its photo in mid-slide.
+          loading="eager"
+          decoding="async"
           // A photo is draggable by default, and the browser's own image drag
           // would take over from ours on a mouse drag.
           draggable={false}

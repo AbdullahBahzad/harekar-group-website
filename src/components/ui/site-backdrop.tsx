@@ -95,7 +95,16 @@ function Dust() {
     }
 
     function tick(now: number) {
-      const dt = last ? Math.min((now - last) / 1000, 0.05) : 0;
+      frame = requestAnimationFrame(tick);
+      /*
+       * Drawn at about 30 frames a second, not the screen's full rate. The
+       * specks drift a few pixels a second, so the eye cannot tell, and it
+       * leaves the main thread free for whatever the visitor is actually
+       * interacting with (the services slider, mostly).
+       */
+      if (last && now - last < 32) return;
+
+      const dt = last ? Math.min((now - last) / 1000, 0.1) : 0;
       last = now;
       for (const m of motes) {
         m.y -= m.rise * dt;
@@ -106,7 +115,6 @@ function Dust() {
         }
       }
       draw(now);
-      frame = requestAnimationFrame(tick);
     }
 
     function onVisibility() {
