@@ -1,23 +1,29 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import ServiceIcon from "./ServiceIcon";
-import { serviceGroups, type ServiceGroupId } from "@/data/services";
+import ServiceIcon from "@/components/ServiceIcon";
+import { serviceGroups } from "@/data/services";
 import type { ResolvedService } from "@/lib/services";
+import { cn } from "@/lib/utils";
 
-type Filter = ServiceGroupId | "all";
-
-const filters: Filter[] = ["all", ...serviceGroups.map((g) => g.id)];
+/** "All" first, then the groups in the order the catalogue defines them. */
+const filters = ["all", ...serviceGroups.map((group) => group.id)] as const;
 
 /**
- * The filterable service grid.
+ * Every service line at once, with a filter by group.
  *
- * Fed from the resolved catalogue rather than the compiled-in key list, so it
- * shows exactly what the console has published. The group *filters* are still
- * static: they are a fixed taxonomy the console assigns services into, not
- * content in their own right.
+ * Replaces the rotating 3D orbit. The orbit showed about five of the thirteen
+ * services at a time, only the centre card had readable text, no description
+ * was visible at all, and a visitor had to swipe through the lot to find the
+ * one they wanted. A grid puts every line, its photograph and its description
+ * on screen together; the filter is the "self-identify by need" the grouping
+ * was always meant to give (see `data/services.ts`).
+ *
+ * The cards come from the console like the orbit's did — copy, group, icon and
+ * photograph are all edited there, so nothing here is hardcoded per service.
  */
 export default function ServicesGrid({
   services,
@@ -26,105 +32,124 @@ export default function ServicesGrid({
 }) {
   const t = useTranslations("services");
   const reduceMotion = useReducedMotion();
-  const [active, setActive] = useState<Filter>("all");
+  const [active, setActive] = useState<(typeof filters)[number]>("all");
 
   const visible =
     active === "all"
       ? services
       : services.filter((service) => service.group === active);
 
+  const countFor = (id: (typeof filters)[number]) =>
+    id === "all"
+      ? services.length
+      : services.filter((service) => service.group === id).length;
+
   return (
-    <>
-      {/* Path selection — lets a prospect narrow by need before reading cards. */}
+    <div>
+      {/* Wraps on a phone rather than scrolling sideways, so no filter hides. */}
       <div
-        className="flex flex-wrap gap-2"
         role="group"
-        aria-label={t("filterLabel")}
+        aria-label={t("groups.all")}
+        className="flex flex-wrap gap-2.5"
       >
-        {filters.map((filter) => {
-          const selected = filter === active;
+        {filters.map((id) => {
+          const count = countFor(id);
+          // A group the console has emptied would be a dead filter.
+          if (id !== "all" && count === 0) return null;
+
           return (
             <button
-              key={filter}
+              key={id}
               type="button"
-              onClick={() => setActive(filter)}
-              aria-pressed={selected}
-              className={`cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors duration-200 ${
-                selected
-                  ? "border-gold bg-gold text-ink"
-                  : "border-bone/20 text-bone/70 hover:border-gold/60 hover:text-bone"
-              }`}
+              aria-pressed={active === id}
+              onClick={() => setActive(id)}
+              className={cn(
+                "flex min-h-11 cursor-pointer items-center gap-2.5 rounded-full border px-5 text-sm transition-colors duration-200",
+                active === id
+                  ? "border-gold/60 bg-gold/12 text-gold"
+                  : "border-bone/16 text-bone/70 hover:border-bone/35 hover:text-bone",
+              )}
             >
-              {t(`groups.${filter}`)}
+              {t(`groups.${id}`)}
+              <span
+                className={cn(
+                  "text-xs tabular-nums",
+                  active === id ? "text-gold/80" : "text-bone/45",
+                )}
+              >
+                {count}
+              </span>
             </button>
           );
         })}
       </div>
 
-      <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <AnimatePresence mode="popLayout">
+      <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <AnimatePresence initial={false} mode="popLayout">
           {visible.map((service, index) => (
-            <motion.article
+            <motion.li
               key={service.id}
               layout={!reduceMotion}
-              initial={reduceMotion ? false : { opacity: 0, y: 26 }}
+              initial={reduceMotion ? false : { opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
+              exit={reduceMotion ? undefined : { opacity: 0, scale: 0.96 }}
               viewport={{ once: true, margin: "-60px" }}
-              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
               transition={{
-                duration: 0.55,
-                // Stagger within each visual row, not across the full list.
-                delay: reduceMotion ? 0 : (index % 4) * 0.07,
+                duration: 0.5,
+                delay: reduceMotion ? 0 : (index % 3) * 0.06,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              whileHover={reduceMotion ? undefined : { y: -5 }}
-              className="group border-bone/14 bg-surface/25 hover:border-gold/45 hover:bg-surface/45 relative h-full overflow-hidden rounded-2xl border p-7 transition-colors duration-300 hover:shadow-[0_18px_50px_-24px_rgba(197,156,64,0.55)]"
+              className="group"
             >
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                style={{
-                  background:
-                    "radial-gradient(120% 80% at 50% 0%, rgba(239,204,110,0.10) 0%, rgba(11,11,11,0) 65%)",
-                }}
-              />
-
-              <div className="flex items-start justify-between">
-                {service.icon && (
-                  <ServiceIcon
-                    name={service.icon}
-                    className="text-gold group-hover:text-gold-bright h-8 w-8 transition-colors"
+              <article className="border-bone/12 bg-surface/20 hover:border-gold/45 flex h-full flex-col overflow-hidden rounded-2xl border transition-colors duration-300">
+                <div className="relative aspect-[16/10] overflow-hidden">
+                  <Image
+                    src={service.imageUrl}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   />
-                )}
-                {/* Details affordance — surfaces on hover, ready for future
-                    per-service pages. */}
-                <span
-                  aria-hidden
-                  className="border-bone/20 text-bone/50 group-hover:border-gold/60 group-hover:text-gold flex h-8 w-8 -translate-x-1 items-center justify-center rounded-full border opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 rtl:translate-x-1 rtl:group-hover:translate-x-0"
-                >
-                  <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 rtl:-scale-x-100">
-                    <path
-                      d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.4"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-              </div>
+                  {/* Fades the photo into the card so the text below reads as one piece. */}
+                  <div
+                    aria-hidden
+                    className="from-ink/95 via-ink/25 absolute inset-0 bg-gradient-to-t to-transparent"
+                  />
 
-              <h2 className="font-display text-bone mt-6 text-xl leading-snug">
-                {service.title}
-              </h2>
-              <p className="text-bone/65 mt-3 text-sm leading-relaxed">
-                {service.description}
-              </p>
-            </motion.article>
+                  <span className="border-gold/35 bg-ink/70 text-gold absolute start-4 top-4 flex size-11 items-center justify-center rounded-full border backdrop-blur-sm">
+                    {service.icon ? (
+                      <ServiceIcon name={service.icon} className="size-5" />
+                    ) : (
+                      <span className="text-xs tabular-nums">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                    )}
+                  </span>
+
+                  <span className="text-gold-bright absolute start-5 bottom-4 text-[11px] tracking-[0.16em] uppercase">
+                    {t(`groups.${service.group}`)}
+                  </span>
+                </div>
+
+                <div className="flex flex-1 flex-col p-6">
+                  <h3 className="font-display text-bone text-2xl leading-snug">
+                    {service.title}
+                  </h3>
+                  <p className="text-bone/65 mt-3 text-sm leading-relaxed text-pretty">
+                    {service.description}
+                  </p>
+                  <div className="mt-auto pt-6">
+                    <span
+                      aria-hidden
+                      className="bg-gold/50 group-hover:bg-gold block h-px w-10 transition-all duration-500 group-hover:w-24"
+                    />
+                  </div>
+                </div>
+              </article>
+            </motion.li>
           ))}
         </AnimatePresence>
-      </div>
-    </>
+      </ul>
+    </div>
   );
 }

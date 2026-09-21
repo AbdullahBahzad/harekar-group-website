@@ -736,7 +736,7 @@
     },
     "services": {
       "title": "Services",
-      "intro": "The service lines shown on the site and in the rotating orbit. Copy, grouping and photography are all edited here.",
+      "intro": "The service lines shown on the site. Copy, grouping and photography are all edited here.",
       "catalogue": "Catalogue",
       "newService": "+ New service",
       "empty": "No services in the database.",
