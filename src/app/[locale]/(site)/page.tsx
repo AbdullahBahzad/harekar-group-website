@@ -6,7 +6,6 @@ import ServicesSection from "@/components/sections/ServicesSection";
 import ClientsSection from "@/components/sections/ClientsSection";
 import FaqSection from "@/components/sections/FaqSection";
 import CareersSection from "@/components/sections/CareersSection";
-import { BackgroundPaths } from "@/components/ui/background-paths";
 import ContactSection from "@/components/sections/ContactSection";
 import { getSiteContent, pick } from "@/lib/site-content";
 import { getPublishedClients } from "@/lib/clients";
@@ -51,7 +50,6 @@ export default async function HomePage({
    */
   return (
     <div className="relative isolate">
-      <BackgroundPaths fullPage />
       <HeroCinematic overrides={hero} />
       <AboutSection content={content} />
       <IntelligenceSection />
