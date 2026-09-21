@@ -10,10 +10,9 @@ import ParticleNetwork from "@/components/ui/particle-network";
  * Shared by the one-page scroll and the standalone /intelligence route.
  * `as` lets the standalone page promote the heading to an h1.
  *
- * `calm` strips the decorative effects for that standalone page — the drifting
- * constellation behind the section and the radar sweep behind the map — because
- * on a screen that is nothing but the map they read as noise over it. The home
- * one-pager leaves it off and keeps the full treatment.
+ * `calm` strips the drifting constellation behind the section for that
+ * standalone page, because on a screen that is nothing but the map it reads as
+ * noise over it. The home one-pager leaves it off and keeps the constellation.
  */
 export default async function IntelligenceSection({
   as: Heading = "h2",
@@ -67,7 +66,7 @@ export default async function IntelligenceSection({
          * the heading text above it.
          */}
         <div className="mt-14 -mx-3 sm:mx-0">
-          <MapStage calm={calm}>
+          <MapStage>
             <IraqMap markers={markers} />
           </MapStage>
         </div>

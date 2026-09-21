@@ -6,24 +6,15 @@ import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "fr
 /**
  * The dimensional stage the Iraq map arrives on.
  *
- * As the visitor scrolls out of the hero, the expanding gold ring hands off to
- * this section's radar geometry: concentric gold circles contract into place
- * behind the map while the map itself tilts up from a distant, reclined angle
- * to face the viewer. Scroll position drives the whole approach, so scrolling
- * up reverses it naturally.
+ * As the visitor scrolls in, the map tilts up from a distant, reclined angle to
+ * face the viewer. Scroll position drives the whole approach, so scrolling up
+ * reverses it naturally.
  *
- * `calm` is for the standalone /intelligence page, where the map is the whole
- * point of the screen and the radar dressing only competes with it: the rotating
- * sweep is dropped and the rings and cross-hairs are pulled well back. The home
- * one-pager keeps the full effect as a scroll-in moment.
+ * There used to be radar dressing behind the map — concentric gold rings,
+ * cross-hairs, and a rotating sweep wedge. All of it was removed: it read as
+ * clutter around the one thing on the screen that matters, the map.
  */
-export default function MapStage({
-  children,
-  calm = false,
-}: {
-  children: ReactNode;
-  calm?: boolean;
-}) {
+export default function MapStage({ children }: { children: ReactNode }) {
   const reduceMotion = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -43,61 +34,8 @@ export default function MapStage({
   const tilt = useSpring(tiltRaw, springCfg);
   const rise = useSpring(riseRaw, springCfg);
 
-  // Radar rings: arrive from beyond the frame — the hero ring "landing".
-  const ringsScale = useTransform(scrollYProgress, [0, 1], [1.7, 1]);
-  const ringsFade = useTransform(scrollYProgress, [0, 0.8], [0, 1]);
-
   return (
     <div ref={ref} className="relative [perspective:1400px]">
-      {/* Radar geometry behind the map. */}
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 flex items-center justify-center"
-        style={reduceMotion ? undefined : { scale: ringsScale, opacity: ringsFade }}
-      >
-        <svg
-          viewBox="0 0 100 100"
-          className={`aspect-square w-full ${calm ? "opacity-30" : "opacity-70"}`}
-          fill="none"
-        >
-          {[46, 36, 26].map((r) => (
-            <circle
-              key={r}
-              cx="50"
-              cy="50"
-              r={r}
-              stroke="var(--color-gold)"
-              strokeOpacity={0.1 + (46 - r) * 0.004}
-              strokeWidth="0.18"
-            />
-          ))}
-          {/* Cross-hairs */}
-          <path
-            d="M 50 4 V 96 M 4 50 H 96"
-            stroke="var(--color-gold)"
-            strokeOpacity="0.06"
-            strokeWidth="0.16"
-          />
-        </svg>
-
-        {/* Slow radar sweep — conic sliver rotating inside the outer ring. */}
-        {!reduceMotion && !calm && (
-          <motion.div
-            className="absolute aspect-square w-full rounded-full"
-            style={{
-              background:
-                "conic-gradient(from 0deg, rgba(197,156,64,0.10) 0deg, rgba(197,156,64,0) 55deg, rgba(197,156,64,0) 360deg)",
-              maskImage:
-                "radial-gradient(circle, black 0%, black 46%, transparent 46.5%)",
-              WebkitMaskImage:
-                "radial-gradient(circle, black 0%, black 46%, transparent 46.5%)",
-            }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
-          />
-        )}
-      </motion.div>
-
       {/*
        * The tilting stage carrying the interactive map.
        *
