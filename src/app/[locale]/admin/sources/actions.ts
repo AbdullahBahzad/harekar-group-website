@@ -293,6 +293,9 @@ function readMeta(formData: FormData) {
   ).trim();
   const politicalIraq = String(formData.get("politicalIraq") ?? "").trim();
   const weather = String(formData.get("weather") ?? "").trim();
+  const executiveSummary = String(
+    formData.get("executiveSummary") ?? "",
+  ).trim();
 
   if (Number.isNaN(date.getTime())) throw new Error("Invalid date");
   if (!THREAT_LEVELS.includes(kurdistanThreat)) {
@@ -309,6 +312,7 @@ function readMeta(formData: FormData) {
     politicalKurdistan: politicalKurdistan || null,
     politicalIraq: politicalIraq || null,
     weather: weather || null,
+    executiveSummary: executiveSummary || null,
   };
 }
 

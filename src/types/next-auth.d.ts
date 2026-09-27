@@ -13,11 +13,16 @@ declare module "next-auth" {
       id: string;
       /** Paid tier. Set manually in the database. */
       isPro: boolean;
+      /** A client portal guest seat rather than the subscribing account
+       * itself — see `PortalGuest`. Never the source of truth for access,
+       * only for what the portal chrome shows this account. */
+      isGuest: boolean;
     } & DefaultSession["user"];
   }
 
   interface User {
     isPro: boolean;
+    isGuest: boolean;
   }
 }
 
@@ -25,5 +30,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
     isPro?: boolean;
+    isGuest?: boolean;
   }
 }

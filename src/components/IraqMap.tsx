@@ -107,7 +107,12 @@ export default function IraqMap({
    * the portal only renders once mounted on the client.
    */
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  // Deferred so the initial mount flag is never set synchronously within
+  // the effect body itself — same pattern as the hero's pointer-fine
+  // detection, for the same reason.
+  useEffect(() => {
+    queueMicrotask(() => setMounted(true));
+  }, []);
 
   const groups = useMemo(() => groupByLocation(markers), [markers]);
   const activeGroup = groups.find((g) => g.key === activeGroupKey) ?? null;

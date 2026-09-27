@@ -87,12 +87,21 @@ export default async function AccountPage({
         </p>
 
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link
-            href="/intelligence"
-            className="bg-gold text-ink hover:bg-gold-bright rounded-full px-6 py-2.5 text-sm font-medium transition-colors"
-          >
-            {t("goToIntelligence")}
-          </Link>
+          {isPro ? (
+            <Link
+              href="/portal"
+              className="bg-gold text-ink hover:bg-gold-bright rounded-full px-6 py-2.5 text-sm font-medium transition-colors"
+            >
+              {t("goToPortal")}
+            </Link>
+          ) : (
+            <Link
+              href="/intelligence"
+              className="bg-gold text-ink hover:bg-gold-bright rounded-full px-6 py-2.5 text-sm font-medium transition-colors"
+            >
+              {t("goToIntelligence")}
+            </Link>
+          )}
 
           {/*
            * Sign-out is a POST via a form, not a link. A GET that destroys the

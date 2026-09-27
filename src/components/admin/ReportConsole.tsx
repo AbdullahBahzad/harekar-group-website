@@ -130,6 +130,7 @@ export default function ReportConsole({
   const [politicalKurdistan, setPoliticalKurdistan] = useState("Stable");
   const [politicalIraq, setPoliticalIraq] = useState("Acceptable");
   const [weather, setWeather] = useState("");
+  const [executiveSummary, setExecutiveSummary] = useState("");
 
   type GovernorateRow = { risk: ThreatLevel; trend: RiskTrend; driver: string };
   const [governorateMatrix, setGovernorateMatrix] = useState<
@@ -372,6 +373,7 @@ export default function ReportConsole({
     formData.set("politicalKurdistan", politicalKurdistan);
     formData.set("politicalIraq", politicalIraq);
     formData.set("weather", weather);
+    formData.set("executiveSummary", executiveSummary);
     // Always all 19, in `GOVERNORATES` order — position is how the action
     // matches each value back to its governorate; see `readGovernorateMatrix`.
     for (const { key } of GOVERNORATES) {
@@ -895,6 +897,19 @@ export default function ReportConsole({
                     />
                   </Field>
                 </div>
+
+                <Field label={t("reports.executiveSummary")}>
+                  <textarea
+                    value={executiveSummary}
+                    onChange={(e) => setExecutiveSummary(e.target.value)}
+                    placeholder={t("reports.executiveSummaryPlaceholder")}
+                    rows={4}
+                    className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm outline-none transition-colors"
+                  />
+                  <p className="text-bone/45 mt-1.5 text-xs">
+                    {t("reports.executiveSummaryHint")}
+                  </p>
+                </Field>
 
                 {/*
                  * Collapsed by default, same reasoning as the intelligence

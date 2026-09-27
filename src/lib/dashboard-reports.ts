@@ -29,8 +29,10 @@ export async function getRecentReports(take: number) {
         politicalKurdistan: report.politicalKurdistan,
         politicalIraq: report.politicalIraq,
         weather: report.weather,
+        executiveSummary: report.executiveSummary,
         content: report.content as unknown as ReportContent,
         createdAt: report.createdAt.toISOString(),
+        updatedAt: report.updatedAt.toISOString(),
         createdByName: report.createdBy?.name ?? report.createdBy?.email ?? null,
       }));
     },
@@ -42,8 +44,12 @@ export async function getRecentReports(take: number) {
       politicalKurdistan: report.politicalKurdistan,
       politicalIraq: report.politicalIraq,
       weather: report.weather,
+      // Preview samples predate this field; the console still renders fine
+      // with the fallback to the item count that a null summary triggers.
+      executiveSummary: null,
       content: report.content,
       createdAt: report.createdAt.toISOString(),
+      updatedAt: report.createdAt.toISOString(),
       createdByName: report.createdBy?.name ?? null,
     })),
   );

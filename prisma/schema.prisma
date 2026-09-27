@@ -83,6 +83,12 @@ model User {
   edits    IntelMarker[]
   reports  DailyReport[]
 
+  /// Portal guests this account has invited under itself — see `PortalGuest`.
+  guestsInvited PortalGuest[] @relation("GuestOwner")
+  /// The invite this account itself was accepted from, if it is a guest and
+  /// not the Pro account that invited it. Null for every ordinary account.
+  guestOf       PortalGuest?  @relation("GuestAccount")
+
   @@index([email])
 }
 
@@ -362,6 +368,11 @@ model DailyReport {
   politicalKurdistan String?
   politicalIraq      String?
   weather            String?
+  /// The analyst's own overview paragraph — what leads the client portal's
+  /// "Daily Brief" and the PDF, ahead of the itemised write-ups below. Optional:
+  /// reports saved before this field existed have none, and a quiet day may not
+  /// need one either, in which case the portal falls back to the item count.
+  executiveSummary   String?
   /// Drafted, reviewed report items — see `ReportContent` in `src/lib/reports.ts`.
   content            Json
 
@@ -691,4 +702,63 @@ model Client {
   updatedAt DateTime @updatedAt
 
   @@index([published, sortOrder])
+}
+
+/**
+ * ---- client portal ---------------------------------------------------------
+ */
+
+/**
+ * A seat a Pro client has handed to a colleague on their own team.
+ *
+ * The portal is per-account, and a client operation is rarely one person, so a
+ * Pro subscriber can invite named colleagues to view the same map, reports and
+ * incident feed under their own login — without sharing a password, and
+ * without each of them needing a separate purchase.
+ *
+ * Acceptance grants the guest's `User.isPro` directly, the same flag a comped
+ * staff account carries (see the field's own doc) — a guest seat is a form of
+ * hand-granted access, not a second kind of entitlement. The one honest
+ * limitation that follows: revoking a guest turns `isPro` back off
+ * unconditionally, so a guest who *also* holds their own paid or comped Pro
+ * for an unrelated reason would lose that too. Rare enough, for how a small
+ * security-sector client actually organises its accounts, not to warrant a
+ * second entitlement source.
+ */
+model PortalGuest {
+  id String @id @default(cuid())
+
+  owner   User   @relation("GuestOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId String
+
+  /// Where the invite was sent. Lower-cased before it is written, matching
+  /// every other address in the system.
+  email String
+
+  /// Opaque, single-use, unguessable — the only thing standing between an
+  /// invite email and creating the guest's account. Cleared once accepted, so
+  /// an old email cannot be replayed to reopen the invite.
+  token String? @unique
+
+  status PortalGuestStatus @default(PENDING)
+
+  /// Set once the invite is accepted — the guest's own account, so revoking
+  /// later has someone to revoke `isPro` from even after the token is gone.
+  account   User?   @relation("GuestAccount", fields: [accountId], references: [id], onDelete: SetNull)
+  accountId String? @unique
+
+  invitedAt  DateTime  @default(now())
+  acceptedAt DateTime?
+  revokedAt  DateTime?
+
+  /// One invite per address per owner — re-inviting updates the row in place
+  /// rather than piling up a second pending invite for the same person.
+  @@unique([ownerId, email])
+  @@index([ownerId])
+}
+
+enum PortalGuestStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
 }

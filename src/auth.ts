@@ -55,7 +55,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!email || !password) return null;
 
-        const user = await prisma.user.findUnique({ where: { email } });
+        const user = await prisma.user.findUnique({
+          where: { email },
+          // `guestOf` is a relation, so it is not selected by default — this
+          // is the one place `isGuest` is decided, from whether the accepted
+          // invite row still points here (see `PortalGuest`).
+          include: { guestOf: true },
+        });
 
         /*
          * A missing user and a wrong password must cost the same amount of
@@ -76,6 +82,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.name,
           isPro: hasProAccess(user),
+          isGuest: user.guestOf !== null,
         };
       },
     }),
@@ -86,20 +93,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.isPro = user.isPro;
+        token.isGuest = user.isGuest;
         return token;
       }
 
       /*
        * On an explicit `update()` call, re-read entitlement. This is what lets
-       * a user who has just been granted Pro pick it up without signing out,
-       * and it is the only place we pay for a query on an existing session.
+       * a user who has just been granted Pro (or a guest seat) pick it up
+       * without signing out, and it is the only place we pay for a query on an
+       * existing session.
        */
       if (trigger === "update" && token.id) {
         const fresh = await prisma.user.findUnique({
           where: { id: String(token.id) },
-          select: { isPro: true, proUntil: true },
+          select: { isPro: true, proUntil: true, guestOf: true },
         });
-        if (fresh) token.isPro = hasProAccess(fresh);
+        if (fresh) {
+          token.isPro = hasProAccess(fresh);
+          token.isGuest = fresh.guestOf !== null;
+        }
       }
 
       return token;
@@ -108,6 +120,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = String(token.id ?? "");
         session.user.isPro = Boolean(token.isPro);
+        session.user.isGuest = Boolean(token.isGuest);
       }
       return session;
     },

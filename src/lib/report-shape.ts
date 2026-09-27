@@ -110,8 +110,11 @@ export type ConsoleReport = {
   politicalKurdistan: string | null;
   politicalIraq: string | null;
   weather: string | null;
+  /** The analyst's overview paragraph — see the field's own doc on the model. */
+  executiveSummary: string | null;
   content: ReportContent;
   createdAt: string;
+  updatedAt: string;
   createdByName: string | null;
 };
 
