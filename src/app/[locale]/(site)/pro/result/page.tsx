@@ -49,7 +49,7 @@ export default async function PaymentResultPage({
     <section className="mx-auto flex min-h-svh max-w-2xl flex-col justify-center px-6 py-28">
       {/* Purchase just landed — refresh the token so Pro applies at once. */}
       {paid && <RefreshSession />}
-      <h1 className="font-display text-bone text-3xl leading-tight font-light sm:text-4xl">
+      <h1 className="font-display text-bone text-3xl leading-tight font-bold sm:text-4xl">
         {paid ? t("result.successTitle") : t("result.pendingTitle")}
       </h1>
       <p className="text-bone/70 mt-5 text-base leading-relaxed text-pretty">

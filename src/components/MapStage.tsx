@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 
 /**
  * The dimensional stage the Iraq map arrives on.
@@ -15,7 +15,6 @@ import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "fr
  * clutter around the one thing on the screen that matters, the map.
  */
 export default function MapStage({ children }: { children: ReactNode }) {
-  const reduceMotion = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -46,17 +45,21 @@ export default function MapStage({ children }: { children: ReactNode }) {
        * edges drew fine but ignored clicks. The tilt only needs the parent's
        * `perspective` acting on this one flat element, which it still does.
        */}
+      {/*
+       * The scroll-driven style is always bound, and reduced motion is
+       * honoured in CSS instead. Branching on `useReducedMotion()` here made
+       * the server (which cannot know the setting) render the reclined,
+       * faded state that hydration then never cleared — leaving the map at
+       * 25% opacity for exactly the visitors who asked for less motion.
+       */}
       <motion.div
-        style={
-          reduceMotion
-            ? undefined
-            : {
-                rotateX: tilt,
-                y: rise,
-                opacity: fade,
-                scale: approach,
-              }
-        }
+        className="motion-reduce:!transform-none motion-reduce:!opacity-100"
+        style={{
+          rotateX: tilt,
+          y: rise,
+          opacity: fade,
+          scale: approach,
+        }}
       >
         {children}
       </motion.div>

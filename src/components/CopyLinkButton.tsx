@@ -36,7 +36,7 @@ export default function CopyLinkButton({
     <button
       type="button"
       onClick={handleCopy}
-      className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold flex min-h-11 cursor-pointer items-center gap-2 rounded-full border px-5 text-sm transition-colors"
+      className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep flex min-h-11 cursor-pointer items-center gap-2 rounded-full border px-5 text-sm transition-colors"
     >
       {copied ? copiedLabel : label}
     </button>

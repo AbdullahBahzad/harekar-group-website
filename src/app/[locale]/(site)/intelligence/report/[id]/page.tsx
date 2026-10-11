@@ -56,7 +56,7 @@ export default async function MarkerReportPage({
     <section className="mx-auto max-w-3xl px-6 py-24 sm:px-10">
       <Link
         href="/intelligence"
-        className="text-bone/55 hover:text-gold inline-flex items-center gap-2 text-sm transition-colors"
+        className="text-bone/55 hover:text-gold-deep inline-flex items-center gap-2 text-sm transition-colors"
       >
         <span aria-hidden>←</span>
         {t("report.backToMap")}
@@ -81,13 +81,13 @@ export default async function MarkerReportPage({
             </span>
           )}
           {restricted && (
-            <span className="border-gold/50 text-gold rounded-full border px-2.5 py-0.5 text-[10px] tracking-wide uppercase">
+            <span className="border-gold/50 text-gold-deep rounded-full border px-2.5 py-0.5 text-[10px] tracking-wide uppercase">
               {t("modal.badge")}
             </span>
           )}
         </div>
 
-        <h1 className="font-display text-bone mt-4 text-3xl leading-snug sm:text-4xl">
+        <h1 className="font-display text-bone mt-4 text-3xl leading-snug sm:text-4xl font-bold">
           {marker.headline ?? marker.label}
         </h1>
         <p className="text-bone/50 mt-3 text-sm">
@@ -105,7 +105,7 @@ export default async function MarkerReportPage({
           </p>
         ) : (
           <div className="border-gold/35 bg-gold/[0.04] rounded-2xl border p-6 sm:p-8">
-            <h2 className="font-display text-bone text-xl leading-snug">
+            <h2 className="font-display text-bone text-xl leading-snug font-bold">
               {isPro ? t("modal.titlePro", { city: marker.label }) : t("modal.title")}
             </h2>
             <p className="text-bone/70 mt-3 text-sm leading-relaxed">

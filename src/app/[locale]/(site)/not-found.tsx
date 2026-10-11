@@ -15,10 +15,10 @@ export default async function SiteNotFound() {
 
   return (
     <section className="mx-auto flex min-h-[60svh] max-w-3xl flex-col justify-center px-6 py-24 sm:px-10">
-      <p className="text-gold/60 font-mono text-xs tracking-[0.4em]">
+      <p className="text-gold-deep/60 font-mono text-xs tracking-[0.4em]">
         {t("notFound.eyebrow")}
       </p>
-      <h1 className="font-display text-bone mt-5 text-4xl font-light sm:text-5xl">
+      <h1 className="font-display text-bone mt-5 text-4xl font-bold sm:text-5xl">
         {t("notFound.title")}
       </h1>
       <p className="text-bone/58 mt-5 max-w-xl text-sm leading-relaxed">

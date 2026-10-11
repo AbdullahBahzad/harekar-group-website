@@ -50,7 +50,7 @@ export default function ClientWall({ logos }: { logos: PublicClientLogo[] }) {
       </div>
 
       {/* Announced on filter change so the result count is not sighted-only. */}
-      <p aria-live="polite" className="text-bone/50 mt-6 text-xs tracking-[0.2em] uppercase">
+      <p aria-live="polite" className="text-bone/70 mt-6 text-sm font-medium">
         {t("countLabel", { count: visible.length })}
       </p>
 
@@ -59,10 +59,12 @@ export default function ClientWall({ logos }: { logos: PublicClientLogo[] }) {
           <motion.li
             key={logo.id}
             layout={!reduceMotion}
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.96 }}
+            // Same starting state on server and client; reduced motion only
+            // drops the timing (see the note in `Reveal`).
+            initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{
-              duration: 0.3,
+              duration: reduceMotion ? 0 : 0.3,
               delay: reduceMotion ? 0 : Math.min(i, 12) * 0.02,
               ease: [0.22, 1, 0.36, 1],
             }}
@@ -133,7 +135,8 @@ export default function ClientWall({ logos }: { logos: PublicClientLogo[] }) {
                   height={1772}
                   sizes="(min-width: 1024px) 20vw, (min-width: 640px) 28vw, 42vw"
                   loading={i < 8 ? "eager" : "lazy"}
-                  className="h-auto w-full"
+                  // White artwork; `logo-mono` darkens it on the light ground.
+                  className="logo-mono h-auto w-full"
                 />
               </motion.div>
             </motion.div>

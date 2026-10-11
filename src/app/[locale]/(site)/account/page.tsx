@@ -40,10 +40,10 @@ export default async function AccountPage({
 
   return (
     <section className="mx-auto min-h-svh max-w-3xl px-6 py-28">
-      <p className="text-gold/88 text-xs font-semibold tracking-[0.3em] uppercase">
+      <p className="text-gold-deep/88 text-xs font-semibold tracking-[0.3em] uppercase">
         {t("eyebrow")}
       </p>
-      <h1 className="font-display text-bone mt-6 text-4xl leading-tight font-light sm:text-5xl">
+      <h1 className="font-display text-bone mt-6 text-4xl leading-tight font-bold sm:text-5xl">
         {t("greeting", { name: name ?? email ?? "" })}
       </h1>
 
@@ -64,7 +64,7 @@ export default async function AccountPage({
               <span
                 className={
                   isPro
-                    ? "border-gold/50 text-gold inline-block rounded-full border px-3 py-1 text-xs tracking-[0.2em] uppercase"
+                    ? "border-gold/50 text-gold-deep inline-block rounded-full border px-3 py-1 text-xs tracking-[0.2em] uppercase"
                     : "border-bone/26 text-bone/70 inline-block rounded-full border px-3 py-1 text-xs tracking-[0.2em] uppercase"
                 }
               >
@@ -73,7 +73,7 @@ export default async function AccountPage({
               {!isPro && (
                 <Link
                   href="/pro"
-                  className="text-gold hover:text-gold-bright text-sm underline underline-offset-4 transition-colors"
+                  className="text-gold-deep hover:text-bone text-sm underline underline-offset-4 transition-colors"
                 >
                   {t("upgrade")}
                 </Link>

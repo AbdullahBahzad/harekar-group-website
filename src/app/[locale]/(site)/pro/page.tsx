@@ -41,10 +41,10 @@ export default async function ProPage({
 
   return (
     <section className="mx-auto min-h-svh max-w-4xl px-6 py-28">
-      <p className="text-gold/88 text-xs font-semibold tracking-[0.3em] uppercase">
+      <p className="text-gold-deep/88 text-xs font-semibold tracking-[0.3em] uppercase">
         {p("proEyebrow", t("eyebrow"))}
       </p>
-      <h1 className="font-display text-bone mt-6 max-w-2xl text-4xl leading-[1.15] font-light text-balance sm:text-5xl">
+      <h1 className="font-display text-bone mt-6 max-w-2xl text-4xl leading-[1.15] font-bold text-balance sm:text-5xl">
         {p("proTitle", t("title"))}
       </h1>
       <p className="text-bone/70 mt-6 max-w-xl text-base leading-relaxed text-pretty">
@@ -73,7 +73,7 @@ export default async function ProPage({
               }`}
             >
               {plan.featured && (
-                <span className="border-gold/50 text-gold absolute -top-3 left-8 rounded-full border bg-[var(--color-ink)] px-3 py-1 text-[10px] tracking-[0.25em] uppercase">
+                <span className="border-gold/50 text-gold-deep absolute -top-3 left-8 rounded-full border bg-[var(--color-ink)] px-3 py-1 text-[10px] tracking-[0.25em] uppercase">
                   {t("bestValue")}
                 </span>
               )}
@@ -82,7 +82,7 @@ export default async function ProPage({
                 {p(`${planFields[plan.id]}Name`, t(`plans.${plan.id}.name`))}
               </h2>
 
-              <p className="font-display text-bone mt-4 text-4xl font-light">
+              <p className="font-display text-bone mt-4 text-4xl font-bold">
                 {formatPrice(plan, locale)}
                 <span className="text-bone/50 ml-2 text-base">
                   {p(
@@ -113,7 +113,7 @@ export default async function ProPage({
                     className={`w-full cursor-pointer rounded-full px-6 py-3 text-sm font-medium transition-colors ${
                       plan.featured
                         ? "bg-gold text-ink hover:bg-gold-bright"
-                        : "border-bone/26 text-bone/80 hover:border-gold hover:text-gold border"
+                        : "border-bone/26 text-bone/80 hover:border-gold hover:text-gold-deep border"
                     }`}
                   >
                     {t("payByCard")}
@@ -125,7 +125,7 @@ export default async function ProPage({
                   className={`mt-8 block w-full rounded-full px-6 py-3 text-center text-sm font-medium transition-colors ${
                     plan.featured
                       ? "bg-gold text-ink hover:bg-gold-bright"
-                      : "border-bone/26 text-bone/80 hover:border-gold hover:text-gold border"
+                      : "border-bone/26 text-bone/80 hover:border-gold hover:text-gold-deep border"
                   }`}
                 >
                   {t("createAccountFirst")}

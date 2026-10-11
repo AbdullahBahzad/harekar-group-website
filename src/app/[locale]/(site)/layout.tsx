@@ -35,7 +35,12 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
      * the sake of one link in the header.
      */
     <SessionProvider>
-      <div className="flex min-h-svh flex-col">
+      {/*
+       * `site tone-light` puts the whole public site on the brand palette —
+       * navy text on white — and the header, hero and footer opt back into
+       * `tone-navy` themselves. See the palette notes in globals.css.
+       */}
+      <div className="site tone-light flex min-h-svh flex-col bg-white">
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter content={content} />

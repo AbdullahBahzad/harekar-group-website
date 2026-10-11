@@ -1,27 +1,5 @@
 @import "tailwindcss";
 
-/*
- * Mesagni is a licensed commercial family and is not bundled.
- * Drop the woff2 files into /public/fonts and these @font-face rules pick them
- * up automatically; until then the Cormorant fallback (loaded in layout.tsx)
- * carries the same editorial serif feel.
- */
-@font-face {
-  font-family: "Mesagni";
-  src: url("/fonts/Mesagni-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Mesagni";
-  src: url("/fonts/Mesagni-Medium.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
 :root {
   /*
    * Brand palette.
@@ -48,6 +26,24 @@
   --color-status-elevated: #d9a441;
   --color-status-critical: #d2564b;
 
+  /* Text-weight gold. Same as the brand gold on dark grounds; the tone-light
+     scope swaps in a deeper shade that stays legible on white. */
+  --color-gold-deep: var(--color-gold);
+
+  --font-heading: var(--font-manrope), system-ui, sans-serif;
+}
+
+/*
+ * Semantic roles, declared on the root AND on each tone scope.
+ *
+ * A custom property that references another is resolved where it is declared,
+ * so `--border: color-mix(… var(--color-bone) …)` set only on :root would keep
+ * the root's bone forever. Redeclaring the same expressions on the tone scopes
+ * makes every border, input and muted text follow the palette it sits in.
+ */
+:root,
+.tone-navy,
+.tone-light {
   /* Semantic roles */
   --background: var(--color-ink);
   --foreground: var(--color-bone);
@@ -111,28 +107,83 @@
   --color-surface: var(--color-surface);
   --color-gold: var(--color-gold);
   --color-gold-bright: var(--color-gold-bright);
+  --color-gold-deep: var(--color-gold-deep);
   --color-bone: var(--color-bone);
 
   --color-status-clear: var(--color-status-clear);
   --color-status-elevated: var(--color-status-elevated);
   --color-status-critical: var(--color-status-critical);
 
-  /* Mesagni first, Cormorant as the licensed-font stand-in */
-  --font-display: "Mesagni", var(--font-cormorant), Georgia, serif;
-  --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-arabic: var(--font-noto-arabic), var(--font-inter), sans-serif;
+  /* Manrope for headings and body alike — no decorative display face. */
+  --font-display: var(--font-heading);
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-arabic: var(--font-noto-arabic), var(--font-manrope), sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, monospace;
 }
 
 /*
- * Radius of the hole the hero pointer opens through the lion. Registered so
- * the browser knows it is a length and can interpolate it — an unregistered
- * custom property is just a string and would snap between values.
+ * ---- The public site's palette ------------------------------------------
+ *
+ * Deep navy #101D2F, white, light grey #F3F5F7, muted gold #B89A60.
+ *
+ * Every component is written against four tokens — `ink` (the ground),
+ * `bone` (the text), `surface` (a raised panel) and `gold` — so the palette is
+ * applied by redefining those tokens per region instead of by touching every
+ * class:
+ *
+ *   tone-navy   header, opening section, footer, menu panel. White text on
+ *               navy; gold reads well here at full strength.
+ *   tone-light  the content. Navy text on white and light grey.
+ *
+ * `ink` stays navy in both, because nearly every `text-ink` in the codebase is
+ * the label on a gold button — and those must be navy on gold everywhere.
+ * Light regions therefore paint their ground with `bg-white`/`bg-surface`, not
+ * `bg-ink`.
+ *
+ * The admin console and client portal sit outside both scopes and keep their
+ * own palette.
  */
-@property --hole-r {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
+.tone-navy {
+  --color-ink: #101d2f;
+  --color-surface: #1b2a40;
+  --color-bone: #ffffff;
+  --color-gold: #b89a60;
+  --color-gold-bright: #cdb27e;
+  --color-gold-deep: #c9ad74;
+  color: var(--color-bone);
+}
+
+.tone-light {
+  --color-ink: #101d2f;
+  --color-surface: #f3f5f7;
+  --color-bone: #101d2f;
+  --color-gold: #b89a60;
+  --color-gold-bright: #cdb27e;
+  /* 5.5:1 on white — gold as text, where #B89A60 would only reach 2.7:1. */
+  --color-gold-deep: #7d6637;
+  color: var(--color-bone);
+}
+
+/*
+ * Body copy at 17px with relaxed spacing, per the brand brief. Scoped to the
+ * public site so the dense admin tables keep their own scale.
+ */
+.site {
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.7;
+  --text-lg: 1.1875rem;
+  --text-lg--line-height: 1.65;
+}
+
+/*
+ * Client logos ship as pure-white artwork for a dark wall. On the light
+ * content ground they are flattened to a dark silhouette instead.
+ */
+.tone-light .logo-mono {
+  filter: brightness(0);
+}
+.tone-navy .logo-mono {
+  filter: none;
 }
 
 html {
@@ -184,10 +235,24 @@ body {
   }
 }
 
-/* Arabic and Kurdish Sorani both render with the Arabic script stack. */
+/*
+ * Arabic and Kurdish Sorani both render with the Arabic script stack — body
+ * and headings alike. Letter-spacing is reset because tracking pulls apart
+ * the joined letterforms of the Arabic script.
+ */
+:root:lang(ar),
+:root:lang(ckb) {
+  --font-heading: var(--font-noto-arabic), var(--font-manrope), sans-serif;
+}
+
 :root:lang(ar) body,
 :root:lang(ckb) body {
   font-family: var(--font-arabic);
+}
+
+:root:lang(ar) .site [class*="tracking-"],
+:root:lang(ckb) .site [class*="tracking-"] {
+  letter-spacing: 0;
 }
 
 ::selection {
@@ -255,34 +320,6 @@ html {
 html::-webkit-scrollbar {
   width: 0;
   height: 0;
-}
-
-/*
- * A tracking readout acquiring its target in the hero sensor sweep. Lives here
- * rather than in the component because the element is positioned by inline
- * `left`/`top` and centred by `translate(-50%, -50%)` — the keyframe has to
- * carry that same translate to avoid fighting it, so it needs a stable,
- * unscoped name.
- */
-@keyframes sensor-lock {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(1.35);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  @keyframes sensor-lock {
-    from,
-    to {
-      opacity: 1;
-      transform: translate(-50%, -50%);
-    }
-  }
 }
 
 /*

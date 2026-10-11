@@ -12,7 +12,7 @@ const CV_ACCEPT = ".pdf,.doc,.docx";
 const CV_EXTENSIONS = [".pdf", ".doc", ".docx"];
 
 const fieldClass =
-  "border-bone/20 bg-ink/90 text-bone placeholder:text-bone/52 focus:border-gold focus-visible:ring-gold/30 min-h-11 rounded-lg border px-4 py-3 text-base outline-none transition-colors focus-visible:ring-2 sm:text-sm";
+  "border-bone/20 bg-white text-bone placeholder:text-bone/52 focus:border-gold focus-visible:ring-gold/30 min-h-11 rounded-lg border px-4 py-3 text-base outline-none transition-colors focus-visible:ring-2 sm:text-sm";
 
 function Field({
   id,
@@ -27,7 +27,7 @@ function Field({
     <div className="flex flex-col gap-2">
       <label htmlFor={id} className="text-bone/70 text-sm">
         {label}
-        <span className="text-gold/78 ms-1" aria-hidden>
+        <span className="text-gold-deep/78 ms-1" aria-hidden>
           *
         </span>
       </label>
@@ -113,7 +113,7 @@ export default function ApplyForm() {
       >
         <svg
           viewBox="0 0 24 24"
-          className="text-gold h-8 w-8"
+          className="text-gold-deep h-8 w-8"
           fill="none"
           aria-hidden
         >
@@ -126,14 +126,14 @@ export default function ApplyForm() {
             strokeLinejoin="round"
           />
         </svg>
-        <h3 className="font-display text-bone mt-5 text-2xl font-light">
+        <h3 className="font-display text-bone mt-5 text-2xl font-bold">
           {t("successTitle")}
         </h3>
         <p className="text-bone/70 mt-3 text-sm leading-relaxed">{t("success")}</p>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="border-gold/60 text-gold hover:bg-gold hover:text-ink mt-7 min-h-11 cursor-pointer rounded-full border px-6 text-sm transition-colors"
+          className="border-gold/60 text-gold-deep hover:bg-gold hover:text-ink mt-7 min-h-11 cursor-pointer rounded-full border px-6 text-sm transition-colors"
         >
           {t("again")}
         </button>
@@ -230,7 +230,7 @@ export default function ApplyForm() {
           <div className="flex flex-col gap-2">
             <label htmlFor="coverLetter" className="text-bone/70 text-sm">
               {t("coverLetter")}
-              <span className="text-gold/78 ms-1" aria-hidden>
+              <span className="text-gold-deep/78 ms-1" aria-hidden>
                 *
               </span>
             </label>
@@ -254,18 +254,18 @@ export default function ApplyForm() {
           <div className="flex flex-col gap-2">
             <span className="text-bone/70 text-sm">
               {t("cv")}
-              <span className="text-gold/78 ms-1" aria-hidden>
+              <span className="text-gold-deep/78 ms-1" aria-hidden>
                 *
               </span>
             </span>
 
             <label
               htmlFor="cv"
-              className="border-bone/20 bg-ink/90 hover:border-gold/60 focus-within:border-gold focus-within:ring-gold/30 group flex min-h-11 cursor-pointer items-center gap-4 rounded-lg border border-dashed px-4 py-4 transition-colors focus-within:ring-2"
+              className="border-bone/20 bg-white hover:border-gold/60 focus-within:border-gold focus-within:ring-gold/30 group flex min-h-11 cursor-pointer items-center gap-4 rounded-lg border border-dashed px-4 py-4 transition-colors focus-within:ring-2"
             >
               <svg
                 viewBox="0 0 24 24"
-                className="text-gold/78 group-hover:text-gold h-5 w-5 shrink-0 transition-colors"
+                className="text-gold-deep/78 group-hover:text-gold-deep h-5 w-5 shrink-0 transition-colors"
                 fill="none"
                 aria-hidden
               >
@@ -300,7 +300,7 @@ export default function ApplyForm() {
                 className="sr-only"
               />
 
-              <span className="text-gold/88 shrink-0 text-xs tracking-[0.2em] whitespace-nowrap uppercase">
+              <span className="text-gold-deep/88 shrink-0 text-xs tracking-[0.2em] whitespace-nowrap uppercase">
                 {cv ? t("cvReplace") : ""}
               </span>
             </label>

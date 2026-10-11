@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import CareersSection from "@/components/sections/CareersSection";
-import { BackgroundPaths } from "@/components/ui/background-paths";
 import { getSiteContent } from "@/lib/site-content";
 import { getPublishedCareerBenefits } from "@/lib/career-benefits";
 import type { Locale } from "@/i18n/routing";
@@ -28,14 +27,11 @@ export default async function CareersPage({
   const benefits = await getPublishedCareerBenefits(locale as Locale);
 
   return (
-    <div className="relative isolate">
-      <BackgroundPaths fullPage />
-      <CareersSection
-        as="h1"
-        content={content}
-        benefits={benefits}
-        locale={locale as Locale}
-      />
-    </div>
+    <CareersSection
+      as="h1"
+      content={content}
+      benefits={benefits}
+      locale={locale as Locale}
+    />
   );
 }

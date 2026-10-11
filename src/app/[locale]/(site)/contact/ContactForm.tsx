@@ -7,7 +7,7 @@ import { submitContactForm, type ContactFormState } from "./actions";
 const initialState: ContactFormState = { status: "idle" };
 
 const fieldClass =
-  "border-bone/20 bg-ink/60 text-bone placeholder:text-bone/52 focus:border-gold rounded-lg border px-4 py-3 text-sm outline-none transition-colors";
+  "border-bone/20 bg-white text-bone placeholder:text-bone/52 focus:border-gold focus:ring-gold/30 min-h-12 rounded-xl border px-4 py-3 text-base outline-none transition-colors focus:ring-2";
 
 export default function ContactForm() {
   const t = useTranslations("contact.form");
@@ -18,16 +18,16 @@ export default function ContactForm() {
   );
 
   return (
-    <form action={formAction} className="mt-12 flex flex-col gap-5">
+    <form action={formAction} className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <label htmlFor="name" className="text-bone/70 text-sm">
+        <label htmlFor="name" className="text-bone/80 text-sm font-semibold">
           {t("name")}
         </label>
         <input id="name" name="name" type="text" required className={fieldClass} />
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="organization" className="text-bone/70 text-sm">
+        <label htmlFor="organization" className="text-bone/80 text-sm font-semibold">
           {t("organization")}
         </label>
         <input
@@ -39,21 +39,21 @@ export default function ContactForm() {
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="email" className="text-bone/70 text-sm">
+        <label htmlFor="email" className="text-bone/80 text-sm font-semibold">
           {t("email")}
         </label>
         <input id="email" name="email" type="email" required className={fieldClass} />
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="phone" className="text-bone/70 text-sm">
+        <label htmlFor="phone" className="text-bone/80 text-sm font-semibold">
           {t("phone")}
         </label>
         <input id="phone" name="phone" type="tel" className={fieldClass} />
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="message" className="text-bone/70 text-sm">
+        <label htmlFor="message" className="text-bone/80 text-sm font-semibold">
           {t("message")}
         </label>
         <textarea
@@ -68,16 +68,16 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={pending}
-        className="bg-gold text-ink hover:bg-gold-bright mt-3 self-start rounded-full px-8 py-3 text-sm font-medium transition-colors disabled:opacity-50"
+        className="bg-gold text-ink hover:bg-gold-bright mt-3 inline-flex min-h-12 cursor-pointer items-center self-start rounded-full px-8 text-base font-bold transition-colors disabled:opacity-50"
       >
         {pending ? t("sending") : tCta("primary")}
       </button>
 
       {state.status === "success" && (
-        <p className="text-gold-bright text-sm">{t("success")}</p>
+        <p className="text-sm font-semibold text-[#1f6b47]">{t("success")}</p>
       )}
       {state.status === "error" && (
-        <p className="text-sm text-red-400">{t(state.error ?? "errorGeneric")}</p>
+        <p className="text-sm font-semibold text-[#b3261e]">{t(state.error ?? "errorGeneric")}</p>
       )}
     </form>
   );

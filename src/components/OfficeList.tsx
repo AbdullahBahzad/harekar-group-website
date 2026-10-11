@@ -16,7 +16,7 @@ export default function OfficeList() {
       <ul className="space-y-6">
         {offices.map((office) => (
           <li key={office.id} className="border-bone/14 border-t pt-4">
-            <p className="font-display text-bone text-base tracking-wide">
+            <p className="font-display text-bone text-base tracking-wide font-bold">
               {t(office.id)}
             </p>
 
@@ -32,7 +32,7 @@ export default function OfficeList() {
                   <a
                     href={`tel:${office.phone.replace(/[^+\d]/g, "")}`}
                     dir="ltr"
-                    className="text-gold hover:text-gold-bright w-fit transition-colors"
+                    className="text-gold-deep hover:text-bone w-fit transition-colors"
                   >
                     {office.phone}
                   </a>
@@ -41,7 +41,7 @@ export default function OfficeList() {
                   <a
                     href={`mailto:${office.email}`}
                     dir="ltr"
-                    className="text-gold hover:text-gold-bright w-fit transition-colors"
+                    className="text-gold-deep hover:text-bone w-fit transition-colors"
                   >
                     {office.email}
                   </a>
@@ -60,7 +60,7 @@ export default function OfficeList() {
         <a
           href={`mailto:${COMPANY_EMAIL}`}
           dir="ltr"
-          className="text-gold hover:text-gold-bright mt-2 inline-block text-sm transition-colors"
+          className="text-gold-deep hover:text-bone mt-2 inline-block text-sm transition-colors"
         >
           {COMPANY_EMAIL}
         </a>

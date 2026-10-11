@@ -20,7 +20,7 @@ export default function AuthShell({
   return (
     <section className="flex min-h-svh items-center justify-center px-6 py-24">
       <div className="w-full max-w-md">
-        <h1 className="font-display text-bone text-3xl leading-tight font-light text-balance sm:text-4xl">
+        <h1 className="font-display text-bone text-3xl leading-tight font-bold text-balance sm:text-4xl">
           {title}
         </h1>
         <p className="text-bone/65 mt-4 text-sm leading-relaxed text-pretty">

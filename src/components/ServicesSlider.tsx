@@ -379,7 +379,7 @@ export default function ServicesSlider({
   const ease = [0.22, 1, 0.36, 1] as const;
 
   const arrowClass =
-    "border-bone/20 bg-ink/50 text-bone/75 hover:border-gold hover:text-gold pointer-events-auto absolute top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border backdrop-blur-md transition-colors";
+    "tone-navy border-bone/20 bg-ink/70 text-bone/85 hover:border-gold hover:text-gold-deep pointer-events-auto absolute top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border backdrop-blur-md transition-colors";
 
   return (
     <div className="relative">
@@ -480,12 +480,12 @@ export default function ServicesSlider({
           >
             {/* Capped and scrollable so a short stage cannot be swallowed
                 whole by the panel. */}
-            <div className="border-gold/35 bg-ink/90 relative max-h-[60svh] overflow-y-auto rounded-2xl border p-5 shadow-[0_24px_70px_-30px_rgba(197,156,64,0.7)] backdrop-blur-xl sm:p-7">
+            <div className="tone-navy border-gold/35 bg-ink/95 relative max-h-[60svh] overflow-y-auto rounded-2xl border p-5 shadow-[0_24px_70px_-30px_rgba(16,29,47,0.7)] backdrop-blur-xl sm:p-7">
               <button
                 type="button"
                 onClick={() => setSelected(null)}
                 aria-label={tNav("close")}
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold absolute end-3 top-3 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition-colors"
+                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold-deep absolute end-3 top-3 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition-colors"
               >
                 <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden>
                   <path
@@ -507,10 +507,10 @@ export default function ServicesSlider({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeOut" }}
               >
-                <p className="text-gold/90 text-[10px] tracking-[0.3em] uppercase">
+                <p className="text-gold-deep/90 text-[10px] tracking-[0.3em] uppercase">
                   {t(`groups.${detail.group}`)}
                 </p>
-                <h3 className="font-display text-bone mt-3 pe-10 text-2xl leading-snug font-medium">
+                <h3 className="font-display text-bone mt-3 pe-10 text-2xl leading-snug font-bold">
                   {detail.title}
                 </h3>
                 <p className="text-bone/70 mt-3 text-sm leading-relaxed text-pretty">
@@ -595,7 +595,7 @@ function SliderCard({
         aria-pressed={selected}
         aria-label={`${service.title} — ${selectLabel}`}
         className={cn(
-          "group focus-visible:ring-gold hover:border-gold/60 absolute inset-0 cursor-pointer overflow-hidden rounded-3xl border text-start shadow-2xl outline-none focus-visible:ring-2",
+          "tone-navy group focus-visible:ring-gold hover:border-gold/60 absolute inset-0 cursor-pointer overflow-hidden rounded-3xl border text-start shadow-[0_24px_50px_-24px_rgba(16,29,47,0.55)] outline-none focus-visible:ring-2",
           selected ? "border-gold/70" : "border-bone/14",
         )}
       >
@@ -623,11 +623,11 @@ function SliderCard({
         />
 
         {/* Darkens toward the labels so they read on any photograph. */}
-        <div className="pointer-events-none absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 pt-12 text-left rtl:text-right">
-          <h3 className="font-display text-bone text-lg leading-snug font-medium">
+        <div className="pointer-events-none absolute bottom-0 left-0 w-full bg-gradient-to-t from-[rgba(16,29,47,0.92)] via-[rgba(16,29,47,0.5)] to-transparent p-4 pt-12 text-left rtl:text-right">
+          <h3 className="font-display text-bone text-lg leading-snug font-bold">
             {service.title}
           </h3>
-          <em className="text-gold-bright/80 mt-1 block text-xs italic">
+          <em className="text-gold-deep/80 mt-1 block text-xs italic">
             {group}
           </em>
         </div>

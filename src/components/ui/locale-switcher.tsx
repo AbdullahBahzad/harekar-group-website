@@ -52,7 +52,7 @@ export default function LocaleSwitcher({
       <PopoverTrigger
         aria-label={t("language")}
         className={cn(
-          "border-border text-bone/75 hover:border-gold/60 hover:text-gold focus-visible:ring-ring data-[state=open]:border-gold/60 data-[state=open]:text-gold flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-xs tracking-[0.15em] uppercase outline-none transition-colors duration-300 focus-visible:ring-2",
+          "border-border text-bone/75 hover:border-gold/60 hover:text-gold-deep focus-visible:ring-ring data-[state=open]:border-gold/60 data-[state=open]:text-gold-deep flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-xs tracking-[0.15em] uppercase outline-none transition-colors duration-300 focus-visible:ring-2",
           className,
         )}
       >
@@ -93,7 +93,8 @@ export default function LocaleSwitcher({
         </svg>
       </PopoverTrigger>
 
-      <PopoverContent align="end" className="w-52">
+      {/* Portaled to <body>, outside the header — so it names its palette. */}
+      <PopoverContent align="end" className="tone-navy w-52">
         <div role="group" aria-label={t("language")} className="flex flex-col">
           {locales.map((code) => {
             const active = code === current;
@@ -111,7 +112,7 @@ export default function LocaleSwitcher({
                 className={cn(
                   "focus-visible:ring-ring flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-start text-sm outline-none transition-colors focus-visible:ring-2",
                   active
-                    ? "text-gold bg-accent"
+                    ? "text-gold-deep bg-accent"
                     : "text-bone/70 hover:bg-accent hover:text-accent-foreground",
                 )}
               >

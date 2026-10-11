@@ -3,23 +3,19 @@ import { auth } from "@/auth";
 import { getPublishedMarkers } from "@/lib/intel";
 import IraqMap from "@/components/IraqMap";
 import MapStage from "@/components/MapStage";
-import Reveal from "@/components/Reveal";
-import ParticleNetwork from "@/components/ui/particle-network";
+import SectionIntro from "@/components/SectionIntro";
 
 /**
  * Shared by the one-page scroll and the standalone /intelligence route.
  * `as` lets the standalone page promote the heading to an h1.
  *
- * `calm` strips the drifting constellation behind the section for that
- * standalone page, because on a screen that is nothing but the map it reads as
- * noise over it. The home one-pager leaves it off and keeps the constellation.
+ * The map itself is a dark basemap, so it sits in a navy panel on the light
+ * page rather than being re-tinted.
  */
 export default async function IntelligenceSection({
   as: Heading = "h2",
-  calm = false,
 }: {
   as?: "h1" | "h2";
-  calm?: boolean;
 }) {
   const t = await getTranslations("intelligence");
 
@@ -39,33 +35,20 @@ export default async function IntelligenceSection({
   return (
     <section
       id="intelligence"
-      className="relative scroll-mt-24 px-6 py-28"
-      // Radar/ring decorations scale past the frame during their entrance;
-      // clip horizontally so they never create page-level overflow.
+      className="relative scroll-mt-24 bg-white px-4 py-20 sm:px-6 sm:py-24"
+      // The map's entrance tilt scales past the frame; clip horizontally so
+      // it never creates page-level overflow.
       style={{ overflowX: "clip" }}
     >
-      {/* Live signal field behind the intelligence picture. */}
-      {!calm && <ParticleNetwork />}
+      <div className="mx-auto max-w-7xl">
+        <SectionIntro
+          as={Heading}
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          subtitle={t("subtitle")}
+        />
 
-      <div className="relative z-10 mx-auto max-w-7xl">
-        <Reveal>
-          <p className="text-gold text-3xl font-semibold tracking-[0.1em] uppercase sm:text-4xl lg:text-5xl">
-            {t("eyebrow")}
-          </p>
-          <Heading className="font-display text-bone mt-5 max-w-3xl text-2xl leading-snug font-normal text-balance sm:text-3xl lg:text-4xl">
-            {t("title")}
-          </Heading>
-          <p className="text-bone/70 mt-6 max-w-2xl text-base leading-relaxed text-pretty">
-            {t("subtitle")}
-          </p>
-        </Reveal>
-
-        {/*
-         * Bleeds past the section's own side padding on phones, where every
-         * pixel of width is worth more to the map than to the alignment of
-         * the heading text above it.
-         */}
-        <div className="mt-14 -mx-3 sm:mx-0">
+        <div className="tone-navy bg-ink mt-12 -mx-4 px-2 py-6 sm:mx-0 sm:rounded-3xl sm:px-6 sm:py-10">
           <MapStage>
             <IraqMap markers={markers} />
           </MapStage>

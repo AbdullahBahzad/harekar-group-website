@@ -15,17 +15,24 @@
     "language": "Language",
     "clients": "Clients",
     "signIn": "Sign in",
-    "account": "Account"
+    "account": "Account",
+    "coverage": "Coverage",
+    "why": "Why Harekar",
+    "whoWeAre": "Who we are",
+    "missionVision": "Mission & vision"
   },
   "cta": {
     "primary": "Request a Security Assessment",
     "secondary": "Contact the Team",
-    "upgradePro": "Upgrade to Pro"
+    "upgradePro": "Upgrade to Pro",
+    "explore": "Explore Our Services"
   },
   "hero": {
     "eyebrow": "Security & Operational Services",
-    "title": "Protection built on discipline.",
-    "subtitle": "Harekar Group delivers security, emergency response, and operational support for organizations that cannot afford uncertainty."
+    "title": "Trusted security across the Kurdistan Region of Iraq.",
+    "subtitle": "Guarding, mobile security, armored transport and emergency response — delivered by vetted, trained teams from our offices in Erbil, Duhok and Sulaymaniyah.",
+    "playVideo": "Play background video",
+    "pauseVideo": "Pause background video"
   },
   "proof": {
     "stats": {
@@ -234,8 +241,8 @@
     }
   },
   "clients": {
-    "eyebrow": "Our Clients",
-    "title": "Trusted where it counts.",
+    "eyebrow": "Experience & clients",
+    "title": "Selected experience and clients.",
     "subtitle": "Humanitarian agencies, energy operators, diplomatic missions and local enterprise across the Kurdistan Region rely on Harekar to keep their people and assets secure.",
     "filterLabel": "Filter clients by sector",
     "countLabel": "{count} organisations",
@@ -246,7 +253,8 @@
       "energy": "Oil & Gas",
       "consulates": "Consulates",
       "locals": "Local Companies"
-    }
+    },
+    "viewAll": "View all clients"
   },
   "faq": {
     "eyebrow": "FAQ",
@@ -332,7 +340,9 @@
   },
   "footer": {
     "tagline": "Security and operational services.",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "pages": "Quick links",
+    "reach": "Offices & contact"
   },
   "auth": {
     "signInTitle": "Sign in",
@@ -1154,5 +1164,82 @@
       "title": "Page not found",
       "body": "The page you are looking for has moved or no longer exists."
     }
+  },
+  "facts": {
+    "eyebrow": "Safeguarding people, sites and operations",
+    "title": "Security and operational support you can rely on.",
+    "intro": "Harekar Group provides security, emergency response and operational support across the Kurdistan Region of Iraq — from static and mobile security to K9 units, armored vehicles and civil works.",
+    "more": "More about us"
+  },
+  "why": {
+    "eyebrow": "Why choose Harekar",
+    "title": "What our clients rely on us for.",
+    "subtitle": "Trained people, our own equipment and a local presence — under one accountable command.",
+    "items": {
+      "licensed": {
+        "title": "Licensed, trained guards",
+        "body": "Our guards are licensed and trained to international standards by accredited trainers."
+      },
+      "vetted": {
+        "title": "Carefully vetted personnel",
+        "body": "Every candidate is assessed on personal and professional grounds before training and deployment."
+      },
+      "always": {
+        "title": "24/7, fully in-house",
+        "body": "Round-the-clock security with our own facilities, vehicles and equipment."
+      },
+      "local": {
+        "title": "Local offices, fast response",
+        "body": "Offices in Erbil, Duhok and Sulaymaniyah, with a Quick Reaction Force on standby for other cities."
+      },
+      "command": {
+        "title": "One accountable command",
+        "body": "Thirteen service lines delivered under one command structure and one standard of accountability."
+      },
+      "specialist": {
+        "title": "Specialised capability",
+        "body": "K9 units, armored vehicles, medical evacuation and specialised personnel matched to your needs."
+      }
+    },
+    "photoAlt": "A Harekar instructor briefing a team of guards",
+    "cta": "More about us"
+  },
+  "coverage": {
+    "eyebrow": "Coverage",
+    "title": "Present across the Kurdistan Region.",
+    "subtitle": "Three regional offices and a Quick Reaction Force on standby let us respond quickly wherever our clients operate.",
+    "office": "Regional office",
+    "qrfTitle": "Quick Reaction Force",
+    "qrfBody": "For locations beyond our offices, our QRF team is always on standby.",
+    "where": "Where we operate",
+    "openMap": "Opens the office in Google Maps"
+  },
+  "capabilities": {
+    "subtitle": "Supporting every part of your operation.",
+    "view": "View services",
+    "items": {
+      "protection": {
+        "title": "Protection & guarding",
+        "tagline": "Vetted guards, K9 units and surveillance"
+      },
+      "response": {
+        "title": "Emergency & crisis",
+        "tagline": "Response planning, crisis management and medical evacuation"
+      },
+      "transport": {
+        "title": "Secure transport",
+        "tagline": "Armored vehicles, mobile security and cash in transit"
+      },
+      "site": {
+        "title": "Site & camp support",
+        "tagline": "Camp security design, fuel, water and heavy equipment"
+      }
+    }
+  },
+  "feature": {
+    "label": "Harekar Intelligence",
+    "title": "A daily picture of the security situation across Iraq.",
+    "body": "Our teams track incidents across the region and publish a Daily Security Report, with flagged locations on a live map — so you can plan with current information.",
+    "cta": "Explore intelligence"
   }
 }

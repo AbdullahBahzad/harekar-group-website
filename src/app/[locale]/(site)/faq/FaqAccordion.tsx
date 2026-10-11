@@ -75,7 +75,7 @@ export default function FaqAccordion({ items }: { items: PublicFaqItem[] }) {
         <button
           type="button"
           onClick={() => setOverride(allOpen ? new Set() : new Set(itemIds))}
-          className="text-bone/58 hover:text-gold min-h-11 cursor-pointer text-xs tracking-[0.2em] uppercase transition-colors"
+          className="text-bone/58 hover:text-gold-deep min-h-11 cursor-pointer text-xs tracking-[0.2em] uppercase transition-colors"
         >
           {allOpen ? t("collapseAll") : t("expandAll")}
         </button>
@@ -112,7 +112,7 @@ export default function FaqAccordion({ items }: { items: PublicFaqItem[] }) {
                 >
                   <span
                     className={`mt-1 w-7 shrink-0 text-xs tracking-[0.2em] tabular-nums transition-colors ${
-                      isOpen ? "text-gold" : "text-gold/55 group-hover:text-gold/78"
+                      isOpen ? "text-gold-deep" : "text-gold-deep/55 group-hover:text-gold-deep/78"
                     }`}
                   >
                     {String(i + 1).padStart(2, "0")}
@@ -134,7 +134,7 @@ export default function FaqAccordion({ items }: { items: PublicFaqItem[] }) {
                   <span
                     aria-hidden
                     className={`relative mt-1.5 h-4 w-4 shrink-0 transition-colors ${
-                      isOpen ? "text-gold" : "text-bone/50 group-hover:text-gold"
+                      isOpen ? "text-gold-deep" : "text-bone/50 group-hover:text-gold-deep"
                     }`}
                   >
                     <span className="absolute top-1/2 left-0 h-px w-4 -translate-y-1/2 bg-current" />

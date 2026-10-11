@@ -36,7 +36,7 @@ export default function SiteError({
 
   return (
     <section className="mx-auto flex min-h-[60svh] max-w-3xl flex-col justify-center px-6 py-24 sm:px-10">
-      <h1 className="font-display text-bone text-4xl font-light sm:text-5xl">
+      <h1 className="font-display text-bone text-4xl font-bold sm:text-5xl">
         {t("title")}
       </h1>
       <p className="text-bone/58 mt-5 max-w-xl text-sm leading-relaxed">
@@ -53,7 +53,7 @@ export default function SiteError({
         </button>
         <Link
           href="/"
-          className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold flex min-h-11 items-center rounded-full border px-7 text-sm transition-colors"
+          className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold-deep flex min-h-11 items-center rounded-full border px-7 text-sm transition-colors"
         >
           {t("home")}
         </Link>

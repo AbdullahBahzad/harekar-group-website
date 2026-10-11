@@ -104,13 +104,13 @@ export default function Sidebar({
           animate="visible"
           exit="hidden"
         >
-          {/* Solid black scrim over the page — no blur, no see-through. */}
+          {/* Navy scrim over the page. */}
           <motion.button
             type="button"
             aria-label={t("close")}
             onClick={onClose}
             className="absolute inset-0"
-            style={{ background: "#000" }}
+            style={{ background: "rgba(16, 29, 47, 0.88)" }}
             variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
             transition={{ duration: 0.35, ease }}
           />
@@ -130,8 +130,8 @@ export default function Sidebar({
             }}
             transition={{ duration: 0.45, ease }}
             style={{
-              // Solid black — nothing behind the panel shows through it.
-              background: "#000",
+              // Solid navy — nothing behind the panel shows through it.
+              background: "#101d2f",
               willChange: "transform",
             }}
           >
@@ -142,14 +142,14 @@ export default function Sidebar({
                 alt={tBrand("name")}
                 width={488}
                 height={207}
-                className="h-10 w-auto"
+                className="h-8 w-auto"
               />
               <button
                 type="button"
                 data-first-focus
                 onClick={onClose}
                 aria-label={t("close")}
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border transition-colors"
+                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold-deep flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border transition-colors"
               >
                 <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
                   <path
@@ -177,7 +177,7 @@ export default function Sidebar({
                 <Link
                   href={signedIn ? "/account" : "/login"}
                   onClick={onClose}
-                  className="border-bone/20 text-bone/80 hover:border-gold hover:text-gold flex-1 cursor-pointer rounded-full border py-3 text-center text-sm transition-colors"
+                  className="border-bone/20 text-bone/80 hover:border-gold hover:text-gold-deep flex-1 cursor-pointer rounded-full border py-3 text-center text-sm transition-colors"
                 >
                   {signedIn ? t("account") : t("signIn")}
                 </Link>
@@ -219,11 +219,11 @@ export default function Sidebar({
                      */}
                     <a href={item.href} onClick={onClose} className="cursor-pointer">
                       <span className="group flex items-baseline gap-4">
-                        <span className="text-gold/60 group-hover:text-gold w-8 text-xs tracking-widest tabular-nums transition-colors">
+                        <span className="text-gold-deep/60 group-hover:text-gold-deep w-8 text-xs tracking-widest tabular-nums transition-colors">
                           {item.index}
                         </span>
                         <span className="relative">
-                          <span className="font-display text-bone/85 group-hover:text-bone text-3xl font-light transition-colors sm:text-4xl">
+                          <span className="font-display text-bone/85 group-hover:text-bone text-3xl font-bold transition-colors sm:text-4xl">
                             {t(item.id)}
                           </span>
                           {/* Gold underline sweeps in from the leading edge on hover. */}

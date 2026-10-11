@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Reveal from "@/components/Reveal";
-import { GradientCard } from "@/components/ui/gradient-card";
+import SectionIntro from "@/components/SectionIntro";
+import InfoCard from "@/components/InfoCard";
+import { FactsGrid } from "@/components/sections/FactsSection";
 import { getSiteContent, pick } from "@/lib/site-content";
 import type { Locale } from "@/i18n/routing";
 
@@ -90,25 +92,10 @@ const supporting = [
 ] as const;
 
 /**
- * The credibility figures, previously a standalone strip beneath the hero and
- * now folded in here so the About story and the numbers backing it read as one
- * statement rather than two disconnected bands.
+ * Who the company is — the About page.
  *
- * TODO: the figures in the message catalogues are placeholders inherited from
- * that strip — replace them with verified numbers before launch.
- */
-const stats = ["experience", "personnel", "sites", "coverage"] as const;
-
-/** Prefixes into `SiteContent`, one per stat, in display order. */
-const statFields = {
-  experience: "statExperience",
-  personnel: "statPersonnel",
-  sites: "statSites",
-  coverage: "statCoverage",
-} as const;
-
-/**
- * Who the company is, sitting between the service offer and the contact ask.
+ * The home page carries only a short introduction (FactsSection); the full
+ * statement, the mission and the vision live here, as the client asked.
  *
  * The prose is the company's own statement. It shipped baked into the message
  * catalogues and only split into paragraphs for reading; it now reads through
@@ -131,49 +118,28 @@ export default function AboutSection({
   content: Awaited<ReturnType<typeof getSiteContent>>;
 }) {
   const t = useTranslations("about");
-  const tProof = useTranslations("proof");
   const locale = useLocale() as Locale;
 
   const p = (field: string, fallback: string) =>
     pick(content, field, locale, fallback);
 
   return (
-    <section
-      id="about"
-      className="relative scroll-mt-24 overflow-hidden px-6 py-28"
-    >
-      {/* Ambient light — gives the dark ground some depth without an image. */}
-      <div
-        aria-hidden
-        className="bg-gold/[0.07] pointer-events-none absolute -top-40 -end-40 size-[40rem] rounded-full blur-[120px]"
-      />
-      <div
-        aria-hidden
-        className="bg-gold/[0.04] pointer-events-none absolute -bottom-40 -start-40 size-[32rem] rounded-full blur-[120px]"
-      />
-
-      <div className="relative mx-auto max-w-6xl">
-        <Reveal>
-          <p className="text-gold text-3xl font-semibold tracking-[0.1em] uppercase sm:text-4xl lg:text-5xl">
-            {p("aboutEyebrow", t("eyebrow"))}
-          </p>
-          <Heading className="font-display text-bone mt-5 max-w-3xl text-2xl leading-snug font-normal text-balance sm:text-3xl lg:text-4xl">
-            {p("aboutTitle", t("title"))}
-          </Heading>
-          <div
-            aria-hidden
-            className="from-gold mt-8 h-px w-28 bg-gradient-to-r to-transparent rtl:bg-gradient-to-l"
-          />
-        </Reveal>
+    <section id="about" className="scroll-mt-24 bg-white px-4 py-20 sm:px-6 sm:py-24">
+      <div className="mx-auto max-w-6xl">
+        <SectionIntro
+          as={Heading}
+          eyebrow={p("aboutEyebrow", t("eyebrow"))}
+          title={p("aboutTitle", t("title"))}
+        />
 
         {/*
          * The statement. The first paragraph is the lead and gets the room;
          * the other two are set beside it as cards, so the page is not one
          * long column of prose with an empty half.
          */}
-        <div className="mt-14 grid items-start gap-10 lg:grid-cols-12 lg:gap-14">
+        <div className="mt-12 grid items-start gap-10 lg:grid-cols-12 lg:gap-14">
           <Reveal className="lg:col-span-7">
-            <p className="text-bone/85 border-gold/60 border-s-2 ps-6 text-lg leading-relaxed text-pretty sm:text-xl sm:leading-relaxed">
+            <p className="text-bone/85 border-gold border-s-4 ps-6 text-lg leading-relaxed text-pretty sm:text-xl sm:leading-relaxed">
               {p("aboutBody1", t("body.p1"))}
             </p>
           </Reveal>
@@ -181,11 +147,11 @@ export default function AboutSection({
           <div className="space-y-5 lg:col-span-5">
             {supporting.map(({ paragraph, icon }, i) => (
               <Reveal key={paragraph} delay={0.08 * (i + 1)}>
-                <article className="border-bone/12 bg-surface/20 hover:border-gold/40 flex gap-4 rounded-2xl border p-5 backdrop-blur-sm transition-colors duration-300">
-                  <span className="border-gold/30 bg-gold/10 text-gold flex size-11 shrink-0 items-center justify-center rounded-full border">
+                <article className="border-bone/10 bg-surface flex gap-4 rounded-2xl border p-5">
+                  <span className="border-gold/30 bg-gold/12 text-gold-deep flex size-11 shrink-0 items-center justify-center rounded-full border">
                     {icon}
                   </span>
-                  <p className="text-bone/70 text-sm leading-relaxed text-pretty">
+                  <p className="text-bone/80 text-base leading-relaxed text-pretty">
                     {p(
                       `aboutBody${paragraph.slice(1)}`,
                       t(`body.${paragraph}`),
@@ -198,12 +164,10 @@ export default function AboutSection({
         </div>
 
         {/* Mission and vision, given equal weight. */}
-        <div className="mt-20 grid gap-6 sm:grid-cols-2">
+        <div className="mt-16 grid gap-6 sm:grid-cols-2">
           {pillars.map((pillar, i) => (
             <Reveal key={pillar} delay={0.08 * i} className="h-full">
-              <GradientCard
-                as="h3"
-                index={String(i + 1).padStart(2, "0")}
+              <InfoCard
                 icon={pillarIcons[pillar]}
                 title={p(`${pillar}Title`, t(`pillars.${pillar}.title`))}
                 body={p(`${pillar}Body`, t(`pillars.${pillar}.body`))}
@@ -213,37 +177,9 @@ export default function AboutSection({
         </div>
 
         {/* The figures behind the statement. */}
-        <Reveal delay={0.1}>
-          <div className="mt-20 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {stats.map((stat) => {
-              const field = statFields[stat];
-              // The figure itself (`15+`, `24/7`) isn't per-locale — only its
-              // label is — so it reads straight off the row without `pick()`.
-              const rowValues = content as unknown as Record<
-                string,
-                string | null
-              > | null;
-              const value =
-                rowValues?.[`${field}Value`] || tProof(`stats.${stat}.value`);
-
-              return (
-                <div
-                  key={stat}
-                  className="border-bone/12 bg-surface/20 hover:border-gold/40 relative overflow-hidden rounded-2xl border px-4 py-9 text-center transition-colors duration-300"
-                >
-                  <span
-                    aria-hidden
-                    className="via-gold/70 absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent to-transparent"
-                  />
-                  <p className="font-display from-gold-bright to-gold bg-gradient-to-b bg-clip-text text-4xl leading-none text-transparent sm:text-5xl">
-                    {value}
-                  </p>
-                  <p className="text-bone/60 mt-4 text-xs tracking-[0.18em] uppercase">
-                    {p(`${field}Label`, tProof(`stats.${stat}.label`))}
-                  </p>
-                </div>
-              );
-            })}
+        <Reveal delay={0.1} className="mt-16">
+          <div className="bg-surface rounded-3xl p-4 sm:p-6">
+            <FactsGrid content={content} />
           </div>
         </Reveal>
       </div>

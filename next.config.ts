@@ -98,6 +98,12 @@ const buildConfig = (isDev: boolean): NextConfig => ({
   },
 
   allowedDevOrigins: ["192.168.100.66"],
+
+  /*
+   * No on-screen "N" badge in development — it floats over the page while
+   * reviewing the design. Compile and runtime errors still surface.
+   */
+  devIndicators: false,
   experimental: {
     serverActions: {
       /*

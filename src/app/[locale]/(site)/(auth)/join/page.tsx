@@ -45,7 +45,7 @@ export default async function JoinPage({
       <AuthShell title={t("title")} subtitle={t("invalidSubtitle")}>
         <Link
           href="/login"
-          className="text-gold hover:text-gold-bright text-sm underline underline-offset-4"
+          className="text-gold-deep hover:text-bone text-sm underline underline-offset-4"
         >
           {t("goToLogin")}
         </Link>

@@ -78,7 +78,7 @@ export default function GoogleOfficeMap() {
               className={`flex min-h-11 cursor-pointer items-center rounded-full border px-4 text-sm transition-colors ${
                 selected
                   ? "border-gold bg-gold text-ink"
-                  : "border-bone/20 text-bone/70 hover:border-gold/60 hover:text-gold"
+                  : "border-bone/20 text-bone/70 hover:border-gold/60 hover:text-gold-deep"
               }`}
             >
               {t(entry.id)}

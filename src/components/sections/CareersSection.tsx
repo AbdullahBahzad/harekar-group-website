@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import Reveal from "@/components/Reveal";
-import { GradientCard } from "@/components/ui/gradient-card";
+import SectionIntro from "@/components/SectionIntro";
+import InfoCard from "@/components/InfoCard";
 import { pick, type getSiteContent } from "@/lib/site-content";
 import type { getPublishedCareerBenefits } from "@/lib/career-benefits";
 import type { Locale } from "@/i18n/routing";
@@ -31,43 +32,38 @@ export default function CareersSection({
 
   return (
     <>
-      <section
-        id="careers"
-        className="mx-auto max-w-6xl scroll-mt-24 px-6 pt-24 pb-16"
-      >
-        <Reveal className="max-w-3xl">
-          <p className="text-gold text-3xl font-semibold tracking-[0.1em] uppercase sm:text-4xl lg:text-5xl">
-            {p("careersEyebrow", t("eyebrow"))}
-          </p>
-          <Heading className="font-display text-bone mt-5 text-2xl leading-snug font-normal text-balance sm:text-3xl lg:text-4xl">
-            {p("careersTitle", t("title"))}
-          </Heading>
-          <a
-            href="#apply"
-            className="border-gold/60 text-gold hover:bg-gold hover:text-ink mt-10 inline-flex min-h-11 items-center rounded-full border px-7 text-sm transition-colors"
+      <section id="careers" className="scroll-mt-24 bg-white px-4 pt-20 pb-16 sm:px-6 sm:pt-24">
+        <div className="mx-auto max-w-6xl">
+          <SectionIntro
+            as={Heading}
+            eyebrow={p("careersEyebrow", t("eyebrow"))}
+            title={p("careersTitle", t("title"))}
           >
-            {tApply("title")}
-          </a>
-        </Reveal>
+            <a
+              href="#apply"
+              className="bg-gold text-ink hover:bg-gold-bright mt-8 inline-flex min-h-12 items-center rounded-full px-7 text-base font-bold transition-colors"
+            >
+              {tApply("title")}
+            </a>
+          </SectionIntro>
 
-        {/* Five across on desktop so the whole argument reads as one line;
-            stacking only where 200px-wide columns would stop being legible. */}
-        <ul className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {benefits.map((benefit, i) => (
-            <li key={benefit.id} className="h-full">
-              <Reveal delay={0.06 * i} className="h-full">
-                <GradientCard
-                  index={String(i + 1).padStart(2, "0")}
-                  title={benefit.title}
-                  body={benefit.body}
-                />
-              </Reveal>
-            </li>
-          ))}
-        </ul>
+          <ul className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {benefits.map((benefit, i) => (
+              <li key={benefit.id} className="h-full">
+                <Reveal delay={0.06 * i} className="h-full">
+                  <InfoCard
+                    index={String(i + 1).padStart(2, "0")}
+                    title={benefit.title}
+                    body={benefit.body}
+                  />
+                </Reveal>
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
-      <section id="apply" className="scroll-mt-24 px-6 pt-8 pb-28">
+      <section id="apply" className="bg-surface scroll-mt-24 px-4 pt-16 pb-24 sm:px-6">
         {/*
           One centred column rather than a heading rail beside the form: the
           label, the title and the application card stack down the middle of
@@ -84,10 +80,10 @@ export default function CareersSection({
           <Reveal className="text-center">
             {/* A sub-section of Careers, so its label stays subordinate to
                 the page head title above rather than matching it. */}
-            <p className="text-gold/88 text-xs font-semibold tracking-[0.3em] uppercase">
+            <p className="text-gold-deep text-sm font-bold tracking-wide">
               {tApply("eyebrow")}
             </p>
-            <h3 className="font-display text-bone mt-5 text-2xl leading-snug font-normal text-balance sm:text-3xl">
+            <h3 className="font-display text-bone mt-5 text-2xl leading-snug font-bold text-balance sm:text-3xl">
               {tApply("title")}
             </h3>
           </Reveal>

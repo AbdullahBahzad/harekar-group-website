@@ -101,7 +101,7 @@ export default function AuthForm({
         {registering ? t("haveAccount") : t("noAccount")}{" "}
         <Link
           href={registering ? "/login" : "/register"}
-          className="text-gold hover:text-gold-bright underline underline-offset-4 transition-colors"
+          className="text-gold-deep hover:text-bone underline underline-offset-4 transition-colors"
         >
           {registering ? t("signIn") : t("createAccount")}
         </Link>
@@ -148,7 +148,7 @@ function Field({
         required={required}
         defaultValue={defaultValue}
         aria-describedby={hintId}
-        className="border-bone/20 bg-ink/40 text-bone focus:border-gold focus:ring-gold/30 w-full rounded-xl border px-4 py-3 text-base outline-none transition-colors focus:ring-2"
+        className="border-bone/20 bg-white text-bone focus:border-gold focus:ring-gold/30 w-full rounded-xl border px-4 py-3 text-base outline-none transition-colors focus:ring-2"
       />
       {hint && (
         <p id={hintId} className="text-bone/50 mt-2 text-xs">

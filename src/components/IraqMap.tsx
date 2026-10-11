@@ -236,7 +236,7 @@ export default function IraqMap({
               {t(`severity.${level}`)}
             </span>
           ))}
-          <span className="text-gold-bright/80 flex items-center gap-2">
+          <span className="text-gold-deep/80 flex items-center gap-2">
             <svg viewBox="0 0 12 12" className="h-3 w-3" aria-hidden>
               <rect
                 x="2.2"
@@ -311,7 +311,7 @@ export default function IraqMap({
                   <div className="border-bone/12 flex items-center justify-between border-b px-6 py-5">
                     <h2
                       id="panel-title"
-                      className="font-display text-bone text-lg leading-snug"
+                      className="font-display text-bone text-lg leading-snug font-bold"
                     >
                       {showSignup
                         ? ta("registerTitle")
@@ -338,7 +338,7 @@ export default function IraqMap({
                         <button
                           type="button"
                           onClick={() => setShowSignup(false)}
-                          className="text-bone/55 hover:text-gold mb-5 inline-flex items-center gap-1.5 text-sm transition-colors"
+                          className="text-bone/55 hover:text-gold-deep mb-5 inline-flex items-center gap-1.5 text-sm transition-colors"
                         >
                           <span aria-hidden>←</span>
                           {t("panel.title", { count: activeGroup.markers.length })}
@@ -372,7 +372,7 @@ export default function IraqMap({
                               {marker.label}
                             </span>
                             {restricted && (
-                              <span className="border-gold/50 text-gold ms-auto rounded-full border px-2 py-0.5 text-[10px] tracking-wide uppercase">
+                              <span className="border-gold/50 text-gold-deep ms-auto rounded-full border px-2 py-0.5 text-[10px] tracking-wide uppercase">
                                 {t("modal.badge")}
                               </span>
                             )}

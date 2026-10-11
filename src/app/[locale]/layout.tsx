@@ -2,23 +2,21 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
-import { Cormorant_Garamond, Inter, Noto_Kufi_Arabic } from "next/font/google";
+import { Manrope, Noto_Sans_Arabic } from "next/font/google";
 import { getDirection, routing, type Locale } from "@/i18n/routing";
 
-const inter = Inter({
-  variable: "--font-inter",
+// The brand typeface for English: bold headings, plain body text.
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 });
 
-// Stand-in for the licensed Mesagni family until the woff2 files are dropped in.
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-});
-
-// Carries both Arabic and Kurdish Sorani, which share the Arabic script.
-const notoArabic = Noto_Kufi_Arabic({
+/*
+ * Carries both Arabic and Kurdish Sorani, which share the Arabic script.
+ * Noto Sans Arabic covers the Sorani-specific letters (ڕ ڵ ۆ ێ ە ڤ گ چ پ ژ)
+ * that some Arabic-only faces are missing.
+ */
+const notoArabic = Noto_Sans_Arabic({
   variable: "--font-noto-arabic",
   subsets: ["arabic"],
 });
@@ -80,7 +78,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={getDirection(locale as Locale)}
-      className={`${inter.variable} ${cormorant.variable} ${notoArabic.variable} h-full antialiased`}
+      className={`${manrope.variable} ${notoArabic.variable} h-full antialiased`}
     >
       {/*
        * Deliberately bare: this layout owns the document, the fonts and the

@@ -32,7 +32,7 @@ export default function JoinForm({
         <span className="text-bone/70 mb-2 block text-xs tracking-[0.2em] uppercase">
           {t("email")}
         </span>
-        <p dir="ltr" className="text-bone border-bone/16 bg-ink/30 rounded-xl border px-4 py-3 text-start text-base">
+        <p dir="ltr" className="text-bone border-bone/16 bg-white rounded-xl border px-4 py-3 text-start text-base">
           {email}
         </p>
       </div>
@@ -96,7 +96,7 @@ function Field({
         autoComplete={autoComplete}
         required={required}
         aria-describedby={hintId}
-        className="border-bone/20 bg-ink/40 text-bone focus:border-gold focus:ring-gold/30 w-full rounded-xl border px-4 py-3 text-base outline-none transition-colors focus:ring-2"
+        className="border-bone/20 bg-white text-bone focus:border-gold focus:ring-gold/30 w-full rounded-xl border px-4 py-3 text-base outline-none transition-colors focus:ring-2"
       />
       {hint && (
         <p id={hintId} className="text-bone/50 mt-2 text-xs">

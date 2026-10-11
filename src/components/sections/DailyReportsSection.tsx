@@ -80,10 +80,10 @@ export default async function DailyReportsSection() {
     <section id="reports" className="scroll-mt-24 px-6 py-24">
       <div className="mx-auto max-w-4xl">
         <Reveal>
-          <p className="text-gold/88 text-xs font-semibold tracking-[0.3em] uppercase">
+          <p className="text-gold-deep/88 text-xs font-semibold tracking-[0.3em] uppercase">
             {t("eyebrow")}
           </p>
-          <h2 className="font-display text-bone mt-6 text-3xl leading-[1.15] font-light text-balance sm:text-4xl">
+          <h2 className="font-display text-bone mt-6 text-3xl leading-[1.15] font-bold text-balance sm:text-4xl">
             {t("title")}
           </h2>
           <p className="text-bone/70 mt-5 max-w-2xl text-base leading-relaxed text-pretty">
@@ -94,7 +94,7 @@ export default async function DailyReportsSection() {
         {/* The upgrade pitch, shown once above the list rather than per row. */}
         {!entitled && (
           <div className="border-gold/35 bg-gold/[0.06] mt-10 rounded-2xl border p-6 sm:p-8">
-            <h3 className="font-display text-bone text-xl leading-snug">
+            <h3 className="font-display text-bone text-xl leading-snug font-bold">
               {t("lockedTitle")}
             </h3>
             <p className="text-bone/70 mt-3 text-sm leading-relaxed">
@@ -123,7 +123,7 @@ export default async function DailyReportsSection() {
                 <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
                   <time
                     dateTime={report.date}
-                    className="font-display text-bone text-lg"
+                    className="font-display text-bone text-lg font-bold"
                   >
                     {formatDate(new Date(report.date), locale, {
                       weekday: "long",
@@ -190,7 +190,7 @@ export default async function DailyReportsSection() {
 
                             return (
                               <div key={group}>
-                                <p className="text-gold/72 text-[11px] font-medium tracking-wide uppercase">
+                                <p className="text-gold-deep/72 text-[11px] font-medium tracking-wide uppercase">
                                   {tm(`regionGroups.${group}`)}
                                 </p>
                                 <ul className="mt-1.5 space-y-1.5">
