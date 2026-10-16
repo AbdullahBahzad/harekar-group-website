@@ -4,7 +4,6 @@ import FactsSection from "@/components/sections/FactsSection";
 import CapabilitiesSection from "@/components/sections/CapabilitiesSection";
 import WhySection from "@/components/sections/WhySection";
 import ClientsSection from "@/components/sections/ClientsSection";
-import CoverageSection from "@/components/sections/CoverageSection";
 import IntelligenceFeature from "@/components/sections/IntelligenceFeature";
 import ContactSection from "@/components/sections/ContactSection";
 import { getSiteContent, pick } from "@/lib/site-content";
@@ -53,8 +52,9 @@ export default async function HomePage({
   /*
    * The home page, in the order the client specified — opening section,
    * verified company facts, main services, why choose Harekar, selected
-   * experience and clients, coverage, contact — with the intelligence product
-   * featured just before the contact ask.
+   * experience and clients, contact — with the intelligence product featured
+   * just before the contact ask. The office locations sit inside the contact
+   * section, which replaced the separate coverage section.
    *
    * The full company statement, mission and vision live on /about, the job
    * application form on /careers, and the FAQ and intelligence map on their
@@ -63,17 +63,16 @@ export default async function HomePage({
   return (
     <>
       <HeroVideo overrides={hero} />
-      <FactsSection content={content} />
+      <FactsSection />
       <CapabilitiesSection />
       <WhySection />
       <ClientsSection logos={logos} showAllLink />
-      <CoverageSection />
       <IntelligenceFeature>
         <MapStage>
           <IraqMap markers={markers} />
         </MapStage>
       </IntelligenceFeature>
-      <ContactSection content={content} locale={l} showMap={false} />
+      <ContactSection content={content} locale={l} />
     </>
   );
 }

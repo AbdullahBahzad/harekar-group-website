@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { logReadFallback, prisma } from "@/lib/prisma";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
 
@@ -51,7 +51,7 @@ export async function getPublishedCareerBenefits(
       });
     }
   } catch (error) {
-    console.error("Falling back to static career benefits", error);
+    logReadFallback("static career benefits", error);
   }
 
   const t = await getTranslations({ locale, namespace: "careers.benefits" });

@@ -1,122 +1,72 @@
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import Reveal from "@/components/Reveal";
-import { pick, type getSiteContent } from "@/lib/site-content";
-import type { Locale } from "@/i18n/routing";
-
-type SiteContentRow = Awaited<ReturnType<typeof getSiteContent>>;
-
-/**
- * The company figures.
- *
- * TODO: the shipped values in the message catalogues (15+, 800+, 120+, 24/7)
- * are placeholders. The client asked for *verified* facts here — confirm each
- * figure with Harekar Group and save it in the admin console (Site content →
- * stats), which overrides the shipped value without a deploy.
- */
-const stats = ["experience", "personnel", "sites", "coverage"] as const;
-
-/** Prefixes into `SiteContent`, one per stat, in display order. */
-const statFields = {
-  experience: "statExperience",
-  personnel: "statPersonnel",
-  sites: "statSites",
-  coverage: "statCoverage",
-} as const;
+import CountUp from "@/components/CountUp";
+import RevealText from "@/components/RevealText";
+import { companyStats, FOUNDED_YEAR } from "@/data/company-stats";
 
 /**
- * The four figures, resolved: the console's saved value first, the shipped
- * catalogue value otherwise. The figure itself (`15+`, `24/7`) isn't
- * per-locale — only its label is.
+ * The company's published figures — people, vehicles and active units — each
+ * under a thin gold rule, counting up as they scroll into view. Shared by the
+ * home page band below and the About page, so both always show the same
+ * numbers.
  */
-function useFacts(content: SiteContentRow) {
-  const tProof = useTranslations("proof");
-  const locale = useLocale() as Locale;
-  const rowValues = content as unknown as Record<string, string | null> | null;
-
-  return stats.map((stat) => {
-    const field = statFields[stat];
-    return {
-      id: stat,
-      value: rowValues?.[`${field}Value`] || tProof(`stats.${stat}.value`),
-      label: pick(content, `${field}Label`, locale, tProof(`stats.${stat}.label`)),
-    };
-  });
-}
-
-/** The four figures as a 2×2 grid of cards — used on the About page. */
-export function FactsGrid({ content }: { content: SiteContentRow }) {
-  const facts = useFacts(content);
+export function StatsGrid() {
+  const t = useTranslations("stats");
 
   return (
-    <dl className="grid grid-cols-2 gap-4">
-      {facts.map((fact) => (
-        <div
-          key={fact.id}
-          className="border-bone/10 flex flex-col-reverse justify-end rounded-2xl border bg-white px-5 py-6 sm:px-6 sm:py-7"
-        >
-          <dt className="text-bone/70 mt-2 text-sm leading-snug font-medium sm:text-base">
-            {fact.label}
-          </dt>
-          <dd
-            dir="ltr"
-            className="font-display text-bone text-start text-4xl leading-none font-extrabold tracking-tight sm:text-5xl rtl:text-end"
-          >
-            {fact.value}
-          </dd>
-        </div>
+    <dl className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
+      {companyStats.map((stat, i) => (
+        <Reveal key={stat.id} delay={0.04 * i}>
+          <div className="border-gold flex flex-col-reverse justify-end border-s-2 ps-4">
+            <dt className="text-bone/75 mt-2 text-sm leading-snug font-medium sm:text-base">
+              {t(`items.${stat.id}`)}
+            </dt>
+            <dd
+              dir="ltr"
+              className="text-gold-deep text-start text-4xl leading-none font-light tracking-tight tabular-nums sm:text-5xl rtl:text-end"
+            >
+              <CountUp value={stat.value} />
+            </dd>
+          </div>
+        </Reveal>
       ))}
     </dl>
   );
 }
 
 /**
- * Directly beneath the opening section: a badge carrying the years figure, a
- * short company introduction across the full width, and the verified figures
- * in a row beneath it. Carries the `about` anchor the header's About entry
- * scrolls to. The full statement, mission and vision live on the About page.
+ * Directly beneath the opening section: the headline with its highlighted
+ * close, a short company introduction beside it, and the figures beneath.
+ * Carries the `about` anchor the header's About entry scrolls to. The full
+ * statement, mission and vision live on the About page.
  */
-export default function FactsSection({ content }: { content: SiteContentRow }) {
+export default function FactsSection() {
   const t = useTranslations("facts");
-  const facts = useFacts(content);
-  const years = facts[0];
+  const tStats = useTranslations("stats");
 
   return (
-    <section id="about" className="scroll-mt-24 bg-white px-4 pt-20 pb-16 sm:px-6 sm:pt-24 lg:px-10">
+    <section id="about" className="scroll-mt-24 bg-white px-4 pt-20 pb-20 sm:px-6 sm:pt-24 lg:px-10">
       <div className="mx-auto max-w-360">
-        <Reveal>
-          {/* The badge: a shield beside the years figure. */}
-          <div className="flex items-center gap-4">
-            <svg viewBox="0 0 40 46" className="text-gold h-14 w-auto shrink-0" aria-hidden>
-              <path
-                d="M20 2 37 8v13c0 11-7.3 19-17 23C10.3 40 3 32 3 21V8L20 2Z"
-                fill="currentColor"
-                opacity="0.18"
-              />
-              <path
-                d="M20 2 37 8v13c0 11-7.3 19-17 23C10.3 40 3 32 3 21V8L20 2Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <div>
-              <p className="font-display text-bone text-2xl leading-none font-extrabold sm:text-3xl">
-                <span dir="ltr">{years.value}</span> {years.label}
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-16">
+          <div className="lg:col-span-7">
+            <Reveal>
+              <p className="text-gold-deep text-base font-bold">
+                {tStats("since", { year: FOUNDED_YEAR })}
               </p>
-              <p className="text-gold-deep mt-1.5 text-base font-bold sm:text-lg">
-                {t("eyebrow")}
-              </p>
-            </div>
+            </Reveal>
+            <RevealText
+              text={tStats("title")}
+              highlight={tStats("titleHighlight")}
+              className="font-display text-bone mt-3 text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl"
+            />
           </div>
 
-          <h2 className="sr-only">{t("title")}</h2>
-          <p className="text-bone/80 mt-8 max-w-5xl text-lg leading-relaxed text-pretty sm:text-xl sm:leading-relaxed">
-            {t("intro")}{" "}
+          <Reveal delay={0.1} className="lg:col-span-5">
+            <p className="text-bone/80 text-lg leading-relaxed text-pretty">{t("intro")}</p>
             <Link
               href="/about"
-              className="text-bone hover:text-gold-deep group inline-flex items-center gap-1.5 font-bold whitespace-nowrap underline decoration-gold decoration-2 underline-offset-4 transition-colors"
+              className="text-bone hover:text-gold-deep group mt-4 inline-flex min-h-11 items-center gap-2 text-base font-bold transition-colors"
             >
               {t("more")}
               <svg
@@ -134,35 +84,12 @@ export default function FactsSection({ content }: { content: SiteContentRow }) {
                 />
               </svg>
             </Link>
-          </p>
-        </Reveal>
+          </Reveal>
+        </div>
 
-        {/* The figures, in a row with hairline dividers. */}
-        <Reveal delay={0.1}>
-          <dl className="border-bone/12 mt-12 grid grid-cols-2 border-y lg:grid-cols-4">
-            {facts.map((fact, i) => (
-              <div
-                key={fact.id}
-                className={
-                  "border-bone/12 flex flex-col-reverse justify-end px-2 py-7 sm:px-6 " +
-                  (i % 2 === 1 ? "border-s " : "") +
-                  (i >= 2 ? "border-t lg:border-t-0 " : "") +
-                  (i === 2 ? "lg:border-s " : "")
-                }
-              >
-                <dt className="text-bone/70 mt-2 text-sm font-medium sm:text-base">
-                  {fact.label}
-                </dt>
-                <dd
-                  dir="ltr"
-                  className="font-display text-bone text-start text-4xl leading-none font-extrabold tracking-tight sm:text-5xl rtl:text-end"
-                >
-                  {fact.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </Reveal>
+        <hr className="border-bone/12 mt-12 mb-12" />
+
+        <StatsGrid />
       </div>
     </section>
   );

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Reveal from "@/components/Reveal";
+import RevealText from "@/components/RevealText";
 import { cn } from "@/lib/utils";
 
 /**
@@ -43,9 +44,11 @@ export default function SectionIntro({
         />
         {eyebrow}
       </p>
-      <Heading className="font-display text-bone mt-4 text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl">
-        {title}
-      </Heading>
+      <RevealText
+        as={Heading}
+        text={title}
+        className="font-display text-bone mt-4 text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl"
+      />
       {subtitle && (
         <p className="text-bone/75 mt-5 text-lg leading-relaxed text-pretty">
           {subtitle}

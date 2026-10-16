@@ -3,21 +3,25 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import RevealText from "@/components/RevealText";
 
 /**
- * The company's own footage — the Erbil office, the fleet, the team — cut
- * from the source film into two H.264 renditions. The phone file is a quarter
- * of the desktop one; `<source media>` lets the browser pick before it
- * downloads anything.
+ * The company's own footage — the Erbil office, the fleet, the team — as
+ * H.264 MP4, which every browser plays. Phones get 720p: they show the frame
+ * cropped to a tall screen, but 720p still covers it sharply without sending
+ * a desktop's file over mobile data. The browser takes the first `<source>`
+ * whose `media` matches, before downloading anything.
  */
-const VIDEO_DESKTOP = "/video/harekar-hero.mp4";
-const VIDEO_MOBILE = "/video/harekar-hero-960.mp4";
+const VIDEO = {
+  mobile: "/video/harekar-hero-720.mp4",
+  desktop: "/video/harekar-hero-1080.mp4",
+};
 const POSTER = "/video/harekar-hero-poster.jpg";
 
 /**
  * The opening section: a full-bleed banner video under a navy wash, with the
- * headline, a short description, the primary "Request a Security Assessment"
- * action and a secondary link to the services.
+ * headline, a short description and a link to the services. The "Request a
+ * Security Assessment" action lives in the header, so it is not repeated here.
  *
  * Full-screen, with the site header floating transparent over it. On a phone
  * the text and the button sit in the first screen — the section is sized so
@@ -41,7 +45,7 @@ export default function HeroVideo({
   /*
    * Autoplay is started from here rather than by the `autoPlay` attribute, so
    * that reduced motion and Data Saver are honoured: those visitors get the
-   * still poster and a play button instead of a 15MB download they did not
+   * still poster and a play button instead of a large download they did not
    * ask for.
    */
   useEffect(() => {
@@ -92,22 +96,22 @@ export default function HeroVideo({
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
       >
-        <source src={VIDEO_MOBILE} type="video/mp4" media="(max-width: 767px)" />
-        <source src={VIDEO_DESKTOP} type="video/mp4" />
+        <source src={VIDEO.mobile} type="video/mp4" media="(max-width: 767px)" />
+        <source src={VIDEO.desktop} type="video/mp4" />
       </video>
 
       {/*
-       * Navy wash. Heavier on the reading side and along the bottom so white
-       * text holds its contrast over a bright, sunlit frame; lighter elsewhere
-       * so the footage still reads as footage.
+       * Navy wash, only where the text is: heavy on the reading side so white
+       * text holds its contrast over a bright, sunlit frame, fading to clear
+       * across the rest so the footage keeps its own colour and sharpness.
        */}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(16,29,47,0.92)_0%,rgba(16,29,47,0.72)_45%,rgba(16,29,47,0.35)_100%)] rtl:bg-[linear-gradient(270deg,rgba(16,29,47,0.92)_0%,rgba(16,29,47,0.72)_45%,rgba(16,29,47,0.35)_100%)]"
+        className="absolute inset-0 -z-10 max-sm:!bg-none max-sm:bg-[rgba(16,29,47,0.66)] bg-[linear-gradient(90deg,rgba(16,29,47,0.88)_0%,rgba(16,29,47,0.62)_38%,rgba(16,29,47,0.12)_75%,rgba(16,29,47,0)_100%)] rtl:bg-[linear-gradient(270deg,rgba(16,29,47,0.88)_0%,rgba(16,29,47,0.62)_38%,rgba(16,29,47,0.12)_75%,rgba(16,29,47,0)_100%)]"
       />
       <div
         aria-hidden
-        className="absolute inset-x-0 bottom-0 -z-10 h-1/3 bg-gradient-to-t from-[rgba(16,29,47,0.85)] to-transparent"
+        className="absolute inset-x-0 bottom-0 -z-10 h-1/4 bg-gradient-to-t from-[rgba(16,29,47,0.6)] to-transparent"
       />
 
       {/* `pt-28` clears the transparent header floating over the video. */}
@@ -121,12 +125,12 @@ export default function HeroVideo({
             {overrides.eyebrow}
           </motion.p>
 
-          <motion.h1
+          <RevealText
+            as="h1"
+            text={overrides.title}
+            delay={0.15}
             className="font-display text-bone mt-5 text-4xl leading-[1.1] font-extrabold tracking-tight text-balance sm:text-5xl lg:text-6xl"
-            {...rise(0.2)}
-          >
-            {overrides.title}
-          </motion.h1>
+          />
 
           <motion.p
             className="text-bone/85 mt-6 max-w-xl text-lg leading-relaxed text-pretty"
@@ -139,12 +143,6 @@ export default function HeroVideo({
             className="mt-9 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:gap-6"
             {...rise(0.4)}
           >
-            <a
-              href="#contact"
-              className="bg-gold text-ink hover:bg-gold-bright focus-visible:ring-bone inline-flex min-h-13 items-center justify-center rounded-full px-8 text-base font-bold shadow-[0_10px_30px_-10px_rgba(184,154,96,0.6)] transition-colors outline-none focus-visible:ring-2"
-            >
-              {tCta("primary")}
-            </a>
             <a
               href="#services"
               className="text-bone hover:text-gold-deep group inline-flex min-h-12 items-center justify-center gap-2 text-base font-semibold transition-colors sm:justify-start"

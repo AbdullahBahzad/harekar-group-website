@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { prisma } from "@/lib/prisma";
+import { logReadFallback, prisma } from "@/lib/prisma";
 import { serviceGroups, type ServiceKey } from "@/data/services";
 
 /** What both the orbit and the grid need to render one service. */
@@ -76,7 +76,7 @@ export async function getPublishedServices(
       icon: asIcon(row.icon),
     }));
   } catch (error) {
-    console.error("Falling back to static services", error);
+    logReadFallback("static services", error);
     return staticServices(locale);
   }
 }

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { logReadFallback, prisma } from "@/lib/prisma";
 import type { Locale } from "@/i18n/routing";
 
 type SiteContentRow = NonNullable<
@@ -15,7 +15,7 @@ export async function getSiteContent(): Promise<SiteContentRow | null> {
   try {
     return await prisma.siteContent.findUnique({ where: { id: "site" } });
   } catch (error) {
-    console.error("Falling back to static site content", error);
+    logReadFallback("static site content", error);
     return null;
   }
 }

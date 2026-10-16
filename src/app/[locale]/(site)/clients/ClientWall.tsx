@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
@@ -14,16 +14,41 @@ import type { PublicClientLogo } from "@/lib/clients";
 type Filter = ClientCategory | "all";
 const filters: Filter[] = ["all", ...clientCategories];
 
+/**
+ * `#clients-<sector>` in the address (e.g. `#clients-energy`, linked from the
+ * header's Clients menu) opens the wall already filtered to that sector.
+ */
+function filterFromHash(): Filter | null {
+  const match = window.location.hash.match(/^#clients-(.+)$/);
+  const key = match?.[1] as Filter | undefined;
+  return key && filters.includes(key) ? key : null;
+}
+
 export default function ClientWall({ logos }: { logos: PublicClientLogo[] }) {
   const t = useTranslations("clients");
   const reduceMotion = useReducedMotion();
   const [filter, setFilter] = useState<Filter>("all");
 
+  useEffect(() => {
+    function sync() {
+      const next = filterFromHash();
+      if (next) setFilter(next);
+    }
+    // Deferred so the initial read never sets state mid-effect.
+    queueMicrotask(sync);
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+
   const visible =
     filter === "all" ? logos : logos.filter((logo) => logo.category === filter);
 
   return (
-    <div>
+    <div className="relative">
+      {/* Scroll targets for the sector links — the wall itself, per sector. */}
+      {filters.map((key) => (
+        <span key={key} id={`clients-${key}`} aria-hidden className="absolute top-0 scroll-mt-28" />
+      ))}
       <div
         role="group"
         aria-label={t("filterLabel")}

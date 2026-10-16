@@ -490,3 +490,71 @@ html::-webkit-scrollbar {
   border-radius: 50%;
   background: var(--color-gold-bright);
 }
+
+/*
+ * ---- Marquee: a row that drifts sideways on its own ----------------------
+ * The track holds the list twice; sliding it by exactly half its width puts
+ * the second copy where the first began, so the loop has no seam. Pauses
+ * while the pointer or keyboard focus is inside, so a card can be read and
+ * clicked. In RTL the row is laid out right-to-left, so it drifts the other
+ * way. Under reduced motion it stands still and scrolls by hand instead.
+ */
+@keyframes marquee-ltr {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes marquee-rtl {
+  to {
+    transform: translateX(50%);
+  }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-ltr var(--marquee-duration, 70s) linear infinite;
+}
+[dir="rtl"] .marquee-track {
+  animation-name: marquee-rtl;
+}
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    overflow-x: auto;
+  }
+  .marquee-track {
+    animation: none;
+  }
+}
+
+/*
+ * ---- The intelligence map on a white ground ----------------------------
+ * Over white, the darkened basemap reads as a black slab; here the tiles
+ * keep their natural colours, muted slightly, and the overlays switch to
+ * light-ground styling.
+ */
+.tone-light .iraq-leaflet .leaflet-tile-pane {
+  filter: saturate(0.7) contrast(0.95);
+}
+.tone-light .harekar-pin-label {
+  color: #101d2f;
+  text-shadow:
+    0 0 3px #fff,
+    0 0 6px #fff,
+    0 0 10px #fff;
+}
+.tone-light .iraq-leaflet.leaflet-container .leaflet-control-attribution {
+  background: rgb(255 255 255 / 80%);
+  color: rgb(16 29 47 / 70%);
+}
+.tone-light .iraq-leaflet.leaflet-container .leaflet-control-attribution a {
+  color: #7d6637;
+}
+.tone-light .iraq-leaflet .leaflet-control-zoom a {
+  background: #fff;
+  color: #101d2f;
+  border-color: rgb(16 29 47 / 15%);
+}

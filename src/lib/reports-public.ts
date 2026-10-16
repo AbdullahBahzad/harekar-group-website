@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { logReadFallback, prisma } from "@/lib/prisma";
 import type { ReportContent, ThreatLevel } from "@/lib/report-shape";
 
 /**
@@ -67,7 +67,7 @@ export async function getReportSummaries(
     }));
   } catch (error) {
     // A reports outage must not take the intelligence page down with it.
-    console.error("Could not read daily reports", error);
+    logReadFallback("no daily reports", error);
     return [];
   }
 }
@@ -92,7 +92,7 @@ export async function getFullReports(take = 8): Promise<PublicReport[]> {
       itemCount: ((row.content as ReportContent | null)?.items ?? []).length,
     }));
   } catch (error) {
-    console.error("Could not read daily reports", error);
+    logReadFallback("no daily reports", error);
     return [];
   }
 }

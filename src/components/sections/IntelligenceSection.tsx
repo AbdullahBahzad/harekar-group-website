@@ -9,8 +9,8 @@ import SectionIntro from "@/components/SectionIntro";
  * Shared by the one-page scroll and the standalone /intelligence route.
  * `as` lets the standalone page promote the heading to an h1.
  *
- * The map itself is a dark basemap, so it sits in a navy panel on the light
- * page rather than being re-tinted.
+ * On the light page the basemap keeps its natural colours (see the
+ * `.tone-light .iraq-leaflet` rules in globals.css).
  */
 export default async function IntelligenceSection({
   as: Heading = "h2",
@@ -48,7 +48,7 @@ export default async function IntelligenceSection({
           subtitle={t("subtitle")}
         />
 
-        <div className="tone-navy bg-ink mt-12 -mx-4 px-2 py-6 sm:mx-0 sm:rounded-3xl sm:px-6 sm:py-10">
+        <div className="mt-12 -mx-2 sm:mx-0">
           <MapStage>
             <IraqMap markers={markers} />
           </MapStage>

@@ -90,6 +90,12 @@ const buildConfig = (isDev: boolean): NextConfig => ({
    * timestamp of whichever row happened to exist at build time.
    */
   images: {
+    /*
+     * Next 16 only serves the qualities listed here. 75 is the default for
+     * logos and small images; 90 is for photographs, where 75's compression
+     * shows as soft, smeared detail on large and high-density screens.
+     */
+    qualities: [75, 90],
     localPatterns: [
       { pathname: "/**", search: "" },
       { pathname: "/api/clients/**" },

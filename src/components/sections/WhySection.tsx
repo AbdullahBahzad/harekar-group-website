@@ -2,6 +2,8 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import Reveal from "@/components/Reveal";
+import RevealImage from "@/components/RevealImage";
+import RevealText from "@/components/RevealText";
 
 /**
  * The reasons, in the order a buyer weighs them. Each one restates something
@@ -21,21 +23,25 @@ export default function WhySection() {
   return (
     <section id="why" className="grid scroll-mt-18 lg:grid-cols-2">
       <div className="relative min-h-72 sm:min-h-96 lg:min-h-full">
-        <Image
-          src="/photos/training-briefing.jpg"
-          alt={t("photoAlt")}
-          fill
-          sizes="(min-width: 1024px) 50vw, 100vw"
-          className="object-cover object-[center_80%]"
-        />
+        <RevealImage>
+          <Image
+            src="/photos/training-briefing.jpg"
+            alt={t("photoAlt")}
+            fill
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            quality={90}
+            className="object-cover object-[center_80%]"
+          />
+        </RevealImage>
       </div>
 
       <div className="tone-navy bg-ink px-6 py-16 sm:px-10 sm:py-20 lg:px-16 xl:px-20">
         <Reveal className="max-w-2xl">
           <p className="text-gold-deep text-base font-bold">{t("eyebrow")}</p>
-          <h2 className="font-display text-bone mt-3 text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl">
-            {t("title")}
-          </h2>
+          <RevealText
+            text={t("title")}
+            className="font-display text-bone mt-3 text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl"
+          />
           <p className="text-bone/80 mt-4 text-lg leading-relaxed text-pretty">
             {t("subtitle")}
           </p>

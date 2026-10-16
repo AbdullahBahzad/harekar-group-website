@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { logReadFallback, prisma } from "@/lib/prisma";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
 
@@ -58,7 +58,7 @@ export async function getPublishedFaqItems(
       });
     }
   } catch (error) {
-    console.error("Falling back to static FAQ items", error);
+    logReadFallback("static FAQ items", error);
   }
 
   const t = await getTranslations({ locale, namespace: "faq.items" });

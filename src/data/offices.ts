@@ -1,7 +1,7 @@
 import type { LngLat } from "@/data/iraq";
 
 /**
- * The three offices, in the Kurdistan Region of Iraq.
+ * The four offices, in the Kurdistan Region of Iraq.
  *
  * `mapQuery` holds the exact Google Maps place each office is listed under on
  * harekargroup.com, lifted from that site's own bundle. They resolve to the
@@ -21,7 +21,7 @@ import type { LngLat } from "@/data/iraq";
  */
 export type Office = {
   /** Key into the `contact.offices` message namespace. */
-  id: "erbil" | "duhok" | "sulaymaniyah";
+  id: "erbil" | "duhok" | "sulaymaniyah" | "zakho";
   coordinates: LngLat;
   /**
    * What Google Maps is asked to show — the office's own place listing.
@@ -73,5 +73,21 @@ export const offices: Office[] = [
     phone: null,
     email: null,
     labelAnchor: "start",
+  },
+  {
+    id: "zakho",
+    /*
+     * TODO: the Zakho office was added at the company's request (October
+     * 2026) without an address or a Google Maps listing. Until one is
+     * supplied, the map shows Zakho itself rather than guessing a building.
+     * Replace `mapQuery` with the office's own listing (as for the others)
+     * and `coordinates` with its exact position.
+     */
+    coordinates: [42.6818, 37.1436],
+    mapQuery: "Zakho, Duhok Governorate, Iraq",
+    address: null,
+    phone: null,
+    email: null,
+    labelAnchor: "middle",
   },
 ];

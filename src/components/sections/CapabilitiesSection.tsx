@@ -1,84 +1,125 @@
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import Reveal from "@/components/Reveal";
+import RevealText from "@/components/RevealText";
+import { getPublishedServices, type ResolvedService } from "@/lib/services";
+
+/** One service as a card in the drifting row: photo, area, title, line. */
+function ServiceCard({
+  service,
+  groupLabel,
+  hidden = false,
+}: {
+  service: ResolvedService;
+  groupLabel: string;
+  /** The loop's second copy: present for the eye, skipped by tab and readers. */
+  hidden?: boolean;
+}) {
+  return (
+    <li
+      className="border-bone/12 w-72 shrink-0 border-s px-4 sm:w-80 sm:px-5"
+      aria-hidden={hidden || undefined}
+    >
+      <Link
+        href="/services"
+        tabIndex={hidden ? -1 : undefined}
+        className="group focus-visible:ring-gold block rounded-sm outline-none focus-visible:ring-2"
+      >
+        <span className="relative block aspect-[4/3] overflow-hidden rounded-sm">
+          <Image
+            src={service.imageUrl}
+            alt=""
+            fill
+            sizes="20rem"
+            quality={90}
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+          />
+        </span>
+        <span className="text-gold-deep mt-4 block text-sm font-bold">{groupLabel}</span>
+        <span className="font-display text-bone group-hover:text-gold-deep mt-1 block text-lg leading-snug font-bold transition-colors">
+          {service.title}
+        </span>
+        <span className="text-bone/70 mt-2 line-clamp-2 block text-[15px] leading-relaxed">
+          {service.description}
+        </span>
+      </Link>
+    </li>
+  );
+}
 
 /**
- * The thirteen service lines, gathered into four areas a buyer recognises.
- * Each card opens the Services page, where every line has its own card.
+ * The home page's services, after the reference site's pattern: a headline
+ * that ends on a gold accent with a short line and a link beside it, then
+ * every service line as a photo card in a row that drifts sideways on its
+ * own and stops while the reader hovers over it.
  */
-const areas = [
-  { id: "protection", image: "/services/static.webp" },
-  { id: "response", image: "/services/crisis.webp" },
-  { id: "transport", image: "/services/armored.webp" },
-  { id: "site", image: "/services/camp.webp" },
-] as const;
+export default async function CapabilitiesSection() {
+  const t = await getTranslations("capabilities");
+  const tServices = await getTranslations("services");
+  const locale = await getLocale();
+  const services = await getPublishedServices(locale);
 
-/**
- * The home page's services: a heading block, then four tall photo cards in a
- * row — title, one line on what the area covers, and a link onward.
- */
-export default function CapabilitiesSection() {
-  const t = useTranslations("capabilities");
-  const tServices = useTranslations("services");
+  const groupLabel = (group: string) =>
+    tServices.has(`groups.${group}`) ? tServices(`groups.${group}`) : "";
 
   return (
-    <section id="services" className="scroll-mt-24 bg-white px-4 pt-12 pb-20 sm:px-6 sm:pb-28 lg:px-10">
-      <div className="mx-auto max-w-360">
-        <Reveal className="max-w-4xl">
-          <h2 className="font-display text-bone text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl">
-            {tServices("title")}
-          </h2>
-          <p className="text-gold-deep mt-2 text-lg font-bold">{t("subtitle")}</p>
-          <p className="text-bone/75 mt-4 text-lg leading-relaxed text-pretty">
-            {tServices("subtitle")}
-          </p>
-        </Reveal>
-
-        <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {areas.map((area, i) => (
-            <li key={area.id}>
-              <Reveal delay={0.06 * i}>
-                <Link
-                  href="/services"
-                  className="group tone-navy focus-visible:ring-gold relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-md outline-none focus-visible:ring-2 sm:aspect-[3/4]"
-                >
-                  <Image
-                    src={area.image}
-                    alt=""
-                    fill
-                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  />
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 bg-gradient-to-t from-[rgba(16,29,47,0.95)] via-[rgba(16,29,47,0.45)] to-[rgba(16,29,47,0.1)]"
-                  />
-                  <span className="relative p-6">
-                    <span className="font-display text-bone block text-2xl leading-tight font-bold">
-                      {t(`items.${area.id}.title`)}
-                    </span>
-                    <span className="text-bone/85 mt-2 block text-base leading-snug font-semibold">
-                      {t(`items.${area.id}.tagline`)}
-                    </span>
-                    <span className="text-gold-deep mt-4 inline-flex items-center gap-2 text-sm font-bold">
-                      {t("view")}
-                      <svg
-                        viewBox="0 0 16 16"
-                        className="size-4 transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1"
-                        fill="none"
-                        aria-hidden
-                      >
-                        <path d="M1 8h14M15 8l-6-6M15 8l-6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                  </span>
-                </Link>
-              </Reveal>
-            </li>
-          ))}
-        </ul>
+    <section id="services" className="scroll-mt-24 overflow-hidden bg-white pt-12 pb-20 sm:pb-28">
+      <div className="mx-auto max-w-360 px-4 sm:px-6 lg:px-10">
+        <hr className="border-bone/12 mb-12" />
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-16">
+          <div className="lg:col-span-7">
+            <Reveal>
+              <p className="text-gold-deep text-base font-bold">{tServices("eyebrow")}</p>
+            </Reveal>
+            <RevealText
+              text={tServices("title")}
+              highlight={t("subtitle")}
+              className="font-display text-bone mt-3 text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl"
+            />
+          </div>
+          <Reveal delay={0.1} className="lg:col-span-5">
+            <p className="text-bone/80 text-lg leading-relaxed text-pretty">
+              {tServices("subtitle")}
+            </p>
+            <Link
+              href="/services"
+              className="text-bone hover:text-gold-deep group mt-4 inline-flex min-h-11 items-center gap-2 text-base font-bold transition-colors"
+            >
+              {t("viewAll")}
+              <svg
+                viewBox="0 0 16 16"
+                className="size-4 transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1"
+                fill="none"
+                aria-hidden
+              >
+                <path d="M1 8h14M15 8l-6-6M15 8l-6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
+          </Reveal>
+        </div>
       </div>
+
+      <Reveal delay={0.15} className="mt-14">
+        <div
+          className="marquee"
+          style={{ ["--marquee-duration" as string]: `${services.length * 6}s` }}
+        >
+          <ul className="marquee-track">
+            {services.map((service) => (
+              <ServiceCard key={service.id} service={service} groupLabel={groupLabel(service.group)} />
+            ))}
+            {services.map((service) => (
+              <ServiceCard
+                key={`${service.id}-loop`}
+                service={service}
+                groupLabel={groupLabel(service.group)}
+                hidden
+              />
+            ))}
+          </ul>
+        </div>
+      </Reveal>
     </section>
   );
 }

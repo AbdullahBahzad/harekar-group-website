@@ -3,7 +3,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Reveal from "@/components/Reveal";
 import SectionIntro from "@/components/SectionIntro";
 import InfoCard from "@/components/InfoCard";
-import { FactsGrid } from "@/components/sections/FactsSection";
+import { StatsGrid } from "@/components/sections/FactsSection";
 import { getSiteContent, pick } from "@/lib/site-content";
 import type { Locale } from "@/i18n/routing";
 
@@ -178,8 +178,8 @@ export default function AboutSection({
 
         {/* The figures behind the statement. */}
         <Reveal delay={0.1} className="mt-16">
-          <div className="bg-surface rounded-3xl p-4 sm:p-6">
-            <FactsGrid content={content} />
+          <div className="border-bone/10 rounded-3xl border p-6 sm:p-10">
+            <StatsGrid />
           </div>
         </Reveal>
       </div>

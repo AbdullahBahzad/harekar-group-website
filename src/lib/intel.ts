@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { logReadFallback, prisma } from "@/lib/prisma";
 import {
   intelMarkers as staticMarkers,
   type IntelMarker,
@@ -65,7 +65,7 @@ export async function getPublishedMarkers(
       ...(entitled ? { headline: row.headline, body: row.body } : {}),
     }));
   } catch (error) {
-    console.error("Falling back to static intel markers", error);
+    logReadFallback("static intel markers", error);
     return staticMarkers;
   }
 }
@@ -131,7 +131,7 @@ export async function getPublishedMarkerById(
       ...(entitled ? { headline: row.headline, body: row.body } : {}),
     };
   } catch (error) {
-    console.error("Could not load marker report", error);
+    logReadFallback("no marker report", error);
     return null;
   }
 }

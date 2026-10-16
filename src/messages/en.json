@@ -16,10 +16,16 @@
     "clients": "Clients",
     "signIn": "Sign in",
     "account": "Account",
-    "coverage": "Coverage",
     "why": "Why Harekar",
     "whoWeAre": "Who we are",
-    "missionVision": "Mission & vision"
+    "missionVision": "Mission & vision",
+    "allServices": "All services",
+    "allClients": "All clients",
+    "whyJoin": "Why join Harekar",
+    "allQuestions": "All questions",
+    "liveMap": "Live security map",
+    "dailyReports": "Daily Security Report",
+    "proAccess": "Pro access"
   },
   "cta": {
     "primary": "Request a Security Assessment",
@@ -30,7 +36,7 @@
   "hero": {
     "eyebrow": "Security & Operational Services",
     "title": "Trusted security across the Kurdistan Region of Iraq.",
-    "subtitle": "Guarding, mobile security, armored transport and emergency response — delivered by vetted, trained teams from our offices in Erbil, Duhok and Sulaymaniyah.",
+    "subtitle": "Guarding, mobile security, armored transport and emergency response — delivered by vetted, trained teams from our offices in Erbil, Duhok, Sulaymaniyah and Zakho.",
     "playVideo": "Play background video",
     "pauseVideo": "Pause background video"
   },
@@ -321,7 +327,8 @@
       "duhok": "Duhok",
       "erbil": "Erbil",
       "sulaymaniyah": "Sulaymaniyah",
-      "emailLabel": "Email"
+      "emailLabel": "Email",
+      "zakho": "Zakho"
     },
     "form": {
       "name": "Full name",
@@ -1168,7 +1175,7 @@
   "facts": {
     "eyebrow": "Safeguarding people, sites and operations",
     "title": "Security and operational support you can rely on.",
-    "intro": "Harekar Group provides security, emergency response and operational support across the Kurdistan Region of Iraq — from static and mobile security to K9 units, armored vehicles and civil works.",
+    "intro": "Founded in Erbil in 2004, Harekar Group provides security, emergency response and operational support across the Kurdistan Region of Iraq — from static and mobile security to K9 units, armored vehicles and civil works.",
     "more": "More about us"
   },
   "why": {
@@ -1190,7 +1197,7 @@
       },
       "local": {
         "title": "Local offices, fast response",
-        "body": "Offices in Erbil, Duhok and Sulaymaniyah, with a Quick Reaction Force on standby for other cities."
+        "body": "Offices in Erbil, Duhok, Sulaymaniyah and Zakho, with a Quick Reaction Force on standby for other cities."
       },
       "command": {
         "title": "One accountable command",
@@ -1203,16 +1210,6 @@
     },
     "photoAlt": "A Harekar instructor briefing a team of guards",
     "cta": "More about us"
-  },
-  "coverage": {
-    "eyebrow": "Coverage",
-    "title": "Present across the Kurdistan Region.",
-    "subtitle": "Three regional offices and a Quick Reaction Force on standby let us respond quickly wherever our clients operate.",
-    "office": "Regional office",
-    "qrfTitle": "Quick Reaction Force",
-    "qrfBody": "For locations beyond our offices, our QRF team is always on standby.",
-    "where": "Where we operate",
-    "openMap": "Opens the office in Google Maps"
   },
   "capabilities": {
     "subtitle": "Supporting every part of your operation.",
@@ -1234,12 +1231,30 @@
         "title": "Site & camp support",
         "tagline": "Camp security design, fuel, water and heavy equipment"
       }
-    }
+    },
+    "viewAll": "View all services"
   },
   "feature": {
     "label": "Harekar Intelligence",
     "title": "A daily picture of the security situation across Iraq.",
     "body": "Our teams track incidents across the region and publish a Daily Security Report, with flagged locations on a live map — so you can plan with current information.",
     "cta": "Explore intelligence"
+  },
+  "stats": {
+    "since": "Since {year}",
+    "title": "Our people, vehicles and operational units",
+    "titleHighlight": "for 2024 and 2025.",
+    "items": {
+      "staticGuards": "Static Guards",
+      "convoy": "Mobile Protection Convoy Escort",
+      "psd": "Personal Security Detail",
+      "cityGuards": "City Security Guards",
+      "trainers": "Internationally Licensed Trainers",
+      "qrf": "Quick Response Force",
+      "vehicles": "Vehicles",
+      "armored": "Armored Cars",
+      "softSkin": "Soft Skin",
+      "activeUnits": "Active Units"
+    }
   }
 }

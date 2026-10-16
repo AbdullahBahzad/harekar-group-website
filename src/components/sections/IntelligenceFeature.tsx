@@ -3,6 +3,8 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import Reveal from "@/components/Reveal";
+import RevealImage from "@/components/RevealImage";
+import RevealText from "@/components/RevealText";
 
 /**
  * A full-width banner for the company's own intelligence product — the
@@ -10,21 +12,24 @@ import Reveal from "@/components/Reveal";
  * an instructor briefing a team in front of the map screen.
  *
  * Carries the `intelligence` anchor the header scrolls to; `children` (the
- * live map, on the home page) sits on a navy band directly beneath it.
+ * live map, on the home page) sits on a white band directly beneath it.
  */
 export default function IntelligenceFeature({ children }: { children?: ReactNode }) {
   const t = useTranslations("feature");
 
   return (
-    <section id="intelligence" className="tone-navy bg-ink scroll-mt-18">
-      <div className="relative isolate overflow-hidden">
-        <Image
-          src="/photos/map-briefing.jpg"
-          alt=""
-          fill
-          sizes="100vw"
-          className="-z-20 object-cover object-[70%_center]"
-        />
+    <section id="intelligence" className="scroll-mt-18">
+      <div className="tone-navy bg-ink relative isolate overflow-hidden">
+        <RevealImage className="absolute inset-0 -z-20">
+          <Image
+            src="/photos/map-briefing.jpg"
+            alt=""
+            fill
+            sizes="100vw"
+            quality={90}
+            className="object-cover object-[70%_center]"
+          />
+        </RevealImage>
         <div
           aria-hidden
           className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(16,29,47,0.95)_0%,rgba(16,29,47,0.82)_45%,rgba(16,29,47,0.35)_100%)] rtl:bg-[linear-gradient(270deg,rgba(16,29,47,0.95)_0%,rgba(16,29,47,0.82)_45%,rgba(16,29,47,0.35)_100%)]"
@@ -40,9 +45,10 @@ export default function IntelligenceFeature({ children }: { children?: ReactNode
               </svg>
               {t("label")}
             </p>
-            <h2 className="font-display text-bone mt-4 text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl lg:text-5xl">
-              {t("title")}
-            </h2>
+            <RevealText
+              text={t("title")}
+              className="font-display text-bone mt-4 text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl lg:text-5xl"
+            />
             <p className="text-bone/85 mt-5 text-lg leading-relaxed text-pretty">{t("body")}</p>
             <Link
               href="/intelligence"
@@ -56,12 +62,12 @@ export default function IntelligenceFeature({ children }: { children?: ReactNode
 
       {children && (
         <div
-          className="mx-auto max-w-360 px-2 pb-20 sm:px-6 lg:px-10"
+          className="tone-light bg-white px-2 py-16 sm:px-6 sm:py-20 lg:px-10"
           // The map's entrance tilt scales past its frame; keep it from
           // widening the page.
           style={{ overflowX: "clip" }}
         >
-          {children}
+          <div className="mx-auto max-w-360">{children}</div>
         </div>
       )}
     </section>

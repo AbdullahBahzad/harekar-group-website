@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { logReadFallback, prisma } from "@/lib/prisma";
 import { clientLogos, type ClientCategory } from "@/lib/client-logos";
 
 export type PublicClientLogo = {
@@ -50,7 +50,7 @@ export async function getPublishedClients(): Promise<PublicClientLogo[]> {
       }));
     }
   } catch (error) {
-    console.error("Falling back to static client logos", error);
+    logReadFallback("static client logos", error);
   }
 
   return clientLogos.map((logo) => ({
