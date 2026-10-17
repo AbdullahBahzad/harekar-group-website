@@ -18,7 +18,7 @@ export default async function EmailingStation({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireReportsAccess(locale);
+  await requireReportsAccess();
   const t = await getTranslations({ locale, namespace: "admin.emailing" });
 
   const { data: recipients } = await getReportRecipients();

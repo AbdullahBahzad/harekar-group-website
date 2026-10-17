@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -28,18 +28,25 @@ export type ConsoleOperator = {
 /**
  * The shared lookup behind both gates below.
  *
+ * Anyone who is not a signed-in operator gets the site's ordinary 404 — not a
+ * sign-in prompt, and not a bounce to the home page. A login form at the
+ * console's address announces that there is a console there worth attacking;
+ * a plain "page not found" (identical to any mistyped address, see
+ * `[locale]/not-found.tsx`) gives nothing away. Operators sign in through the
+ * normal sign-in page first, then open the console.
+ *
  * One query, one preview fallback, one "outage locks the console" rule —
  * `requireAdmin` and `requireReportsAccess` differ only in which flag they
  * accept, not in how the operator is found.
  */
-async function loadOperator(locale: string): Promise<ConsoleOperator> {
+async function loadOperator(): Promise<ConsoleOperator> {
   const session = await auth();
 
   if (!session?.user?.id) {
     if (previewUnlocked && (await databaseUnreachable())) {
       return PREVIEW_OPERATOR;
     }
-    redirect(toLogin(locale));
+    notFound();
   }
 
   try {
@@ -53,7 +60,7 @@ async function loadOperator(locale: string): Promise<ConsoleOperator> {
         canManageReports: true,
       },
     });
-    if (!user) redirect(`/${locale}`);
+    if (!user) notFound();
     return user;
   } catch (error) {
     /*
@@ -81,9 +88,9 @@ async function loadOperator(locale: string): Promise<ConsoleOperator> {
  * home rather than to an "access denied" screen, which would confirm the
  * console exists at this address.
  */
-export async function requireAdmin(locale: string): Promise<ConsoleOperator> {
-  const operator = await loadOperator(locale);
-  if (!operator.isAdmin) redirect(`/${locale}`);
+export async function requireAdmin(): Promise<ConsoleOperator> {
+  const operator = await loadOperator();
+  if (!operator.isAdmin) notFound();
   return operator;
 }
 
@@ -95,19 +102,34 @@ export async function requireAdmin(locale: string): Promise<ConsoleOperator> {
  * Every *other* page still calls `requireAdmin` above and stays closed to a
  * reports-only operator — this function does not widen anything else.
  */
-export async function requireReportsAccess(
-  locale: string,
-): Promise<ConsoleOperator> {
-  const operator = await loadOperator(locale);
-  if (!operator.isAdmin && !operator.canManageReports) {
-    redirect(`/${locale}`);
+/**
+ * Whether the visitor may see the console at all, as a yes/no rather than a
+ * 404 — for code that must behave identically for strangers instead of
+ * stopping the render (the console's page title, see the admin layout).
+ * Same rule as `requireReportsAccess`, preview fallback included.
+ */
+export async function isConsoleOperator(): Promise<boolean> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return previewUnlocked && (await databaseUnreachable());
   }
-  return operator;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isAdmin: true, canManageReports: true },
+    });
+    return Boolean(user?.isAdmin || user?.canManageReports);
+  } catch {
+    return previewUnlocked;
+  }
 }
 
-/** Sign-in URL that returns the operator to the console afterwards. */
-function toLogin(locale: string) {
-  return `/${locale}/login?next=${encodeURIComponent(`/${locale}/admin`)}`;
+export async function requireReportsAccess(): Promise<ConsoleOperator> {
+  const operator = await loadOperator();
+  if (!operator.isAdmin && !operator.canManageReports) {
+    notFound();
+  }
+  return operator;
 }
 
 /** Stands in for a signed-in administrator while the console is previewed. */

@@ -14,7 +14,7 @@ export default async function ServicesStation({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireAdmin(locale);
+  await requireAdmin();
   const t = await getTranslations({ locale, namespace: "admin.services" });
 
   const iconNames = serviceGroups.flatMap(

@@ -12,7 +12,7 @@ export default async function SourcesStation({
   const { locale } = await params;
   setRequestLocale(locale);
   // The one station a reports-only operator may open — see `lib/admin.ts`.
-  await requireReportsAccess(locale);
+  await requireReportsAccess();
   const t = await getTranslations({ locale, namespace: "admin.reports" });
 
   const { data: reports, preview } = await getRecentReports(30);

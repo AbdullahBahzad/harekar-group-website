@@ -31,7 +31,7 @@ export default async function ApplicationsStation({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireAdmin(locale);
+  await requireAdmin();
   const t = await getTranslations({ locale, namespace: "admin.applications" });
 
   const { data: applications } = await orPreview(

@@ -16,7 +16,7 @@ export default async function AccountsStation({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const operator = await requireAdmin(locale);
+  const operator = await requireAdmin();
   const t = await getTranslations({ locale, namespace: "admin" });
 
   const { data: users } = await orPreview(

@@ -13,7 +13,7 @@ export default async function BenefitsStation({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireAdmin(locale);
+  await requireAdmin();
   const t = await getTranslations({ locale, namespace: "admin.benefits" });
 
   const { data: benefits, preview } = await orPreview<ConsoleBenefit[]>(

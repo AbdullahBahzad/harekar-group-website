@@ -74,7 +74,7 @@ export default async function ContentStation({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireAdmin(locale);
+  await requireAdmin();
   const t = await getTranslations({ locale, namespace: "admin.content" });
 
   const { data: content } = await orPreview(

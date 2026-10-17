@@ -13,7 +13,7 @@ export default async function ClientsStation({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireAdmin(locale);
+  await requireAdmin();
   const t = await getTranslations({ locale, namespace: "admin.clients" });
 
   const { data: clients, preview } = await orPreview<ConsoleClient[]>(

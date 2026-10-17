@@ -55,7 +55,7 @@ export default async function DashboardStation({
    * coherent right after signing in (their `next` param points here) instead
    * of bouncing straight to `/` and looking like the login failed.
    */
-  const operator = await requireReportsAccess(locale);
+  const operator = await requireReportsAccess();
   if (!operator.isAdmin) redirect(`/${locale}/admin/sources`);
   const t = await getTranslations({ locale, namespace: "admin" });
 

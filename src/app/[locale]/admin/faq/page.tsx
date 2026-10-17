@@ -11,7 +11,7 @@ export default async function FaqStation({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireAdmin(locale);
+  await requireAdmin();
   const t = await getTranslations({ locale, namespace: "admin.faq" });
 
   const { data: items, preview } = await orPreview<ConsoleFaqItem[]>(

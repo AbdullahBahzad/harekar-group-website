@@ -19,7 +19,7 @@ export default async function MessagesStation({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireAdmin(locale);
+  await requireAdmin();
   const t = await getTranslations({ locale, namespace: "admin.inbox" });
 
   const { data: messages } = await orPreview(

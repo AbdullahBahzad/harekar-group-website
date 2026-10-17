@@ -6,7 +6,7 @@ import {
   getTranslations,
   setRequestLocale,
 } from "next-intl/server";
-import { requireReportsAccess } from "@/lib/admin";
+import { isConsoleOperator, requireReportsAccess } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import ConsoleRail from "@/components/admin/ConsoleRail";
 import { orPreview } from "@/lib/admin-preview";
@@ -18,6 +18,14 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  /*
+   * Gate the title too. Metadata resolves on its own, before the layout's
+   * gate runs, so without this a stranger's 404 carried the console's "Admin"
+   * title — the one detail telling it apart from any other missing page.
+   * Returning nothing (rather than throwing a 404 from here) lets the page
+   * inherit the site's ordinary title, exactly as a mistyped address does.
+   */
+  if (!(await isConsoleOperator())) return {};
   const t = await getTranslations({ locale, namespace: "admin" });
 
   return {
@@ -46,7 +54,7 @@ export default async function AdminLayout({
    * except Sources/Reports still calls the strict `requireAdmin` itself, so
    * this alone does not widen what a reports-only operator can open.
    */
-  const operator = await requireReportsAccess(locale);
+  const operator = await requireReportsAccess();
   const t = await getTranslations({ locale, namespace: "admin" });
 
   /*
