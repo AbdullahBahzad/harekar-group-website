@@ -243,7 +243,8 @@
       "errorCvSize": "Your CV must be 5MB or smaller.",
       "errorGeneric": "Something went wrong. Please try again.",
       "errorTooLong": "One of the fields is longer than we can accept.",
-      "errorTooMany": "Too many applications sent. Please try again shortly."
+      "errorTooMany": "Too many applications sent. Please try again shortly.",
+      "emailNote": "Questions about working with us? Email"
     }
   },
   "clients": {

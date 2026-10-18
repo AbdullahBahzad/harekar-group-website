@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { COMPANY_EMAIL } from "@/data/offices";
+import { CAREERS_EMAIL, COMPANY_EMAIL } from "@/data/offices";
 import { pick, type getSiteContent } from "@/lib/site-content";
 import type { Locale } from "@/i18n/routing";
 
@@ -70,6 +70,18 @@ export default function SiteFooter({
             </li>
             <li className="flex items-center gap-2.5">
               <svg viewBox="0 0 20 20" className="text-gold size-4 shrink-0" fill="none" aria-hidden>
+                <rect x="2.5" y="4.5" width="15" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+                <path d="m3 5.5 7 5.5 7-5.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+              </svg>
+              <span>
+                {tNav("careers")}:{" "}
+                <a href={`mailto:${CAREERS_EMAIL}`} dir="ltr" className="hover:text-gold-deep transition-colors">
+                  {CAREERS_EMAIL}
+                </a>
+              </span>
+            </li>
+            <li className="flex items-center gap-2.5">
+              <svg viewBox="0 0 20 20" className="text-gold size-4 shrink-0" fill="none" aria-hidden>
                 <path d="M10 17.5s5.5-4.6 5.5-9a5.5 5.5 0 0 0-11 0c0 4.4 5.5 9 5.5 9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                 <circle cx="10" cy="8.5" r="2" stroke="currentColor" strokeWidth="1.5" />
               </svg>
@@ -109,7 +121,8 @@ export default function SiteFooter({
 
       <div className="bg-[#0b1522]">
         <p className="text-bone/65 mx-auto max-w-360 px-4 py-5 text-center text-sm sm:px-6 lg:px-10">
-          © {new Date().getFullYear()} {tBrand("name")}. {t("rights")}
+          {/* The year the company asked for, not the current one. */}
+          © 2008 {tBrand("name")}. {t("rights")}
         </p>
       </div>
     </footer>

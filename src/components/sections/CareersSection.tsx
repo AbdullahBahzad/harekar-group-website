@@ -6,6 +6,7 @@ import { pick, type getSiteContent } from "@/lib/site-content";
 import type { getPublishedCareerBenefits } from "@/lib/career-benefits";
 import type { Locale } from "@/i18n/routing";
 import ApplyForm from "@/app/[locale]/(site)/careers/ApplyForm";
+import { CAREERS_EMAIL } from "@/data/offices";
 
 /**
  * Shared by the one-page scroll and the standalone /careers route.
@@ -86,6 +87,16 @@ export default function CareersSection({
             <h3 className="font-display text-bone mt-5 text-2xl leading-snug font-bold text-balance sm:text-3xl">
               {tApply("title")}
             </h3>
+            <p className="text-bone/75 mt-4 text-base">
+              {tApply("emailNote")}{" "}
+              <a
+                href={`mailto:${CAREERS_EMAIL}`}
+                dir="ltr"
+                className="text-bone hover:text-gold-deep font-bold underline-offset-4 transition-colors hover:underline"
+              >
+                {CAREERS_EMAIL}
+              </a>
+            </p>
           </Reveal>
 
           <ApplyForm />

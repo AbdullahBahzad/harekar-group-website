@@ -37,12 +37,15 @@ export type Office = {
 };
 
 /**
- * The company-wide contact address, taken from harekargroup.com — it is where
- * that site's own contact form is addressed. Kept separate from the offices
- * because it is one shared inbox, not three: repeating it under each office
- * would imply per-branch addresses that do not exist.
+ * The company-wide contact address, as given by Harekar Group. Kept separate
+ * from the offices because it is one shared inbox, not one per branch:
+ * repeating it under each office would imply per-branch addresses that do
+ * not exist.
  */
-export const COMPANY_EMAIL = "cco@harekargroup.com";
+export const COMPANY_EMAIL = "info@harekargroup.com";
+
+/** Where job applications and careers questions go, as given by the company. */
+export const CAREERS_EMAIL = "hr@harekargroup.com";
 
 export const offices: Office[] = [
   {
