@@ -26,10 +26,16 @@ const icon = {
       <path d="M7 10h6M7 13h6M7 7h3" stroke="currentColor" strokeLinecap="round" />
     </svg>
   ),
-  console: (
+  account: (
     <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" aria-hidden>
       <circle cx="10" cy="10" r="2.25" stroke="currentColor" />
       <path d="M10 3.5v2M10 14.5v2M16.5 10h-2M5.5 10h-2M14.6 5.4l-1.4 1.4M6.8 13.2l-1.4 1.4M14.6 14.6l-1.4-1.4M6.8 6.8 5.4 5.4" stroke="currentColor" strokeLinecap="round" />
+    </svg>
+  ),
+  console: (
+    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" aria-hidden>
+      <path d="M3 5.5 7.5 3.5l5 2 4.5-2v11l-4.5 2-5-2L3 16.5v-11Z" stroke="currentColor" strokeLinejoin="round" />
+      <path d="M7.5 3.5v11M12.5 5.5v11" stroke="currentColor" />
     </svg>
   ),
   statistics: (
@@ -72,12 +78,13 @@ const icon = {
 
 const stations: Station[] = [
   { href: "/portal/reports", labelKey: "reports", icon: icon.reports },
-  { href: "/portal/incidents", labelKey: "incidents", icon: icon.incidents },
+  { href: "/portal/console", labelKey: "console", icon: icon.console },
   { href: "/portal/statistics", labelKey: "statistics", icon: icon.statistics },
+  { href: "/portal/incidents", labelKey: "incidents", icon: icon.incidents },
   { href: "/portal/ask", labelKey: "ask", icon: icon.ask },
   { href: "/portal/resources", labelKey: "resources", icon: icon.resources },
   { href: "/portal/guests", labelKey: "guests", icon: icon.guests },
-  { href: "/portal/console", labelKey: "console", icon: icon.console },
+  { href: "/portal/account", labelKey: "account", icon: icon.account },
 ];
 
 /**

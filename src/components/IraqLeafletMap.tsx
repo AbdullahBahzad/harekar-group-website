@@ -34,6 +34,17 @@ export type LeafletPin = {
 };
 
 /**
+ * A shaded area drawn beneath the pins — a governorate, in the portal
+ * Console's "Tactical areas". `rings` are [longitude, latitude] outlines, as
+ * everywhere else in this codebase.
+ */
+export type LeafletArea = {
+  id: string;
+  rings: [number, number][][];
+  tone: string;
+};
+
+/**
  * The real Iraq — OpenStreetMap tiles, dark-filtered to match the site, with
  * the country's own border traced in gold on top. Replaces the earlier
  * illustrated country shape: this is the same approach the `iraq mmap`
@@ -47,6 +58,8 @@ export type LeafletPin = {
  */
 export default function IraqLeafletMap({
   markers,
+  areas,
+  areaPadding,
   draftPoint,
   onMapClick,
   maskOutside,
@@ -55,6 +68,16 @@ export default function IraqLeafletMap({
   ariaLabel,
 }: {
   markers: LeafletPin[];
+  /**
+   * Areas to shade. When there are any, the view moves to frame them; when
+   * they are cleared, it returns to the whole country.
+   */
+  areas?: LeafletArea[];
+  /**
+   * Extra room, in pixels, to leave when framing `areas` — so a panel laid
+   * over one edge of the map does not cover the area it just framed.
+   */
+  areaPadding?: { start?: number; end?: number };
   /** A pin for a spot chosen but not yet saved — console only. */
   draftPoint?: { lat: number; lng: number } | null;
   /** Present only on the console map, where clicking ground starts a marker. */
@@ -80,6 +103,8 @@ export default function IraqLeafletMap({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const areaLayerRef = useRef<L.LayerGroup | null>(null);
+  const homeBoundsRef = useRef<L.LatLngBounds | null>(null);
   /*
    * Handlers are read from a ref inside the Leaflet click listener instead of
    * being a dependency of the setup effect. The map itself must only be
@@ -227,6 +252,9 @@ export default function IraqLeafletMap({
       map.on("move zoom viewreset resize", updateClip);
     }
 
+    // Areas first, so their shading sits beneath the pins.
+    areaLayerRef.current = L.layerGroup().addTo(map);
+    homeBoundsRef.current = bounds;
     layerRef.current = L.layerGroup().addTo(map);
 
     map.on("click", (event: L.LeafletMouseEvent) => {
@@ -245,6 +273,7 @@ export default function IraqLeafletMap({
       map.remove();
       mapRef.current = null;
       layerRef.current = null;
+      areaLayerRef.current = null;
     };
     // `maskOutside` is a fixed per-caller choice, not runtime state — see the
     // prop doc. Included so the map does rebuild if a caller ever did change it.
@@ -330,6 +359,53 @@ export default function IraqLeafletMap({
       }).addTo(layer);
     }
   }, [markers, draftPoint]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const layer = areaLayerRef.current;
+    if (!map || !layer) return;
+    layer.clearLayers();
+
+    const shapes = areas ?? [];
+    let framed: L.LatLngBounds | null = null;
+    for (const area of shapes) {
+      const polygon = L.polygon(
+        area.rings.map((ring) => ring.map(([lng, lat]) => [lat, lng] as [number, number])),
+        {
+          color: area.tone,
+          weight: 1.8,
+          opacity: 0.95,
+          fillColor: area.tone,
+          fillOpacity: 0.22,
+          interactive: false,
+        },
+      ).addTo(layer);
+      framed = framed ? framed.extend(polygon.getBounds()) : polygon.getBounds();
+    }
+
+    // Only maps that use areas move on their own; the others keep their view.
+    if (areas === undefined) return;
+    const target = framed ?? homeBoundsRef.current;
+    if (!target) return;
+    if (!framed) {
+      map.flyToBounds(target, { padding: [24, 24], duration: 0.6 });
+      return;
+    }
+    // Leaflet pads by physical side; turn start/end into left/right.
+    const rtl = getComputedStyle(map.getContainer()).direction === "rtl";
+    const start = 48 + (areaPadding?.start ?? 0);
+    const end = 48 + (areaPadding?.end ?? 0);
+    map.flyToBounds(target, {
+      paddingTopLeft: [rtl ? end : start, 48],
+      paddingBottomRight: [rtl ? start : end, 48],
+      // Close enough to read the area, not so close the tiles turn to mush.
+      maxZoom: 9,
+      duration: 0.6,
+    });
+    // `areaPadding` is read as it stands when the areas change; it is a
+    // layout constant, not something that should re-trigger a flight.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [areas]);
 
   return (
     <div

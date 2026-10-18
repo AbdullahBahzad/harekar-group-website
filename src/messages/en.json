@@ -424,7 +424,8 @@
       "signOut": "Sign out",
       "openMenu": "Open menu",
       "closeMenu": "Close menu",
-      "drawerLabel": "Portal navigation"
+      "drawerLabel": "Portal navigation",
+      "account": "Account"
     },
     "reports": {
       "title": "Reports",
@@ -507,13 +508,29 @@
     },
     "console": {
       "title": "Console",
-      "intro": "Your account, in one place.",
-      "emailLabel": "Email",
-      "planLabel": "Plan",
-      "planPro": "Pro",
-      "planGuest": "Guest seat",
-      "guestsHint": "Invite colleagues to view the portal under your own subscription from <link>Guests</link>.",
-      "signOut": "Sign out"
+      "intro": "The live operational picture — filter by date and tactical area, then switch between the map and a scrollable feed.",
+      "ranges": {
+        "7": "Last 7 days",
+        "14": "Last 14 days",
+        "30": "Last 30 days",
+        "60": "Last 60 days",
+        "all": "All time"
+      },
+      "count": "{count, plural, one {# incident} other {# incidents}}",
+      "viewLabel": "View",
+      "map": "Map",
+      "feed": "Feed",
+      "mapLabel": "Map of incidents across Iraq",
+      "tacticalAreas": "Tactical areas",
+      "clear": "Clear",
+      "atLocation": "{count, plural, one {# incident at this location} other {# incidents at this location}}",
+      "close": "Close",
+      "feedTitle": "Incidents",
+      "nationwide": "Nationwide",
+      "empty": "No incidents match these filters.",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page} of {pages}"
     },
     "guests": {
       "title": "Guests",
@@ -531,6 +548,16 @@
       "statusACCEPTED": "Active",
       "statusREVOKED": "Revoked",
       "revoke": "Revoke"
+    },
+    "account": {
+      "title": "Console",
+      "intro": "Your account, in one place.",
+      "emailLabel": "Email",
+      "planLabel": "Plan",
+      "planPro": "Pro",
+      "planGuest": "Guest seat",
+      "guestsHint": "Invite colleagues to view the portal under your own subscription from <link>Guests</link>.",
+      "signOut": "Sign out"
     }
   },
   "pro": {
@@ -1305,6 +1332,101 @@
       "armored": "Armored Cars",
       "softSkin": "Soft Skin",
       "activeUnits": "Active Units"
+    }
+  },
+  "showcase": {
+    "eyebrow": "See it in motion",
+    "title": "Inside the platform",
+    "subtitle": "Scan the feed, focus on your areas, ask a question or read the daily report — whatever the moment needs.",
+    "example": "Example",
+    "tabs": {
+      "console": {
+        "label": "Console + Incident Feed",
+        "title": "See what's happening right now.",
+        "description": "Every verified incident as it comes in — filter by date, area and severity, and open any incident for its full report."
+      },
+      "areas": {
+        "label": "Tactical areas",
+        "title": "Focus on where you operate.",
+        "description": "Switch on the governorates that matter to you. The map shades them and the feed narrows to what is happening inside them."
+      },
+      "ask": {
+        "label": "Ask Harekar",
+        "title": "Ask a question. Get an answer built from the data.",
+        "description": "Ask about recent incidents, trends or a specific area — the answer is built from Harekar's verified reports."
+      },
+      "reports": {
+        "label": "Daily Security Report",
+        "title": "Where the intelligence becomes strategy.",
+        "description": "A written daily brief with an executive summary and a risk rating for every governorate, ready to download as a PDF."
+      }
+    },
+    "feed": {
+      "incidents": "Incidents",
+      "nationwide": "Nationwide",
+      "count": "128 incidents",
+      "page": "Page 1 of 11",
+      "today": "Today, {time}",
+      "rows": {
+        "row1": "Checkpoint delays reported on the Duhok–Zakho road",
+        "row2": "Protest gathering near a government building in central Baghdad",
+        "row3": "Security operation reported south of Kirkuk",
+        "row4": "Traffic accident causes a road closure in Erbil"
+      }
+    },
+    "areas": {
+      "range": "Last 30 days",
+      "areas": "Tactical areas",
+      "cardTitle": "1 incident at this location",
+      "category": "Road blockage",
+      "headline": "Road partly closed after a protest near Amedi",
+      "sourceLabel": "Source reliability",
+      "sourceValue": "Fairly reliable",
+      "infoLabel": "Information",
+      "infoValue": "Probably true"
+    },
+    "ask": {
+      "question": "Show elevated incidents in Duhok over the last 14 days, compared with the month before.",
+      "answerTitle": "Intelligence brief: Duhok",
+      "lines": {
+        "period": {
+          "label": "Period",
+          "value": "Last 14 days"
+        },
+        "count": {
+          "label": "Elevated incidents",
+          "value": "3, down from 5"
+        },
+        "driver": {
+          "label": "Main driver",
+          "value": "Road protests over electricity supply"
+        },
+        "assessment": {
+          "label": "Assessment",
+          "value": "Localised; low risk to movement on main routes"
+        }
+      },
+      "prompt": "Ask Harekar a question…"
+    },
+    "report": {
+      "brand": "HAREKAR GROUP",
+      "title": "Daily Security Report",
+      "download": "Download PDF",
+      "summary": "Executive summary",
+      "matrix": "Governorate risk",
+      "places": {
+        "duhok": "Duhok",
+        "erbil": "Erbil",
+        "ninawa": "Ninawa",
+        "kirkuk": "Kirkuk",
+        "baghdad": "Baghdad"
+      },
+      "risk": {
+        "LOW": "Low",
+        "MODERATE": "Moderate",
+        "HIGH": "High",
+        "CRITICAL": "Critical"
+      }
     }
   }
 }

@@ -5,6 +5,7 @@ import CapabilitiesSection from "@/components/sections/CapabilitiesSection";
 import WhySection from "@/components/sections/WhySection";
 import ClientsSection from "@/components/sections/ClientsSection";
 import IntelligenceFeature from "@/components/sections/IntelligenceFeature";
+import PlatformShowcase from "@/components/sections/PlatformShowcase";
 import ContactSection from "@/components/sections/ContactSection";
 import { getSiteContent, pick } from "@/lib/site-content";
 import { getPublishedClients } from "@/lib/clients";
@@ -77,7 +78,7 @@ export default async function HomePage({
       <CapabilitiesSection />
       <WhySection photo={media.whyPhoto} />
       <ClientsSection logos={logos} showAllLink />
-      <IntelligenceFeature photo={media.intelligencePhoto}>
+      <IntelligenceFeature photo={media.intelligencePhoto} showcase={<PlatformShowcase />}>
         <MapStage>
           <IraqMap markers={markers} />
         </MapStage>

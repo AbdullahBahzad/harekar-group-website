@@ -16,9 +16,12 @@ import RevealText from "@/components/RevealText";
  */
 export default function IntelligenceFeature({
   children,
+  showcase,
   photo = "/photos/map-briefing.jpg",
 }: {
   children?: ReactNode;
+  /** The "Inside the platform" tour, on navy directly beneath the banner. */
+  showcase?: ReactNode;
   /** The banner background — the Media station's upload, or the shipped one. */
   photo?: string;
 }) {
@@ -66,6 +69,8 @@ export default function IntelligenceFeature({
           </Reveal>
         </div>
       </div>
+
+      {showcase && <div className="tone-navy bg-ink">{showcase}</div>}
 
       {children && (
         <div

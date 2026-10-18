@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { governorateAt } from "@/lib/governorates";
+import type { GovernorateKey } from "@/lib/report-shape";
 
 /** One row of the portal's Incident Feed. */
 export type PortalIncident = {
@@ -18,6 +20,10 @@ export type PortalIncident = {
    * marker created without a specific occurrence time still needs a place
    * in the feed's chronological order. */
   occurredAt: string;
+  latitude: number;
+  longitude: number;
+  /** Worked out from the position, not the typed province — see `governorateAt`. */
+  governorate: GovernorateKey | null;
 };
 
 /**
@@ -50,6 +56,8 @@ export async function getIncidentFeed(take = 200): Promise<PortalIncident[]> {
       resolved: true,
       occurredAt: true,
       createdAt: true,
+      latitude: true,
+      longitude: true,
     },
   });
 
@@ -67,5 +75,8 @@ export async function getIncidentFeed(take = 200): Promise<PortalIncident[]> {
     city: row.city,
     resolved: row.resolved,
     occurredAt: (row.occurredAt ?? row.createdAt).toISOString(),
+    latitude: row.latitude,
+    longitude: row.longitude,
+    governorate: governorateAt(row.longitude, row.latitude),
   }));
 }
