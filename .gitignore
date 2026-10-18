@@ -42,3 +42,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .gstack/
+
+# Media uploaded from the admin console (see lib/media.ts) — server data, not source.
+/uploads

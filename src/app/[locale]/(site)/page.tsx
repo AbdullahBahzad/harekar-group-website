@@ -8,6 +8,7 @@ import IntelligenceFeature from "@/components/sections/IntelligenceFeature";
 import ContactSection from "@/components/sections/ContactSection";
 import { getSiteContent, pick } from "@/lib/site-content";
 import { getPublishedClients } from "@/lib/clients";
+import { getMediaUrls } from "@/lib/media";
 import { auth } from "@/auth";
 import { getPublishedMarkers } from "@/lib/intel";
 import IraqMap from "@/components/IraqMap";
@@ -40,6 +41,8 @@ export default async function HomePage({
    * that owns the page.
    */
   const logos = await getPublishedClients();
+  // The banner video, its poster and the section photos (admin › Media).
+  const media = await getMediaUrls();
 
   /*
    * The intelligence map's markers. Entitlement is resolved here, on the
@@ -62,12 +65,19 @@ export default async function HomePage({
    */
   return (
     <>
-      <HeroVideo overrides={hero} />
+      <HeroVideo
+        overrides={hero}
+        media={{
+          video: media.heroVideo,
+          videoMobile: media.heroVideoMobile,
+          poster: media.heroPoster,
+        }}
+      />
       <FactsSection />
       <CapabilitiesSection />
-      <WhySection />
+      <WhySection photo={media.whyPhoto} />
       <ClientsSection logos={logos} showAllLink />
-      <IntelligenceFeature>
+      <IntelligenceFeature photo={media.intelligencePhoto}>
         <MapStage>
           <IraqMap markers={markers} />
         </MapStage>

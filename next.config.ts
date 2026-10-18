@@ -100,6 +100,7 @@ const buildConfig = (isDev: boolean): NextConfig => ({
       { pathname: "/**", search: "" },
       { pathname: "/api/clients/**" },
       { pathname: "/api/services/**" },
+      { pathname: "/api/media/**" },
     ],
   },
 

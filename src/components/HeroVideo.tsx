@@ -6,17 +6,16 @@ import { useTranslations } from "next-intl";
 import RevealText from "@/components/RevealText";
 
 /**
- * The company's own footage — the Erbil office, the fleet, the team — as
- * H.264 MP4, which every browser plays. Phones get 720p: they show the frame
- * cropped to a tall screen, but 720p still covers it sharply without sending
- * a desktop's file over mobile data. The browser takes the first `<source>`
- * whose `media` matches, before downloading anything.
+ * The company's own footage, as H.264 MP4 — every browser plays it. Phones
+ * get the 720p version: they show the frame cropped to a tall screen, and
+ * 720p still covers it sharply without sending a desktop's file over mobile
+ * data. The browser takes the first `<source>` whose `media` matches, before
+ * downloading anything.
+ *
+ * The files themselves are whatever the Media station in the admin console
+ * holds (see `lib/media.ts`), falling back to the shipped ones.
  */
-const VIDEO = {
-  mobile: "/video/harekar-hero-720.mp4",
-  desktop: "/video/harekar-hero-1080.mp4",
-};
-const POSTER = "/video/harekar-hero-poster.jpg";
+export type HeroMedia = { video: string; videoMobile: string; poster: string };
 
 /**
  * The opening section: a full-bleed banner video under a navy wash, with the
@@ -29,12 +28,15 @@ const POSTER = "/video/harekar-hero-poster.jpg";
  */
 export default function HeroVideo({
   overrides,
+  media,
 }: {
   /**
    * Eyebrow/title/subtitle resolved server-side from the console's
    * `SiteContent` row, or the shipped translation if nothing was saved there.
    */
   overrides: { eyebrow: string; title: string; subtitle: string };
+  /** The banner video (computer and phone versions) and its poster. */
+  media: HeroMedia;
 }) {
   const t = useTranslations("hero");
   const tCta = useTranslations("cta");
@@ -87,7 +89,7 @@ export default function HeroVideo({
       <video
         ref={video}
         className="absolute inset-0 -z-20 h-full w-full object-cover"
-        poster={POSTER}
+        poster={media.poster}
         muted
         loop
         playsInline
@@ -96,8 +98,8 @@ export default function HeroVideo({
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
       >
-        <source src={VIDEO.mobile} type="video/mp4" media="(max-width: 767px)" />
-        <source src={VIDEO.desktop} type="video/mp4" />
+        <source src={media.videoMobile} type="video/mp4" media="(max-width: 767px)" />
+        <source src={media.video} type="video/mp4" />
       </video>
 
       {/*

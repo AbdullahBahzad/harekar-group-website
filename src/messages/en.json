@@ -594,7 +594,8 @@
       "closeMenu": "Close menu",
       "drawerLabel": "Admin navigation",
       "backToSite": "Back to site",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "media": "Media"
     },
     "common": {
       "save": "Save",
@@ -1136,6 +1137,54 @@
       "templateGone": "This report no longer exists.",
       "sent": "Sent to {count} clients.",
       "sentPartial": "Sent to {sent} of {total} clients — check the mail settings for the rest."
+    },
+    "media": {
+      "title": "Media",
+      "intro": "The homepage video and the large photos on the site. Upload a replacement and it goes live straight away; Restore original brings back the file the site shipped with. Service photos and client logos are changed in their own sections.",
+      "slots": {
+        "heroVideo": {
+          "title": "Homepage video — computers",
+          "hint": "The full-screen video at the top of the homepage, shown on computers and tablets. Best at 1920×1080, around 30–60 seconds."
+        },
+        "heroVideoMobile": {
+          "title": "Homepage video — phones",
+          "hint": "A lighter version of the same video for phones, ideally 1280×720. Optional: if you only replace the computer video, phones show that one."
+        },
+        "heroPoster": {
+          "title": "Video cover image",
+          "hint": "The still picture shown while the video loads, and to visitors who have reduced motion turned on. Use a frame from the video, 1920×1080."
+        },
+        "whyPhoto": {
+          "title": "\"Why choose Harekar\" photo",
+          "hint": "The photo beside the reasons on the homepage. A landscape photo of your team or operations works best."
+        },
+        "intelligencePhoto": {
+          "title": "Intelligence banner photo",
+          "hint": "The background of the Intelligence banner on the homepage. It is darkened on the left behind the text."
+        }
+      },
+      "uploaded": "Uploaded",
+      "original": "Original",
+      "currentUpload": "Current file: {name} · {size} · uploaded {date}",
+      "currentOriginal": "Showing the original file that came with the website.",
+      "upload": "Upload new",
+      "restore": "Restore original",
+      "confirmRestore": "Remove the uploaded file and show the original again?",
+      "uploading": "Uploading… {percent}%",
+      "checking": "Checking the file…",
+      "uploadedNotice": "Uploaded. The website now shows the new file.",
+      "restoredNotice": "Restored. The website shows the original file again.",
+      "requirementsVideo": "MP4 (H.264), up to {max}",
+      "requirementsImage": "JPEG, PNG, WebP or AVIF, up to {max}",
+      "errors": {
+        "tooLarge": "This file is too large. The limit here is {max}.",
+        "wrongType": "This type of file can't be used here. Check the accepted formats below.",
+        "hevc": "This video is in HEVC format (the iPhone default), which most browsers can't play. Export it as MP4 with H.264 — on iPhone, set Settings › Camera › Formats to \"Most Compatible\", or convert it with HandBrake.",
+        "notH264": "This video isn't H.264, so some browsers can't play it. Export it as MP4 with the H.264 codec.",
+        "invalidVideo": "This doesn't look like a complete MP4 video. Try exporting it again.",
+        "network": "The upload was interrupted. Check your connection and try again.",
+        "generic": "Something went wrong. Please try again."
+      }
     }
   },
   "reports": {

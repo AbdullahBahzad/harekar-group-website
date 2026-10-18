@@ -14,7 +14,14 @@ import RevealText from "@/components/RevealText";
  * Carries the `intelligence` anchor the header scrolls to; `children` (the
  * live map, on the home page) sits on a white band directly beneath it.
  */
-export default function IntelligenceFeature({ children }: { children?: ReactNode }) {
+export default function IntelligenceFeature({
+  children,
+  photo = "/photos/map-briefing.jpg",
+}: {
+  children?: ReactNode;
+  /** The banner background — the Media station's upload, or the shipped one. */
+  photo?: string;
+}) {
   const t = useTranslations("feature");
 
   return (
@@ -22,7 +29,7 @@ export default function IntelligenceFeature({ children }: { children?: ReactNode
       <div className="tone-navy bg-ink relative isolate overflow-hidden">
         <RevealImage className="absolute inset-0 -z-20">
           <Image
-            src="/photos/map-briefing.jpg"
+            src={photo}
             alt=""
             fill
             sizes="100vw"

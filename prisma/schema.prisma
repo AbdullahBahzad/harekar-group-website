@@ -762,3 +762,22 @@ enum PortalGuestStatus {
   ACCEPTED
   REVOKED
 }
+
+/// A replaceable piece of site media — the homepage video, its poster, the
+/// large section photos — uploaded from the admin console's Media station.
+///
+/// Only the record lives here; the file itself is on disk under MEDIA_DIR
+/// (see `lib/media.ts`), named after its slot. Kept out of the database
+/// because a video is tens of megabytes and has to be served in byte ranges,
+/// which a bytea column cannot do without loading the whole file each time.
+/// A slot with no row shows the media shipped with the site.
+model SiteMedia {
+  /// One of the slots defined in `data/media-slots.ts`.
+  slot      String   @id
+  /// The uploader's original file name, for the console's "current file" line.
+  fileName  String
+  mimeType  String
+  size      Int
+  /// Doubles as the cache-busting version in the public media URL.
+  updatedAt DateTime @updatedAt
+}

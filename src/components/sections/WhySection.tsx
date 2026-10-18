@@ -17,7 +17,12 @@ const reasons = ["licensed", "vetted", "always", "local", "command", "specialist
  * a guard briefing on one half, the case for the company on a navy panel on
  * the other.
  */
-export default function WhySection() {
+export default function WhySection({
+  photo = "/photos/training-briefing.jpg",
+}: {
+  /** The photo beside the reasons — the Media station's upload, or the shipped one. */
+  photo?: string;
+}) {
   const t = useTranslations("why");
 
   return (
@@ -25,7 +30,7 @@ export default function WhySection() {
       <div className="relative min-h-72 sm:min-h-96 lg:min-h-full">
         <RevealImage>
           <Image
-            src="/photos/training-briefing.jpg"
+            src={photo}
             alt={t("photoAlt")}
             fill
             sizes="(min-width: 1024px) 50vw, 100vw"
