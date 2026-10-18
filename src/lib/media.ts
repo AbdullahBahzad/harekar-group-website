@@ -12,12 +12,14 @@ import { mediaSlotIds, mediaSlots, type MediaSlotId } from "@/data/media-slots";
  * The default sits inside the project (`uploads/media`, ignored by git, so a
  * `git pull` never touches it). Set MEDIA_DIR to keep uploads elsewhere.
  */
+// `turbopackIgnore`: these paths are runtime data, not code. Without it the
+// bundler cannot tell, and traces the entire project into the server output.
 export const MEDIA_DIR =
-  process.env.MEDIA_DIR || path.join(process.cwd(), "uploads", "media");
+  process.env.MEDIA_DIR || path.join(/*turbopackIgnore: true*/ process.cwd(), "uploads", "media");
 
 /** The one file a slot's upload lives in — replaced whole on each upload. */
 export function mediaFilePath(slot: MediaSlotId) {
-  return path.join(MEDIA_DIR, slot);
+  return path.join(/*turbopackIgnore: true*/ MEDIA_DIR, slot);
 }
 
 export type MediaUrls = Record<MediaSlotId, string>;

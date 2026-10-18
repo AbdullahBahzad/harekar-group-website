@@ -131,7 +131,7 @@ export async function POST(
   }
 
   await mkdir(MEDIA_DIR, { recursive: true });
-  const temp = path.join(MEDIA_DIR, `.upload-${slot}-${randomBytes(6).toString("hex")}`);
+  const temp = path.join(/*turbopackIgnore: true*/ MEDIA_DIR, `.upload-${slot}-${randomBytes(6).toString("hex")}`);
 
   let received = 0;
   const limit = new Transform({
