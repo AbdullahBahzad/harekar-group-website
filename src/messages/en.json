@@ -622,7 +622,8 @@
       "drawerLabel": "Admin navigation",
       "backToSite": "Back to site",
       "signOut": "Sign out",
-      "media": "Media"
+      "media": "Media",
+      "console": "Console"
     },
     "common": {
       "save": "Save",
@@ -1212,6 +1213,10 @@
         "network": "The upload was interrupted. Check your connection and try again.",
         "generic": "Something went wrong. Please try again."
       }
+    },
+    "console": {
+      "title": "Console",
+      "intro": "The live operational picture, exactly as clients see it in their portal — filter by date and tactical area, then switch between the map and the feed. Incidents are added and edited in Intelligence."
     }
   },
   "reports": {

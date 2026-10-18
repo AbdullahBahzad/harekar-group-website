@@ -37,6 +37,12 @@ const icon = {
       <circle cx="10" cy="8.25" r="2" stroke="currentColor" />
     </svg>
   ),
+  console: (
+    <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" aria-hidden>
+      <path d="M3 5.5 7.5 3.5l5 2 4.5-2v11l-4.5 2-5-2L3 16.5v-11Z" stroke="currentColor" strokeLinejoin="round" />
+      <path d="M7.5 3.5v11M12.5 5.5v11" stroke="currentColor" />
+    </svg>
+  ),
   media: (
     <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.5" aria-hidden>
       <rect x="2.75" y="4" width="14.5" height="12" rx="1.5" stroke="currentColor" />
@@ -109,7 +115,10 @@ const icon = {
 const groups: Group[] = [
   {
     labelKey: "overview",
-    stations: [{ href: "/admin", labelKey: "dashboard", icon: icon.dashboard }],
+    stations: [
+      { href: "/admin", labelKey: "dashboard", icon: icon.dashboard },
+      { href: "/admin/console", labelKey: "console", icon: icon.console },
+    ],
   },
   {
     labelKey: "content",
