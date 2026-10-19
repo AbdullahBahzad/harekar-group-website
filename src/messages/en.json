@@ -393,6 +393,25 @@
       "errorPasswordMismatch": "Passwords don't match.",
       "errorTooMany": "Too many attempts — try again shortly.",
       "errorGeneric": "Something went wrong — try again."
+    },
+    "verify": {
+      "title": "Check your email",
+      "subtitle": "We sent a 6-digit code to {email}. Enter it below to confirm your email and finish creating your account.",
+      "codeLabel": "Verification code",
+      "confirm": "Confirm email",
+      "noCode": "Didn't get the code? Check your spam folder, or",
+      "resend": "send a new code",
+      "resent": "If this email is waiting for confirmation, a new code is on its way.",
+      "confirmed": "Email confirmed. You can sign in now.",
+      "errorCode": "That code isn't right. Check the latest email and try again.",
+      "errorExpired": "That code has expired. Send a new code and try again.",
+      "errorTooMany": "Too many attempts. Wait a few minutes, then send a new code.",
+      "errorResendTooSoon": "Please wait a minute before asking for another code.",
+      "errorGeneric": "Something went wrong. Please try again.",
+      "email": {
+        "subject": "Your Harekar Group code: {code}",
+        "body": "Your Harekar Group verification code is:\n\n{code}\n\nEnter it on the website to confirm your email. The code expires in {minutes} minutes.\n\nIf you didn't create an account, you can ignore this email — nothing will happen."
+      }
     }
   },
   "account": {
@@ -550,7 +569,7 @@
       "revoke": "Revoke"
     },
     "account": {
-      "title": "Console",
+      "title": "Account",
       "intro": "Your account, in one place.",
       "emailLabel": "Email",
       "planLabel": "Plan",

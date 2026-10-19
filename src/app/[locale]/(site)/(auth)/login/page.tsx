@@ -22,10 +22,10 @@ export default async function LoginPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; verified?: string; email?: string }>;
 }) {
   const { locale } = await params;
-  const { next } = await searchParams;
+  const { next, verified, email } = await searchParams;
   setRequestLocale(locale);
 
   /*
@@ -41,7 +41,15 @@ export default async function LoginPage({
 
   return (
     <AuthShell title={t("signInTitle")} subtitle={t("signInSubtitle")}>
-      <AuthForm mode="login" action={loginAccount} next={next} />
+      {verified === "1" && (
+        <p
+          role="status"
+          className="border-status-clear/40 bg-status-clear/10 text-status-clear mb-5 rounded-xl border px-4 py-3 text-sm"
+        >
+          {t("verify.confirmed")}
+        </p>
+      )}
+      <AuthForm mode="login" action={loginAccount} next={next} initialEmail={email} />
     </AuthShell>
   );
 }

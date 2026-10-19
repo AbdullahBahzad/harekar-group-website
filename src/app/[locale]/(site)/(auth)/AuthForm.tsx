@@ -22,6 +22,7 @@ export default function AuthForm({
   mode,
   action,
   next,
+  initialEmail,
 }: {
   mode: Mode;
   action: (
@@ -30,10 +31,15 @@ export default function AuthForm({
   ) => Promise<AuthFormState>;
   /** Where to land after signing in; validated server-side before use. */
   next?: string;
+  /** Pre-fills the email field — after confirming it, say. */
+  initialEmail?: string;
 }) {
   const t = useTranslations("auth");
   const locale = useLocale();
-  const [state, formAction] = useActionState(action, initialState);
+  const [state, formAction] = useActionState(
+    action,
+    initialEmail ? { ...initialState, values: { email: initialEmail } } : initialState,
+  );
   const registering = mode === "register";
 
   return (

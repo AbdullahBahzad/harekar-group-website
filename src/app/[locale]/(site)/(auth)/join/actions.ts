@@ -73,7 +73,9 @@ export async function acceptGuestInvite(
     // for the common case; a second visitor racing the same token lands on
     // the unique `accountId` constraint instead of silently doubling up.
     const account = await prisma.user.create({
-      data: { email: invite.email, name, passwordHash, isPro: true },
+      // The invite link arrived at this address — that is the proof the
+      // emailed code would otherwise ask for.
+      data: { email: invite.email, name, passwordHash, isPro: true, emailVerified: new Date() },
     });
 
     await prisma.portalGuest.update({
@@ -129,6 +131,10 @@ export async function linkExistingAccount(formData: FormData) {
 
   await prisma.$transaction([
     prisma.user.update({ where: { id: account.id }, data: { isPro: true } }),
+    prisma.user.updateMany({
+      where: { id: account.id, emailVerified: null },
+      data: { emailVerified: new Date() },
+    }),
     prisma.portalGuest.update({
       where: { id: invite.id },
       data: {

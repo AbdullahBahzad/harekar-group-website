@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
@@ -30,6 +30,16 @@ import { hasProAccess } from "@/lib/entitlement";
  * survive. Kept short enough that granting Pro is felt the same day without
  * forcing the user to sign in again constantly.
  */
+/**
+ * The password was right, but the address has not been confirmed with its
+ * emailed code yet. Raised only after a correct password, so it reveals
+ * nothing to someone guessing — the sign-in action catches it by `code` and
+ * sends the owner to the confirmation page with a fresh code.
+ */
+export class UnverifiedEmailError extends CredentialsSignin {
+  code = "unverified";
+}
+
 const SESSION_MAX_AGE = 60 * 60 * 24; // 24 hours
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -76,6 +86,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
+
+        // New accounts confirm their email by code before first sign-in.
+        // Administrators are exempt: they are only ever created on the
+        // server, by someone who already holds the database.
+        if (!user.emailVerified && !user.isAdmin) throw new UnverifiedEmailError();
 
         return {
           id: user.id,

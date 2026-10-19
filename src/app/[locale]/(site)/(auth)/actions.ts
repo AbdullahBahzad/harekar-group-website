@@ -1,6 +1,7 @@
 "use server";
 
-import { AuthError } from "next-auth";
+import { redirect } from "next/navigation";
+import { AuthError, CredentialsSignin } from "next-auth";
 import { hasLocale } from "next-intl";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
@@ -9,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { locales, type Locale } from "@/i18n/routing";
 import { safeInternalPath } from "@/lib/safe-redirect";
 import { clientKey, withinRateLimit } from "@/lib/rate-limit";
+import { confirmEmailWithCode, sendVerificationCode } from "@/lib/email-verification";
 
 /** Cost factor for password hashing. 12 is the current sensible default. */
 const BCRYPT_ROUNDS = 12;
@@ -38,6 +40,21 @@ const LOGIN_LIMIT = 10;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const REGISTER_LIMIT = 5;
 const REGISTER_WINDOW_MS = 60 * 60 * 1000;
+
+/** Code attempts per address — a handful, against a million possible codes. */
+const VERIFY_LIMIT = 8;
+const VERIFY_WINDOW_MS = 15 * 60 * 1000;
+/** Resends: one a minute, a few an hour, per address. */
+const RESEND_GAP_MS = 60 * 1000;
+const RESEND_LIMIT = 5;
+const RESEND_WINDOW_MS = 60 * 60 * 1000;
+const CODE_PATTERN = /^\d{6}$/;
+
+/** The confirmation page, carrying who is confirming and where to go after. */
+function verifyUrl(locale: Locale, email: string, next: string): string {
+  const query = new URLSearchParams({ email, next });
+  return `/${locale}/verify?${query.toString()}`;
+}
 
 export type AuthFormState = {
   status: "idle" | "error";
@@ -116,19 +133,34 @@ export async function registerAccount(
      * unique constraint is the thing actually relied on and the collision is
      * caught below.
      */
-    await prisma.user.create({ data: { name, email, passwordHash } });
-  } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
-      return { status: "error", error: "errorEmailTaken", values: typed };
+    try {
+      await prisma.user.create({ data: { name, email, passwordHash } });
+    } catch (error) {
+      if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {
+        throw error;
+      }
+      /*
+       * The address is already registered. If it was never confirmed, nobody
+       * has proved they own it — so the person registering now may take it
+       * over (new name and password) and receive the code. A confirmed
+       * account is taken.
+       */
+      const existing = await prisma.user.findUnique({
+        where: { email },
+        select: { emailVerified: true, isAdmin: true },
+      });
+      if (!existing || existing.emailVerified || existing.isAdmin) {
+        return { status: "error", error: "errorEmailTaken", values: typed };
+      }
+      await prisma.user.update({ where: { email }, data: { name, passwordHash } });
     }
+    await sendVerificationCode(email, locale);
+  } catch (error) {
     console.error("Failed to register account", error);
     return { status: "error", error: "errorGeneric", values: typed };
   }
 
-  return signInWithPassword(email, password, next, typed);
+  redirect(verifyUrl(locale, email, next));
 }
 
 /** Signs an existing account in. */
@@ -152,7 +184,7 @@ export async function loginAccount(
     return { status: "error", error: "errorTooMany", values: { email } };
   }
 
-  return signInWithPassword(email, password, next, { email });
+  return signInWithPassword(email, password, next, { email }, locale);
 }
 
 /**
@@ -187,11 +219,16 @@ async function signInWithPassword(
   password: string,
   redirectTo: string,
   values: { name?: string; email?: string },
+  locale: Locale,
 ): Promise<AuthFormState> {
+  let unverified = false;
   try {
     await signIn("credentials", { email, password, redirectTo });
   } catch (error) {
-    if (error instanceof AuthError) {
+    // Right password, unconfirmed address: send a fresh code (below).
+    if (error instanceof CredentialsSignin && error.code === "unverified") {
+      unverified = true;
+    } else if (error instanceof AuthError) {
       return {
         status: "error",
         error:
@@ -200,9 +237,84 @@ async function signInWithPassword(
             : "errorGeneric",
         values,
       };
+    } else {
+      throw error;
     }
-    throw error;
+  }
+
+  if (unverified) {
+    if (withinRateLimit(`resend:${email}`, RESEND_LIMIT, RESEND_WINDOW_MS)) {
+      await sendVerificationCode(email, locale).catch((error) =>
+        console.error("Failed to send verification code", error),
+      );
+    }
+    redirect(verifyUrl(locale, email, redirectTo));
   }
 
   return { status: "idle" };
+}
+
+export type VerifyFormState = {
+  status: "idle" | "error" | "sent";
+  error?: "errorCode" | "errorExpired" | "errorTooMany" | "errorGeneric";
+};
+
+/** Checks the typed code; on success, on to sign-in with a confirmation note. */
+export async function verifyEmailCode(
+  _prevState: VerifyFormState,
+  formData: FormData,
+): Promise<VerifyFormState> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const code = String(formData.get("code") ?? "").replace(/\s+/g, "");
+  const locale = readLocale(formData);
+  const next = readNext(formData, locale);
+
+  if (!EMAIL_PATTERN.test(email) || !CODE_PATTERN.test(code)) {
+    return { status: "error", error: "errorCode" };
+  }
+  if (!withinRateLimit(`verify:${email}`, VERIFY_LIMIT, VERIFY_WINDOW_MS)) {
+    return { status: "error", error: "errorTooMany" };
+  }
+
+  let result: Awaited<ReturnType<typeof confirmEmailWithCode>>;
+  try {
+    result = await confirmEmailWithCode(email, code);
+  } catch (error) {
+    console.error("Failed to check verification code", error);
+    return { status: "error", error: "errorGeneric" };
+  }
+  if (result === "expired") return { status: "error", error: "errorExpired" };
+  if (result !== "ok") return { status: "error", error: "errorCode" };
+
+  const query = new URLSearchParams({ verified: "1", email, next });
+  redirect(`/${locale}/login?${query.toString()}`);
+}
+
+/**
+ * Sends a new code. Answers "sent" whether or not the address has an
+ * unconfirmed account, so this cannot be used to discover who is registered.
+ */
+export async function resendVerificationCode(
+  _prevState: VerifyFormState,
+  formData: FormData,
+): Promise<VerifyFormState> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const locale = readLocale(formData);
+  if (!EMAIL_PATTERN.test(email)) return { status: "error", error: "errorGeneric" };
+
+  if (
+    !withinRateLimit(`resend-gap:${email}`, 1, RESEND_GAP_MS) ||
+    !withinRateLimit(`resend:${email}`, RESEND_LIMIT, RESEND_WINDOW_MS) ||
+    !withinRateLimit(await clientKey("resend"), RESEND_LIMIT * 2, RESEND_WINDOW_MS)
+  ) {
+    return { status: "error", error: "errorTooMany" };
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email }, select: { emailVerified: true } });
+    if (user && !user.emailVerified) await sendVerificationCode(email, locale);
+  } catch (error) {
+    console.error("Failed to resend verification code", error);
+  }
+  return { status: "sent" };
 }
