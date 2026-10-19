@@ -61,11 +61,17 @@ const MINOR_UNITS: Record<Plan["currency"], number> = {
  * in two of the three locales.
  */
 export function formatPrice(plan: Plan, locale: string): string {
+  return formatAmount(plan.amountMinor, plan.currency, locale);
+}
+
+/** The same, for an amount held on an order rather than a plan. */
+export function formatAmount(amountMinor: number, currency: string, locale: string): string {
+  const unit = MINOR_UNITS[currency as Plan["currency"]] ?? 100;
   return new Intl.NumberFormat(locale, {
     style: "currency",
-    currency: plan.currency,
+    currency,
     // These are whole-unit prices; trailing ".00" is noise on a pricing card.
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(plan.amountMinor / MINOR_UNITS[plan.currency]);
+  }).format(amountMinor / unit);
 }

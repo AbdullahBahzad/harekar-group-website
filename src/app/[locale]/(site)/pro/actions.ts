@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { getAppOrigin } from "@/lib/app-url";
 import { findPlan } from "@/data/plans";
 import { getPaymentProvider } from "@/lib/payments";
+import type { Checkout } from "@/lib/payments/types";
 import { locales } from "@/i18n/routing";
 
 /**
@@ -65,13 +66,9 @@ export async function startCheckout(formData: FormData): Promise<void> {
    * start" is worth more when reconciling than a gap in the sequence. The error
    * is rethrown: the customer still needs to be told.
    */
-  let redirectUrl: string;
-  let providerRef: string | undefined;
+  let checkout: Checkout;
   try {
-    ({ redirectUrl, providerRef } = await provider.createCheckout({
-      order,
-      returnUrl,
-    }));
+    checkout = await provider.createCheckout({ order, returnUrl });
   } catch (error) {
     await prisma.order
       .updateMany({
@@ -84,14 +81,60 @@ export async function startCheckout(formData: FormData): Promise<void> {
     throw error;
   }
 
-  if (providerRef) {
+  if (checkout.kind === "inApp") {
     await prisma.order.update({
       where: { id: order.id },
-      data: { providerRef },
+      data: {
+        providerRef: checkout.providerRef,
+        payCode: checkout.readableCode,
+        payQr: checkout.qrCode,
+        payAppLink: checkout.appLink ?? null,
+        expiresAt: checkout.expiresAt,
+      },
+    });
+  } else if (checkout.providerRef) {
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { providerRef: checkout.providerRef },
     });
   }
 
   // Outside try/catch: `redirect` signals by throwing, and catching it here
   // would strand the customer on the pricing page after an order was created.
-  redirect(redirectUrl);
+  redirect(
+    checkout.kind === "inApp" ? `/${locale}/pro/pay/${order.id}` : checkout.redirectUrl,
+  );
+}
+
+/**
+ * The customer backs out of a payment page. The order is closed and, where
+ * the gateway allows, the code withdrawn so it cannot be paid afterwards.
+ */
+export async function cancelPayment(formData: FormData): Promise<void> {
+  const session = await auth();
+  const rawLocale = String(formData.get("locale") ?? "");
+  const locale = hasLocale(locales, rawLocale) ? rawLocale : "en";
+  if (!session?.user?.id) redirect(`/${locale}/login`);
+
+  const order = await prisma.order.findFirst({
+    where: { id: String(formData.get("order") ?? ""), userId: session.user.id },
+  });
+  if (order?.status === "PENDING") {
+    const provider = getPaymentProvider();
+    /*
+     * Withdrawn at the gateway first. If that fails the order stays PENDING,
+     * so a payment made in the app a moment earlier can still be matched
+     * when its callback arrives.
+     */
+    try {
+      if (provider.id === order.provider) await provider.cancel?.(order);
+      await prisma.order.updateMany({
+        where: { id: order.id, status: "PENDING" },
+        data: { status: "CANCELLED" },
+      });
+    } catch (error) {
+      console.error("Failed to cancel payment", error);
+    }
+  }
+  redirect(`/${locale}/pro`);
 }

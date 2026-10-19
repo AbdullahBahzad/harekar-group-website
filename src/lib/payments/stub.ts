@@ -37,6 +37,7 @@ export const stubProvider: PaymentProvider = {
     refuseInProduction("createCheckout");
 
     return {
+      kind: "redirect",
       // Locale-free internal route; the page redirects onward after confirming.
       redirectUrl: `/api/payments/stub/${order.id}`,
       providerRef: `stub_${order.id}`,

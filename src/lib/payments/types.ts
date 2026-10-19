@@ -10,6 +10,28 @@ import type { Order } from "@prisma/client";
  * interface promising capabilities the implementations lack is worse than no
  * interface at all.
  */
+/**
+ * How the customer pays, once the gateway has registered the payment.
+ *
+ * Either they are sent to the gateway's own page (`redirect`), or — FIB's
+ * way — they pay inside their bank app, by scanning a QR code, tapping a link
+ * on their phone, or typing a short code; the site shows those on its own
+ * payment page and waits for the outcome (`inApp`).
+ */
+export type Checkout =
+  | { kind: "redirect"; redirectUrl: string; providerRef?: string }
+  | {
+      kind: "inApp";
+      providerRef: string;
+      /** The short code typed into the app. */
+      readableCode: string;
+      /** QR image, as a data URL. */
+      qrCode: string;
+      /** Opens the bank app on this payment, on a phone. */
+      appLink?: string;
+      expiresAt: Date;
+    };
+
 export type PaymentProvider = {
   /** Stored on the order, so a row always records who processed it. */
   id: string;
@@ -24,7 +46,19 @@ export type PaymentProvider = {
     order: Order;
     /** Absolute URL the gateway returns the customer to. */
     returnUrl: string;
-  }): Promise<{ redirectUrl: string; providerRef?: string }>;
+  }): Promise<Checkout>;
+
+  /**
+   * Asks the gateway where a payment stands, for gateways that can be asked.
+   *
+   * The callback is the main path, but it can arrive late or not at all; the
+   * payment page polls, and this lets a poll settle an order the callback
+   * has not reached yet.
+   */
+  checkStatus?(order: Order): Promise<"paid" | "pending" | "declined">;
+
+  /** Withdraws a payment the customer abandoned, so its code stops working. */
+  cancel?(order: Order): Promise<void>;
 
   /**
    * Interprets a callback from the gateway.

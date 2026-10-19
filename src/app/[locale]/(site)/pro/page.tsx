@@ -116,7 +116,7 @@ export default async function ProPage({
                         : "border-bone/26 text-bone/80 hover:border-gold hover:text-gold-deep border"
                     }`}
                   >
-                    {t("payByCard")}
+                    {t("payWithFib")}
                   </button>
                 </form>
               ) : (
@@ -133,6 +133,28 @@ export default async function ProPage({
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {!alreadyPro && (
+        <div className="border-bone/12 bg-surface mt-10 rounded-3xl border p-6 sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-bone text-base font-semibold">{t("how.title")}</h2>
+            <span className="border-bone/15 text-bone/70 rounded-full border bg-white px-3 py-1 text-xs font-semibold">
+              {t("how.badge")}
+            </span>
+          </div>
+          <ol className="mt-6 grid gap-6 sm:grid-cols-3">
+            {(["step1", "step2", "step3"] as const).map((step, index) => (
+              <li key={step}>
+                <span className="text-gold-deep font-display text-2xl font-bold">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <p className="text-bone mt-2 text-sm font-semibold">{t(`how.${step}.title`)}</p>
+                <p className="text-bone/65 mt-1 text-sm leading-relaxed">{t(`how.${step}.body`)}</p>
+              </li>
+            ))}
+          </ol>
         </div>
       )}
 

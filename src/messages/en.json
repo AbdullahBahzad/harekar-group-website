@@ -584,7 +584,6 @@
     "eyebrow": "Pro",
     "subtitle": "Unlock the restricted assessments across the intelligence map, with the full operational picture behind every marker.",
     "bestValue": "Best value",
-    "payByCard": "Pay by card",
     "createAccountFirst": "Create an account",
     "alreadyPro": "Your account already has Pro access.",
     "goToIntelligence": "Go to intelligence",
@@ -608,7 +607,97 @@
       "pendingTitle": "Payment not completed.",
       "pendingBody": "We have not received confirmation for this payment. If money has left your account, contact us and we will resolve it.",
       "tryAgain": "Back to plans",
-      "viewAccount": "View account"
+      "viewAccount": "View account",
+      "failedTitle": "Payment declined.",
+      "failedBody": "The bank declined this payment and nothing was charged. You can try again with a new code.",
+      "cancelledTitle": "Payment cancelled.",
+      "cancelledBody": "This payment was cancelled and nothing was charged.",
+      "plan": "Plan",
+      "amount": "Amount",
+      "method": "Paid with",
+      "paidOn": "Paid on",
+      "activeUntil": "Pro active until",
+      "reference": "Reference"
+    },
+    "payWithFib": "Pay with FIB",
+    "how": {
+      "title": "How payment works",
+      "badge": "First Iraqi Bank",
+      "step1": {
+        "title": "Choose a plan",
+        "body": "Pick monthly or yearly. You'll get a payment code that's valid for 15 minutes."
+      },
+      "step2": {
+        "title": "Pay in the FIB app",
+        "body": "Scan the QR code, tap \"Open the FIB app\" on your phone, or type the short code."
+      },
+      "step3": {
+        "title": "Pro turns on",
+        "body": "As soon as the bank confirms, your access is active. No card details are needed."
+      }
+    },
+    "pay": {
+      "title": "Pay with FIB",
+      "eyebrow": "Secure payment · First Iraqi Bank",
+      "subtitle": "Scan the code with the FIB app, or open the app on this phone. This page moves on by itself once the bank confirms the payment.",
+      "back": "All plans",
+      "expiresIn": "Expires in",
+      "qrAlt": "QR code for this payment",
+      "scan": "Scan with the FIB app",
+      "orCode": "Or enter this code in the app",
+      "copy": "Copy",
+      "copied": "Copied",
+      "openApp": "Open the FIB app",
+      "cancel": "Cancel payment",
+      "newCode": "Get a new code",
+      "backToPlans": "Back to plans",
+      "orderTitle": "Your order",
+      "product": "Harekar Pro",
+      "method": "Payment method",
+      "methodFib": "FIB account",
+      "reference": "Reference",
+      "total": "Total",
+      "stepsTitle": "How to pay",
+      "step1": "Open the FIB app on your phone and sign in.",
+      "step2": "Tap Scan and point the camera at the QR code, or choose to enter a code and type the one shown.",
+      "step3": "Check the amount and confirm the payment in the app.",
+      "step4": "This page updates on its own, and Pro is active straight away.",
+      "closeNote": "You can close this page safely. If you pay, your access is turned on as soon as FIB confirms it.",
+      "state": {
+        "pending": "Waiting for payment",
+        "paid": "Payment received",
+        "expired": "Code expired",
+        "failed": "Payment declined",
+        "cancelled": "Payment cancelled"
+      },
+      "overlay": {
+        "paid": {
+          "title": "Payment received",
+          "body": "Taking you to your receipt..."
+        },
+        "expired": {
+          "title": "This code has expired",
+          "body": "Get a new code to continue. Nothing was charged."
+        },
+        "failed": {
+          "title": "Payment declined",
+          "body": "The bank declined this payment. Nothing was charged."
+        },
+        "cancelled": {
+          "title": "Payment cancelled",
+          "body": "This code can no longer be used."
+        },
+        "pending": {
+          "title": "",
+          "body": ""
+        }
+      },
+      "sim": {
+        "title": "Developer simulation",
+        "body": "Shown only in development. These buttons stand in for the customer paying, or being declined, in the FIB app.",
+        "paid": "Simulate paid",
+        "declined": "Simulate declined"
+      }
     }
   },
   "admin": {

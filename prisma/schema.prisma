@@ -122,6 +122,15 @@ model Order {
   /// still waiting for the gateway to issue one — Postgres permits any number
   /// of nulls under a unique constraint, so pending orders do not collide.
   providerRef String?     @unique
+  /// In-app payments (FIB): what the customer scans or types in their bank app.
+  /// Null for gateways that send the customer to a hosted page instead.
+  payCode     String?
+  /// The QR image as a data URL, exactly as the gateway issued it.
+  payQr       String?
+  /// Opens the bank app straight on this payment, on a phone.
+  payAppLink  String?
+  /// After this the code can no longer be paid; a new one has to be issued.
+  expiresAt   DateTime?
   createdAt   DateTime    @default(now())
   paidAt      DateTime?
 

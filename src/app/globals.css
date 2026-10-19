@@ -499,6 +499,21 @@ html::-webkit-scrollbar {
  * clicked. In RTL the row is laid out right-to-left, so it drifts the other
  * way. Under reduced motion it stands still and scrolls by hand instead.
  */
+/* The tick or cross landing on the FIB payment page. */
+@keyframes pay-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 @keyframes marquee-ltr {
   to {
     transform: translateX(-50%);

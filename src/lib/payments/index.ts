@@ -1,3 +1,5 @@
+import { fibProvider } from "./fib";
+import { fibSimProvider } from "./fib-sim";
 import { stubProvider } from "./stub";
 import type { PaymentProvider } from "./types";
 
@@ -12,6 +14,8 @@ export type { PaymentProvider } from "./types";
  */
 const providers: Record<string, PaymentProvider> = {
   stub: stubProvider,
+  fib: fibProvider,
+  "fib-sim": fibSimProvider,
 };
 
 export function getPaymentProvider(): PaymentProvider {
@@ -32,7 +36,8 @@ export function getPaymentProvider(): PaymentProvider {
         "PAYMENT_PROVIDER is not set. Set it to a real gateway — there is no default in production.",
       );
     }
-    return stubProvider;
+    // FIB is the gateway being built for, so development shows its page.
+    return fibSimProvider;
   }
 
   const provider = providers[configured];
