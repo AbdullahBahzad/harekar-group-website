@@ -42,7 +42,7 @@ export default function IntelligenceFeature({
         </RevealImage>
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(16,29,47,0.95)_0%,rgba(16,29,47,0.82)_45%,rgba(16,29,47,0.35)_100%)] rtl:bg-[linear-gradient(270deg,rgba(16,29,47,0.95)_0%,rgba(16,29,47,0.82)_45%,rgba(16,29,47,0.35)_100%)]"
+          className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(22,22,22,0.95)_0%,rgba(22,22,22,0.82)_45%,rgba(22,22,22,0.35)_100%)] rtl:bg-[linear-gradient(270deg,rgba(22,22,22,0.95)_0%,rgba(22,22,22,0.82)_45%,rgba(22,22,22,0.35)_100%)]"
         />
 
         <div className="mx-auto max-w-360 px-4 py-24 sm:px-6 sm:py-32 lg:px-10">

@@ -53,29 +53,29 @@ model JobApplication {
  * would be structure without purpose.
  */
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  passwordHash  String?
+  id               String    @id @default(cuid())
+  name             String?
+  email            String    @unique
+  emailVerified    DateTime?
+  image            String?
+  passwordHash     String?
   /// Permanent Pro, granted by hand — comped accounts, staff, the client's own
   /// team. Independent of anything purchased, so revoking a payment never
   /// removes access that was never paid for.
-  isPro         Boolean   @default(false)
+  isPro            Boolean   @default(false)
   /// Full console access. Granted by hand — there is no self-serve path to it.
-  isAdmin       Boolean   @default(false)
+  isAdmin          Boolean   @default(false)
   /**
    * Narrow console access: the Sources/Reports station only, nothing else.
    * Independent of `isAdmin` — a full admin already has this implicitly and
    * the flag is never read for one. For an operator whose whole job is
    * filing the Daily Security Report, not the rest of the console.
    */
-  canManageReports Boolean @default(false)
+  canManageReports Boolean   @default(false)
   /// Expiry of *purchased* Pro. Null means nothing has been bought.
-  proUntil      DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  proUntil         DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   accounts Account[]
   sessions Session[]
@@ -221,24 +221,24 @@ model IntelMarker {
    * All optional: a marker can carry only a headline, only these details, or
    * both.
    */
-  category      String?
-  incidentType  String?
-  keyPoints     String?
-  occurredAt    DateTime?
-  method        String?
-  actor         String?
-  actorDetail   String?
-  target        String?
-  targetDetail  String?
+  category          String?
+  incidentType      String?
+  keyPoints         String?
+  occurredAt        DateTime?
+  method            String?
+  actor             String?
+  actorDetail       String?
+  target            String?
+  targetDetail      String?
   /// Admiralty grade A (completely reliable) through F (cannot be judged).
   sourceReliability String?
   /// Admiralty grade 1 (confirmed) through 6 (cannot be judged).
   infoCredibility   String?
-  facility      String?
-  streetAddress String?
-  city          String?
-  district      String?
-  province      String?
+  facility          String?
+  streetAddress     String?
+  city              String?
+  district          String?
+  province          String?
   sourceName        String?
   sourceUrl         String?
   sourcePublishedAt DateTime?
@@ -339,10 +339,28 @@ model Service {
   published Boolean @default(true)
   sortOrder Int     @default(0)
 
+  /// Further photos for the service's gallery, shown after the main one.
+  gallery ServiceImage[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([published, sortOrder])
+}
+
+/// One gallery photo of a service. Held inline, like the main photo.
+model ServiceImage {
+  id        String   @id @default(cuid())
+  serviceId String
+  data      Bytes
+  type      String
+  name      String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId, sortOrder])
 }
 
 /**
@@ -404,8 +422,8 @@ enum ThreatLevel {
 /// address plus enough to address and group the person — there is no portal,
 /// no login, no relationship to `User`.
 model ReportRecipient {
-  id    String  @id @default(cuid())
-  email String  @unique
+  id    String @id @default(cuid())
+  email String @unique
 
   /// Split rather than one `name` so the greeting can say "Hi Conno," without
   /// guessing where a first name ends. Both optional: an address is enough to
@@ -434,7 +452,6 @@ model ReportRecipient {
  * A source an operator added beyond the fixed eleven built into the app
  * (`src/data/report-sources.ts`). Merged with that list wherever headlines
  * are fetched from "the sources" — see `report-sources-db.ts`.
- *
  * No `region` enum here for the same reason `DailyReport.content` has none:
  * `Region` has always been a TS-level constant (`REGIONS` in
  * `report-shape.ts`), never a database enum, so a source's default region is
@@ -719,12 +736,10 @@ model Client {
 
 /**
  * A seat a Pro client has handed to a colleague on their own team.
- *
  * The portal is per-account, and a client operation is rarely one person, so a
  * Pro subscriber can invite named colleagues to view the same map, reports and
  * incident feed under their own login — without sharing a password, and
  * without each of them needing a separate purchase.
- *
  * Acceptance grants the guest's `User.isPro` directly, the same flag a comped
  * staff account carries (see the field's own doc) — a guest seat is a form of
  * hand-granted access, not a second kind of entitlement. The one honest

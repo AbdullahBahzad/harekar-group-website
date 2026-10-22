@@ -21,7 +21,7 @@ export default function InfoCard({
   as?: "h3" | "h4";
 }) {
   return (
-    <article className="border-bone/10 hover:border-gold/60 flex h-full flex-col rounded-2xl border bg-white p-6 shadow-[0_1px_2px_rgba(16,29,47,0.04),0_8px_24px_-12px_rgba(16,29,47,0.12)] transition-colors duration-300 sm:p-7">
+    <article className="border-bone/10 hover:border-gold/60 flex h-full flex-col rounded-2xl border bg-white p-6 shadow-[0_1px_2px_rgba(22,22,22,0.04),0_8px_24px_-12px_rgba(22,22,22,0.12)] transition-colors duration-300 sm:p-7">
       <span className="bg-gold/12 text-gold-deep border-gold/30 flex size-12 shrink-0 items-center justify-center rounded-full border text-sm font-bold tabular-nums">
         {icon ?? index}
       </span>

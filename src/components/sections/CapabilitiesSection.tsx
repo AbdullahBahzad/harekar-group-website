@@ -22,7 +22,8 @@ function ServiceCard({
       aria-hidden={hidden || undefined}
     >
       <Link
-        href="/services"
+        // Opens this service's details and photos on the services page.
+        href={`/services#service-${service.slug}`}
         tabIndex={hidden ? -1 : undefined}
         className="group focus-visible:ring-gold block rounded-sm outline-none focus-visible:ring-2"
       >

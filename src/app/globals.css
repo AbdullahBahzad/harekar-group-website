@@ -124,7 +124,8 @@
 /*
  * ---- The public site's palette ------------------------------------------
  *
- * Deep navy #101D2F, white, light grey #F3F5F7, muted gold #B89A60.
+ * Black #161616 (navy until October 2026, changed at the company's request),
+ * white, light grey #F3F5F7, muted gold #B89A60.
  *
  * Every component is written against four tokens — `ink` (the ground),
  * `bone` (the text), `surface` (a raised panel) and `gold` — so the palette is
@@ -132,11 +133,12 @@
  * class:
  *
  *   tone-navy   header, opening section, footer, menu panel. White text on
- *               navy; gold reads well here at full strength.
- *   tone-light  the content. Navy text on white and light grey.
+ *               black (the class keeps its old name); gold reads well here
+ *               at full strength.
+ *   tone-light  the content. Black text on white and light grey.
  *
- * `ink` stays navy in both, because nearly every `text-ink` in the codebase is
- * the label on a gold button — and those must be navy on gold everywhere.
+ * `ink` stays black in both, because nearly every `text-ink` in the codebase
+ * is the label on a gold button — and those must be black on gold everywhere.
  * Light regions therefore paint their ground with `bg-white`/`bg-surface`, not
  * `bg-ink`.
  *
@@ -144,8 +146,8 @@
  * own palette.
  */
 .tone-navy {
-  --color-ink: #101d2f;
-  --color-surface: #1b2a40;
+  --color-ink: #161616;
+  --color-surface: #232323;
   --color-bone: #ffffff;
   --color-gold: #b89a60;
   --color-gold-bright: #cdb27e;
@@ -154,9 +156,9 @@
 }
 
 .tone-light {
-  --color-ink: #101d2f;
+  --color-ink: #161616;
   --color-surface: #f3f5f7;
-  --color-bone: #101d2f;
+  --color-bone: #161616;
   --color-gold: #b89a60;
   --color-gold-bright: #cdb27e;
   /* 5.5:1 on white — gold as text, where #B89A60 would only reach 2.7:1. */
@@ -555,7 +557,7 @@ html::-webkit-scrollbar {
   filter: saturate(0.7) contrast(0.95);
 }
 .tone-light .harekar-pin-label {
-  color: #101d2f;
+  color: #161616;
   text-shadow:
     0 0 3px #fff,
     0 0 6px #fff,
@@ -570,6 +572,6 @@ html::-webkit-scrollbar {
 }
 .tone-light .iraq-leaflet .leaflet-control-zoom a {
   background: #fff;
-  color: #101d2f;
+  color: #161616;
   border-color: rgb(16 29 47 / 15%);
 }

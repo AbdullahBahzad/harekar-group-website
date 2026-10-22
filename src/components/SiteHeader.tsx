@@ -26,96 +26,17 @@ type NavLink =
   | { id: string; route: string; anchor?: never };
 
 /**
- * A dropdown entry. `label` is a full message key, so entries can borrow
- * names that already exist elsewhere in the catalogues (a service group, a
- * client sector, an office, an FAQ question) instead of duplicating them.
+ * The desktop bar, in the order the home page reads. Each entry goes straight
+ * to its section (or page) — no dropdowns, at the company's request.
  */
-type MenuLink =
-  | { label: string; anchor: string; route?: never }
-  | { label: string; route: string; anchor?: never };
-
-type NavEntry = NavLink & { children: MenuLink[] };
-
-/**
- * The desktop bar, in the order the home page reads. Every entry opens a
- * dropdown on hover (or keyboard focus) listing what sits behind it — the
- * entry itself still goes straight to its section or page when clicked.
- *
- * Hash links reach into a section: `#clients-<sector>` opens the client wall
- * filtered to that sector, `#contact-<office>` opens that office's map tab,
- * `/careers#apply` the application form, `/intelligence#reports` the daily
- * reports.
- */
-const desktopNav: NavEntry[] = [
-  {
-    id: "about",
-    anchor: "about",
-    children: [
-      { label: "nav.whoWeAre", anchor: "about" },
-      { label: "nav.missionVision", route: "/about" },
-      { label: "nav.why", anchor: "why" },
-    ],
-  },
-  {
-    id: "services",
-    anchor: "services",
-    children: [
-      { label: "nav.allServices", anchor: "services" },
-      { label: "services.groups.protection", route: "/services" },
-      { label: "services.groups.response", route: "/services" },
-      { label: "services.groups.logistics", route: "/services" },
-    ],
-  },
-  {
-    id: "clients",
-    anchor: "clients",
-    children: [
-      { label: "nav.allClients", anchor: "clients-all" },
-      { label: "clients.groups.ngos", anchor: "clients-ngos" },
-      { label: "clients.groups.energy", anchor: "clients-energy" },
-      { label: "clients.groups.consulates", anchor: "clients-consulates" },
-      { label: "clients.groups.locals", anchor: "clients-locals" },
-    ],
-  },
-  {
-    id: "careers",
-    route: "/careers",
-    children: [
-      { label: "nav.whyJoin", route: "/careers#careers" },
-      { label: "careers.apply.title", route: "/careers#apply" },
-    ],
-  },
-  {
-    id: "faq",
-    route: "/faq",
-    children: [
-      { label: "faq.items.hours.q", route: "/faq" },
-      { label: "faq.items.response.q", route: "/faq" },
-      { label: "faq.items.licensed.q", route: "/faq" },
-      { label: "faq.items.vetting.q", route: "/faq" },
-      { label: "nav.allQuestions", route: "/faq" },
-    ],
-  },
-  {
-    id: "intelligence",
-    anchor: "intelligence",
-    children: [
-      { label: "nav.liveMap", anchor: "intelligence" },
-      { label: "nav.dailyReports", route: "/intelligence#reports" },
-      { label: "nav.proAccess", route: "/pro" },
-    ],
-  },
-  {
-    id: "contact",
-    anchor: "contact",
-    children: [
-      { label: "cta.primary", anchor: "contact" },
-      { label: "contact.offices.erbil", anchor: "contact-erbil" },
-      { label: "contact.offices.duhok", anchor: "contact-duhok" },
-      { label: "contact.offices.sulaymaniyah", anchor: "contact-sulaymaniyah" },
-      { label: "contact.offices.zakho", anchor: "contact-zakho" },
-    ],
-  },
+const desktopNav: NavLink[] = [
+  { id: "about", anchor: "about" },
+  { id: "services", anchor: "services" },
+  { id: "clients", anchor: "clients" },
+  { id: "careers", route: "/careers" },
+  { id: "faq", route: "/faq" },
+  { id: "intelligence", anchor: "intelligence" },
+  { id: "contact", anchor: "contact" },
 ];
 
 /** The phone menu: everything, flat, numbered. */
@@ -155,8 +76,6 @@ const SOLID_AT = 24;
  */
 export default function SiteHeader() {
   const t = useTranslations("nav");
-  // Root translator, for dropdown labels that live in other namespaces.
-  const tAny = useTranslations();
   const tBrand = useTranslations("brand");
   const tCta = useTranslations("cta");
   const locale = useLocale() as Locale;
@@ -211,17 +130,16 @@ export default function SiteHeader() {
     };
   }, [onePager]);
 
-  function hrefFor(item: NavLink | MenuLink) {
+  function hrefFor(item: NavLink) {
     if (item.route) return `/${locale}${item.route}`;
     return onePager ? `#${item.anchor}` : `/${locale}#${item.anchor}`;
   }
 
-  function isCurrent(item: NavEntry) {
+  function isCurrent(item: NavLink) {
     if (item.route) return pathname === item.route || pathname.startsWith(`${item.route}/`);
     if (onePager) return active === item.anchor;
-    return item.children.some(
-      (child) => child.route && pathname === child.route.split("#")[0],
-    );
+    // Off the home page, a section's own page (/about, /services…) counts.
+    return pathname === `/${item.anchor}` || pathname.startsWith(`/${item.anchor}/`);
   }
 
   function switchLocale(next: Locale) {
@@ -234,12 +152,12 @@ export default function SiteHeader() {
         className={cn(
           "tone-navy fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow] duration-300",
           solid
-            ? "bg-ink border-bone/10 shadow-[0_8px_30px_-12px_rgba(16,29,47,0.55)]"
-            : "border-bone/15 bg-gradient-to-b from-[rgba(16,29,47,0.7)] to-transparent",
+            ? "bg-ink border-bone/10 shadow-[0_8px_30px_-12px_rgba(22,22,22,0.55)]"
+            : "border-bone/15 bg-gradient-to-b from-[rgba(22,22,22,0.7)] to-transparent",
         )}
       >
         <nav className="mx-auto flex h-18 w-full max-w-360 items-center justify-between gap-6 px-4 sm:px-6">
-          {/* Brand — kept small so it never dominates the first screen. */}
+          {/* Brand. */}
           <Link
             href="/"
             className="focus-visible:ring-gold/60 flex shrink-0 cursor-pointer items-center gap-3 rounded-full outline-none focus-visible:ring-2"
@@ -251,9 +169,9 @@ export default function SiteHeader() {
               width={488}
               height={207}
               priority
-              className="h-8 w-auto"
+              className="h-11 w-auto"
             />
-            <span className="font-display text-bone text-lg font-bold whitespace-nowrap">
+            <span className="font-display text-bone text-xl font-bold whitespace-nowrap">
               {tBrand("name")}
             </span>
           </Link>
@@ -261,65 +179,27 @@ export default function SiteHeader() {
           <div className="flex items-center gap-2 lg:gap-5">
             {/* The page list. */}
             <ul className="hidden items-center gap-0.5 text-[15px] font-semibold whitespace-nowrap xl:flex">
-              {desktopNav.map((item, i) => {
+              {desktopNav.map((item) => {
                 const selected = isCurrent(item);
-                // The last entries open toward the start, so their panels
-                // never run off the edge of the screen.
-                const alignEnd = i >= desktopNav.length - 2;
                 return (
-                  <li key={item.id} className="group relative">
+                  <li key={item.id}>
                     <a
                       href={hrefFor(item)}
                       aria-current={selected ? "true" : undefined}
-                      aria-haspopup="true"
                       className={cn(
-                        "focus-visible:ring-gold/60 relative flex items-center gap-1.5 rounded-md px-2.5 py-2 outline-none transition-colors duration-200 focus-visible:ring-2",
+                        "focus-visible:ring-gold/60 relative flex items-center rounded-md px-3 py-2 outline-none transition-colors duration-200 focus-visible:ring-2",
                         selected ? "text-gold-deep" : "text-bone/90 hover:text-bone",
                       )}
                     >
                       {t(item.id)}
-                      <svg
-                        viewBox="0 0 12 12"
-                        className="size-3 opacity-80 transition-transform duration-200 group-focus-within:rotate-180 group-hover:rotate-180"
-                        fill="none"
-                        aria-hidden
-                      >
-                        <path d="m3 4.5 3 3 3-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
                       <span
                         aria-hidden
                         className={cn(
-                          "bg-gold absolute inset-x-2.5 -bottom-0.5 h-0.5 origin-center rounded-full transition-transform duration-300",
+                          "bg-gold absolute inset-x-3 -bottom-0.5 h-0.5 origin-center rounded-full transition-transform duration-300",
                           selected ? "scale-x-100" : "scale-x-0",
                         )}
                       />
                     </a>
-
-                    {/*
-                     * Opens on hover and on keyboard focus inside the entry,
-                     * so it works without a pointer. `pt-3` bridges the gap
-                     * between the link and the panel so the pointer can cross
-                     * it without the menu closing.
-                     */}
-                    <div
-                      className={cn(
-                        "invisible absolute top-full z-10 translate-y-1 pt-3 opacity-0 transition-[opacity,transform,visibility] duration-200 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100",
-                        alignEnd ? "end-0" : "start-0",
-                      )}
-                    >
-                      <ul className="tone-light border-bone/10 border-t-gold w-64 overflow-hidden rounded-lg border border-t-2 bg-white py-2 shadow-[0_24px_50px_-20px_rgba(16,29,47,0.45)]">
-                        {item.children.map((child) => (
-                          <li key={child.label}>
-                            <a
-                              href={hrefFor(child)}
-                              className="text-bone/85 hover:bg-surface hover:text-gold-deep focus-visible:bg-surface block px-5 py-2.5 text-[15px] leading-snug font-medium whitespace-normal outline-none transition-colors"
-                            >
-                              {tAny(child.label)}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
                   </li>
                 );
               })}

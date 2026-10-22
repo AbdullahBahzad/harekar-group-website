@@ -5,13 +5,16 @@ import {
   AnimatePresence,
   motion,
   useMotionValue,
+  useMotionValueEvent,
   useReducedMotion,
   useSpring,
   useTransform,
   type MotionValue,
 } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import type { ResolvedService } from "@/lib/services";
+import ServiceGallery from "@/components/ServiceGallery";
 import { cn } from "@/lib/utils";
 
 /**
@@ -84,8 +87,9 @@ const undetent = (y: number) => {
  * The services slider: a row of tall rounded photo cards, the centre one
  * largest, the ones beside it stepping down in size and turning slightly toward
  * the middle. Drag left or right with a finger or the mouse, use the arrows,
- * the keyboard or a trackpad swipe; tap the middle card to read about it, or
- * tap a side card to bring it to the middle.
+ * the keyboard or a trackpad swipe. Selecting a card brings it to the middle
+ * and opens its details beneath the row — description and a photo gallery —
+ * which then follow the arrows from service to service.
  *
  * The row never ends. Its position is one continuous number, and every card
  * finds its place from that number modulo the count, so turning past the last
@@ -342,44 +346,82 @@ export default function ServicesSlider({
     else if (event.key === "ArrowLeft") step(-1);
   }
 
-  /* ---- the open card ----------------------------------------------------- */
+  /* ---- the open service ------------------------------------------------ */
+
+  /** The card in the middle, as an index into `services`. */
+  const [centre, setCentre] = useState(0);
+  useMotionValueEvent(target, "change", (value) => {
+    const next = ((Math.round(value) % count) + count) % count;
+    setCentre((current) => (current === next ? current : next));
+  });
 
   /*
-   * Opening a card shows its detail in a panel docked over the slider, so the
-   * row stays visible behind it and picking another service swaps the copy in
-   * place instead of forcing a close-then-reopen.
+   * The details show whichever service is in the middle, so once open they
+   * follow the arrows, a drag or a swipe from one service to the next.
    */
-  const [selected, setSelected] = useState<string | null>(null);
-  const detail = services.find((service) => service.slug === selected) ?? null;
+  const [open, setOpen] = useState(false);
+  const detail = open ? services[centre] : null;
+  const detailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!selected) return;
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelected(null);
+      if (e.key === "Escape") setOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selected]);
+  }, [open]);
 
-  /**
-   * The middle card opens its details; any other card is brought to the middle
-   * first, by the shortest way round.
+  /** Brings the card to the middle by the shortest way round, and opens it. */
+  const select = useCallback(
+    (index: number) => {
+      const offset = wrap(index - position.get(), count);
+      if (Math.abs(offset) < 0.5 && open) {
+        setOpen(false);
+        return;
+      }
+      moveTo(Math.round(position.get() + offset));
+      setOpen(true);
+    },
+    [count, moveTo, open, position],
+  );
+
+  // Opening brings the details up, unless they are already in full view.
+  useEffect(() => {
+    if (!open) return;
+    const timer = setTimeout(() => {
+      const panel = detailRef.current;
+      if (!panel || panel.getBoundingClientRect().bottom <= window.innerHeight) return;
+      panel.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [open, reduceMotion]);
+
+  /*
+   * `#service-<slug>` — as the home page's service cards link — opens that
+   * service straight away.
    */
-  function handleSelect(index: number, slug: string) {
-    const offset = wrap(index - position.get(), count);
-    if (Math.abs(offset) < 0.5) {
-      setSelected((current) => (current === slug ? null : slug));
-      return;
+  useEffect(() => {
+    function openFromHash() {
+      const match = window.location.hash.match(/^#service-(.+)$/);
+      if (!match) return;
+      const index = services.findIndex((service) => service.slug === decodeURIComponent(match[1]));
+      if (index < 0) return;
+      target.set(index);
+      position.jump(index);
+      setOpen(true);
     }
-    moveTo(Math.round(position.get() + offset));
-  }
+    openFromHash();
+    window.addEventListener("hashchange", openFromHash);
+    return () => window.removeEventListener("hashchange", openFromHash);
+  }, [services, target, position]);
 
   if (count === 0) return null;
 
   const ease = [0.22, 1, 0.36, 1] as const;
 
   const arrowClass =
-    "tone-navy border-bone/20 bg-ink/70 text-bone/85 hover:border-gold hover:text-gold-deep pointer-events-auto absolute top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border backdrop-blur-md transition-colors";
+    "tone-navy bg-ink text-bone hover:bg-gold hover:text-ink focus-visible:ring-gold pointer-events-auto flex size-12 cursor-pointer items-center justify-center rounded-full shadow-[0_12px_30px_-12px_rgba(0,0,0,0.6)] outline-none transition-colors focus-visible:ring-2 sm:size-14";
 
   return (
     <div className="relative">
@@ -389,7 +431,7 @@ export default function ServicesSlider({
           "relative touch-pan-y overflow-hidden select-none",
           dragging ? "cursor-grabbing" : "cursor-grab",
         )}
-        style={{ height: size.h + 72, perspective: "1400px" }}
+        style={{ height: size.h + 56, perspective: "1400px" }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={endDrag}
@@ -411,117 +453,127 @@ export default function ServicesSlider({
             size={size}
             group={t(`groups.${service.group}`)}
             selectLabel={t("orbitSelect")}
-            selected={selected === service.slug}
-            onSelect={() => handleSelect(index, service.slug)}
+            selected={open && centre === index}
+            onSelect={() => select(index)}
           />
         ))}
       </div>
 
-      <button
-        type="button"
-        onClick={() => step(-1)}
-        aria-label={t("orbitPrev")}
-        className={cn(arrowClass, "start-1 sm:start-4")}
+      {/* Side arrows, over the row's edges. */}
+      <div
+        className="pointer-events-none absolute inset-x-2 z-30 flex -translate-y-1/2 justify-between sm:inset-x-6"
+        // Centred on the row itself, whatever opens beneath it.
+        style={{ top: (size.h + 56) / 2 }}
       >
-        <svg viewBox="0 0 24 24" className="h-4 w-4 rtl:rotate-180" aria-hidden>
-          <path
-            d="M15 5l-7 7 7 7"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
-        </svg>
-      </button>
-      <button
-        type="button"
-        onClick={() => step(1)}
-        aria-label={t("orbitNext")}
-        className={cn(arrowClass, "end-1 sm:end-4")}
-      >
-        <svg viewBox="0 0 24 24" className="h-4 w-4 rtl:rotate-180" aria-hidden>
-          <path
-            d="M9 5l7 7-7 7"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-          />
-        </svg>
-      </button>
+        <ArrowButton direction="prev" label={t("orbitPrev")} className={arrowClass} onClick={() => step(-1)} />
+        <ArrowButton direction="next" label={t("orbitNext")} className={arrowClass} onClick={() => step(1)} />
+      </div>
 
-      {/* The drag affordance steps aside for the panel, which sits in the
-          same corner. */}
-      <AnimatePresence>
-        {!selected && (
-          <motion.p
-            initial={false}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="text-bone/55 pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 text-xs tracking-[0.3em] uppercase"
-          >
-            {t("orbitHint")}
-          </motion.p>
-        )}
-      </AnimatePresence>
+      {/* Which service is in the middle, out of how many. */}
+      <div className="mt-2 flex flex-col items-center gap-2 px-4 text-center">
+        <p className="text-bone text-sm font-bold tabular-nums" dir="ltr">
+          {String(centre + 1).padStart(2, "0")}
+          <span className="text-bone/40"> / {String(count).padStart(2, "0")}</span>
+        </p>
+        <p className="text-bone/55 text-xs tracking-[0.2em] uppercase">{t("orbitHint")}</p>
+      </div>
 
-      <AnimatePresence>
-        {selected && detail && (
+      {/* The open service: description beside a gallery of its photos. */}
+      <AnimatePresence initial={false}>
+        {detail && (
           <motion.div
-            key="panel"
-            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
-            transition={{ duration: reduceMotion ? 0 : 0.35, ease }}
-            className="pointer-events-auto absolute inset-x-4 bottom-4 z-40 mx-auto max-w-xl sm:inset-x-6"
+            key="detail"
+            ref={detailRef}
+            initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.45, ease }}
+            className="scroll-mt-28 overflow-hidden"
           >
-            {/* Capped and scrollable so a short stage cannot be swallowed
-                whole by the panel. */}
-            <div className="tone-navy border-gold/35 bg-ink/95 relative max-h-[60svh] overflow-y-auto rounded-2xl border p-5 shadow-[0_24px_70px_-30px_rgba(16,29,47,0.7)] backdrop-blur-xl sm:p-7">
-              <button
-                type="button"
-                onClick={() => setSelected(null)}
-                aria-label={tNav("close")}
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold-deep absolute end-3 top-3 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition-colors"
-              >
-                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden>
-                  <path
-                    d="M6 6l12 12M18 6L6 18"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
+            <div className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
+              <div className="border-bone/12 bg-surface relative grid gap-8 rounded-3xl border p-5 pt-16 sm:p-8 sm:pt-16 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-12 lg:p-10">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label={tNav("close")}
+                  className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold-deep absolute end-3 top-3 z-10 flex size-11 cursor-pointer items-center justify-center rounded-full border bg-white transition-colors"
+                >
+                  <svg viewBox="0 0 24 24" className="size-3.5" aria-hidden>
+                    <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                </button>
 
-              {/* Only the copy is keyed to the selection, so switching services
-                  replays its entrance without the shell blinking empty. */}
-              <motion.div
-                key={selected}
-                role="region"
-                aria-live="polite"
-                initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeOut" }}
-              >
-                <p className="text-gold-deep/90 text-[10px] tracking-[0.3em] uppercase">
-                  {t(`groups.${detail.group}`)}
-                </p>
-                <h3 className="font-display text-bone mt-3 pe-10 text-2xl leading-snug font-bold">
-                  {detail.title}
-                </h3>
-                <p className="text-bone/70 mt-3 text-sm leading-relaxed text-pretty">
-                  {detail.description}
-                </p>
-              </motion.div>
+                <ServiceGallery
+                  key={`gallery-${detail.id}`}
+                  images={detail.gallery}
+                  title={detail.title}
+                />
+
+                {/* Keyed so moving to another service replays the copy's entrance. */}
+                <motion.div
+                  key={`copy-${detail.id}`}
+                  role="region"
+                  aria-live="polite"
+                  aria-label={detail.title}
+                  initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.35, ease }}
+                  className="flex flex-col justify-center lg:pe-6"
+                >
+                  <p className="text-gold-deep text-sm font-bold">{t(`groups.${detail.group}`)}</p>
+                  <h3 className="font-display text-bone mt-2 pe-12 text-2xl leading-snug font-bold sm:text-3xl">
+                    {detail.title}
+                  </h3>
+                  <p className="text-bone/75 mt-4 text-base leading-relaxed text-pretty">
+                    {detail.description}
+                  </p>
+                  <div className="mt-8 flex flex-wrap items-center gap-3">
+                    <Link
+                      href="/contact"
+                      className="bg-gold text-ink hover:bg-gold-bright inline-flex min-h-12 items-center rounded-full px-6 text-sm font-bold transition-colors"
+                    >
+                      {t("detailCta")}
+                    </Link>
+                    <div className="ms-auto flex gap-2">
+                      <ArrowButton direction="prev" label={t("orbitPrev")} className={cn(arrowClass, "size-11 sm:size-11")} onClick={() => step(-1)} />
+                      <ArrowButton direction="next" label={t("orbitNext")} className={cn(arrowClass, "size-11 sm:size-11")} onClick={() => step(1)} />
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/** A round arrow button; the glyph mirrors itself in right-to-left pages. */
+function ArrowButton({
+  direction,
+  label,
+  className,
+  onClick,
+}: {
+  direction: "prev" | "next";
+  label: string;
+  className: string;
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" onClick={onClick} aria-label={label} className={className}>
+      <svg viewBox="0 0 24 24" className="size-5 rtl:rotate-180" aria-hidden>
+        <path
+          d={direction === "prev" ? "M19 12H5M11 6l-6 6 6 6" : "M5 12h14M13 6l6 6-6 6"}
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+      </svg>
+    </button>
   );
 }
 
@@ -595,7 +647,7 @@ function SliderCard({
         aria-pressed={selected}
         aria-label={`${service.title} — ${selectLabel}`}
         className={cn(
-          "tone-navy group focus-visible:ring-gold hover:border-gold/60 absolute inset-0 cursor-pointer overflow-hidden rounded-3xl border text-start shadow-[0_24px_50px_-24px_rgba(16,29,47,0.55)] outline-none focus-visible:ring-2",
+          "tone-navy group focus-visible:ring-gold hover:border-gold/60 absolute inset-0 cursor-pointer overflow-hidden rounded-3xl border text-start shadow-[0_24px_50px_-24px_rgba(22,22,22,0.55)] outline-none focus-visible:ring-2",
           selected ? "border-gold/70" : "border-bone/14",
         )}
       >
@@ -623,7 +675,7 @@ function SliderCard({
         />
 
         {/* Darkens toward the labels so they read on any photograph. */}
-        <div className="pointer-events-none absolute bottom-0 left-0 w-full bg-gradient-to-t from-[rgba(16,29,47,0.92)] via-[rgba(16,29,47,0.5)] to-transparent p-4 pt-12 text-left rtl:text-right">
+        <div className="pointer-events-none absolute bottom-0 left-0 w-full bg-gradient-to-t from-[rgba(22,22,22,0.92)] via-[rgba(22,22,22,0.5)] to-transparent p-4 pt-12 text-left rtl:text-right">
           <h3 className="font-display text-bone text-lg leading-snug font-bold">
             {service.title}
           </h3>

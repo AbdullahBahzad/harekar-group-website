@@ -119,7 +119,7 @@ export default function SiteFooter({
         </nav>
       </div>
 
-      <div className="bg-[#0b1522]">
+      <div className="bg-[#0e0e0e]">
         <p className="text-bone/65 mx-auto max-w-360 px-4 py-5 text-center text-sm sm:px-6 lg:px-10">
           {/* The year the company asked for, not the current one. */}
           © 2008 {tBrand("name")}. {t("rights")}

@@ -11,6 +11,8 @@ export type ResolvedService = {
   description: string;
   /** Absolute path to the card image. */
   imageUrl: string;
+  /** Every photo for the service's gallery: the card image first. */
+  gallery: string[];
   /** Line icon to draw, when one of the known glyphs applies. */
   icon: ServiceKey | null;
 };
@@ -43,38 +45,61 @@ export async function getPublishedServices(
       where: { published: true },
       orderBy: [{ sortOrder: "asc" }, { titleEn: "asc" }],
       select: {
-        id: true, slug: true, group: true, icon: true,
-        titleEn: true, titleAr: true, titleKu: true,
-        descriptionEn: true, descriptionAr: true, descriptionKu: true,
-        imageData: false, imageType: true, updatedAt: true,
+        id: true,
+        slug: true,
+        group: true,
+        icon: true,
+        titleEn: true,
+        titleAr: true,
+        titleKu: true,
+        descriptionEn: true,
+        descriptionAr: true,
+        descriptionKu: true,
+        imageData: false,
+        imageType: true,
+        updatedAt: true,
+        gallery: {
+          select: { id: true },
+          orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        },
       },
     });
 
     if (rows.length === 0) return staticServices(locale);
 
-    return rows.map((row) => ({
-      id: row.id,
-      slug: row.slug,
-      group: row.group,
-      title:
-        (locale === "ar" ? row.titleAr : locale === "ckb" ? row.titleKu : null) ??
-        row.titleEn,
-      description:
-        (locale === "ar"
-          ? row.descriptionAr
-          : locale === "ckb"
-            ? row.descriptionKu
-            : null) ?? row.descriptionEn,
+    return rows.map((row) => {
       /*
        * `updatedAt` in the query string busts the browser cache the moment an
        * operator replaces a photo. Without it the route's long cache header
        * would keep serving the old image for a year.
        */
-      imageUrl: row.imageType
+      const imageUrl = row.imageType
         ? `/api/services/${row.id}/image?v=${row.updatedAt.getTime()}`
-        : `/services/${row.slug}.webp`,
-      icon: asIcon(row.icon),
-    }));
+        : `/services/${row.slug}.webp`;
+      return {
+        id: row.id,
+        slug: row.slug,
+        group: row.group,
+        title:
+          (locale === "ar"
+            ? row.titleAr
+            : locale === "ckb"
+              ? row.titleKu
+              : null) ?? row.titleEn,
+        description:
+          (locale === "ar"
+            ? row.descriptionAr
+            : locale === "ckb"
+              ? row.descriptionKu
+              : null) ?? row.descriptionEn,
+        imageUrl,
+        gallery: [
+          imageUrl,
+          ...row.gallery.map((image) => `/api/services/gallery/${image.id}`),
+        ],
+        icon: asIcon(row.icon),
+      };
+    });
   } catch (error) {
     logReadFallback("static services", error);
     return staticServices(locale);
@@ -93,6 +118,7 @@ async function staticServices(locale: string): Promise<ResolvedService[]> {
       title: t(`items.${key}.title`),
       description: t(`items.${key}.description`),
       imageUrl: `/services/${key}.webp`,
+      gallery: [`/services/${key}.webp`],
       icon: key as ServiceKey,
     })),
   );

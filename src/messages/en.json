@@ -102,7 +102,7 @@
     "title": "A full operational spectrum.",
     "subtitle": "Thirteen service lines, delivered under one command structure and one standard of accountability.",
     "ctaTitle": "Tell us what you need to protect.",
-    "orbitHint": "Swipe or use the arrows",
+    "orbitHint": "Select a service to see its details and photos",
     "orbitPrev": "Previous service",
     "orbitNext": "Next service",
     "groups": {
@@ -165,7 +165,11 @@
         "description": "Machinery and operational plant supplied to project and camp sites."
       }
     },
-    "orbitSelect": "Show details"
+    "orbitSelect": "Show details",
+    "detailCta": "Request this service",
+    "galleryPrev": "Previous photo",
+    "galleryNext": "Next photo",
+    "galleryPhoto": "{title}, photo {n} of {total}"
   },
   "about": {
     "eyebrow": "About Us",
@@ -1055,7 +1059,14 @@
         "protection": "Protection & guarding",
         "response": "Emergency & crisis",
         "logistics": "Transport & logistics"
-      }
+      },
+      "gallery": "Gallery",
+      "galleryHint": "More photos for this service's gallery on the website, shown after the main photo. WebP, JPEG, PNG or AVIF, up to 4 MB each. You can choose several at once.",
+      "galleryEmpty": "No gallery photos yet. The website shows the main photo only.",
+      "galleryAdd": "Add photos",
+      "galleryUploading": "Uploading {done} of {total}...",
+      "galleryRemove": "Remove",
+      "galleryFailed": "These photos could not be added: {names}"
     },
     "clients": {
       "title": "Clients",
@@ -1365,7 +1376,7 @@
   "facts": {
     "eyebrow": "Safeguarding people, sites and operations",
     "title": "Security and operational support you can rely on.",
-    "intro": "Founded in Erbil in 2004, Harekar Group provides security, emergency response and operational support across the Kurdistan Region of Iraq — from static and mobile security to K9 units, armored vehicles and civil works.",
+    "intro": "Founded in Erbil in 2008, Harekar Group provides security, emergency response and operational support across the Kurdistan Region of Iraq — from static and mobile security to K9 units, armored vehicles and civil works.",
     "more": "More about us"
   },
   "why": {

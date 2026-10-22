@@ -20,5 +20,5 @@ export const companyStats = [
   { id: "activeUnits", value: 1086 },
 ] as const;
 
-/** The year the company was founded, in Erbil — from the same source. */
-export const FOUNDED_YEAR = 2004;
+/** The year the company was founded, in Erbil (confirmed by the company). */
+export const FOUNDED_YEAR = 2008;

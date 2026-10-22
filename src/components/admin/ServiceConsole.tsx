@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import Panel from "@/components/admin/Panel";
 import {
+  addServiceGalleryImage,
   clearServiceImage,
   createService,
   deleteService,
+  removeServiceGalleryImage,
   seedFromStaticServices,
   toggleServicePublished,
   updateService,
@@ -29,6 +32,8 @@ export type ConsoleService = {
   imageUrl: string;
   published: boolean;
   sortOrder: number;
+  /** Gallery photos after the main one. Absent in the preview's sample data. */
+  gallery?: { id: string; url: string }[];
 };
 
 /** Stored group values. The label each one shows comes from `admin.services.groups`. */
@@ -371,7 +376,104 @@ function ServiceEditor({
           )}
         </div>
       </form>
+
+      {service && <GalleryEditor service={service} />}
     </Panel>
+  );
+}
+
+/**
+ * The service's gallery on the site: the main photo above, then these. A
+ * separate form from the editor's, so adding photos never saves (or
+ * validates) half-edited copy.
+ */
+function GalleryEditor({ service }: { service: ConsoleService }) {
+  const t = useTranslations("admin.services");
+  const router = useRouter();
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [failed, setFailed] = useState<string[]>([]);
+  const gallery = service.gallery ?? [];
+
+  async function upload(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const list = [...files];
+    const errors: string[] = [];
+    setFailed([]);
+    setProgress({ done: 0, total: list.length });
+    // One request per photo, in order, so each stays under the size limit.
+    for (const [index, file] of list.entries()) {
+      const form = new FormData();
+      form.set("id", service.id);
+      form.set("image", file);
+      try {
+        await addServiceGalleryImage(form);
+      } catch {
+        errors.push(file.name);
+      }
+      setProgress({ done: index + 1, total: list.length });
+    }
+    setProgress(null);
+    setFailed(errors);
+    router.refresh();
+  }
+
+  return (
+    <div className="border-bone/12 space-y-3 border-t p-5">
+      <div>
+        <p className="text-bone/80 text-sm">{t("gallery")}</p>
+        <p className="text-bone/55 mt-1 text-xs leading-relaxed">{t("galleryHint")}</p>
+      </div>
+
+      {gallery.length === 0 ? (
+        <p className="text-bone/50 text-xs">{t("galleryEmpty")}</p>
+      ) : (
+        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+          {gallery.map((image) => (
+            <li key={image.id} className="border-bone/14 group relative aspect-[4/3] overflow-hidden border">
+              {/* eslint-disable-next-line @next/next/no-img-element -- console thumbnail of an uploaded photo */}
+              <img src={image.url} alt="" className="h-full w-full object-cover" />
+              <form action={removeServiceGalleryImage} className="absolute end-1 top-1">
+                <input type="hidden" name="imageId" value={image.id} />
+                <button
+                  type="submit"
+                  className="bg-ink/80 text-bone/80 hover:bg-status-critical hover:text-ink cursor-pointer px-2 py-1 text-[11px] backdrop-blur transition-colors"
+                >
+                  {t("galleryRemove")}
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <label
+        className={cn(
+          "border-gold/50 text-gold hover:bg-gold hover:text-ink inline-flex min-h-11 cursor-pointer items-center border px-4 text-xs transition-colors",
+          progress && "pointer-events-none opacity-60",
+        )}
+      >
+        {progress
+          ? t("galleryUploading", { done: progress.done, total: progress.total })
+          : t("galleryAdd")}
+        <input
+          type="file"
+          multiple
+          accept="image/webp,image/jpeg,image/png,image/avif"
+          className="sr-only"
+          disabled={Boolean(progress)}
+          onChange={(event) => {
+            void upload(event.target.files);
+            event.target.value = "";
+          }}
+        />
+      </label>
+
+      {failed.length > 0 && (
+        <p role="alert" className="text-status-critical text-xs">
+          {t("galleryFailed", { names: failed.join(", ") })}
+        </p>
+      )}
+    </div>
   );
 }
 

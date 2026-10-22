@@ -36,6 +36,10 @@ export default async function ServicesStation({
           titleEn: true, titleAr: true, titleKu: true,
           descriptionEn: true, descriptionAr: true, descriptionKu: true,
           imageType: true, published: true, sortOrder: true, updatedAt: true,
+          gallery: {
+            select: { id: true },
+            orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+          },
         },
       });
 
@@ -57,6 +61,10 @@ export default async function ServicesStation({
           : `/services/${row.slug}.webp`,
         published: row.published,
         sortOrder: row.sortOrder,
+        gallery: row.gallery.map((image) => ({
+          id: image.id,
+          url: `/api/services/gallery/${image.id}`,
+        })),
       }));
     },
     sampleServices,

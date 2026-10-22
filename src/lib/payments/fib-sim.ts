@@ -55,7 +55,7 @@ function sampleQr(seed: string): string {
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 ${n + 4} ${n + 4}" shape-rendering="crispEdges">` +
     `<rect x="-2" y="-2" width="${n + 4}" height="${n + 4}" fill="#fff"/>` +
-    `<g fill="#101d2f">${finder(0, 0)}${finder(n - 7, 0)}${finder(0, n - 7)}<path d="${modules}"/></g></svg>`;
+    `<g fill="#161616">${finder(0, 0)}${finder(n - 7, 0)}${finder(0, n - 7)}<path d="${modules}"/></g></svg>`;
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 }
 

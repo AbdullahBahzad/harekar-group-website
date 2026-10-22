@@ -125,7 +125,7 @@ export default function PlatformShowcase() {
           id="showcase-panel"
           role="tabpanel"
           aria-labelledby={`showcase-tab-${active}`}
-          className="border-bone/12 bg-[#0b1522] relative order-1 h-[26rem] lg:order-2 overflow-hidden rounded-2xl border shadow-[0_30px_70px_-30px_rgba(0,0,0,0.7)] sm:h-[28rem]"
+          className="border-bone/12 bg-[#0e0e0e] relative order-1 h-[26rem] lg:order-2 overflow-hidden rounded-2xl border shadow-[0_30px_70px_-30px_rgba(0,0,0,0.7)] sm:h-[28rem]"
         >
           <span className="border-bone/15 text-bone/55 absolute end-3 top-3 z-20 rounded-full border px-2 py-0.5 text-[10px]">
             {t("example")}
@@ -292,7 +292,7 @@ function AreasPanel() {
             >
               <circle cx={x} cy={y} r={cluster.count > 1 ? 15 : 9} fill={tone} opacity="0.9" />
               {cluster.count > 1 && (
-                <text x={x} y={y + 5} textAnchor="middle" fontSize="15" fontWeight="700" fill="#101d2f">
+                <text x={x} y={y + 5} textAnchor="middle" fontSize="15" fontWeight="700" fill="#161616">
                   {cluster.count}
                 </text>
               )}
@@ -400,19 +400,19 @@ function ReportPanel() {
   const rise = useStagger();
   return (
     <div className="flex h-full items-center justify-center p-6 pt-10">
-      <div className="h-full w-full max-w-md overflow-hidden rounded-lg bg-white p-6 text-[#101d2f] shadow-2xl">
-        <div className="flex items-start justify-between gap-3 border-b border-[#101d2f]/10 pb-3">
+      <div className="h-full w-full max-w-md overflow-hidden rounded-lg bg-white p-6 text-[#161616] shadow-2xl">
+        <div className="flex items-start justify-between gap-3 border-b border-[#161616]/10 pb-3">
           <div>
             <p className="text-[10px] font-bold tracking-wide text-[#7d6637]">{t("brand")}</p>
             <p className="mt-1 text-base font-bold">{t("title")}</p>
           </div>
-          <span className="rounded-full bg-[#b89a60] px-3 py-1 text-[11px] font-bold text-[#101d2f]">{t("download")}</span>
+          <span className="rounded-full bg-[#b89a60] px-3 py-1 text-[11px] font-bold text-[#161616]">{t("download")}</span>
         </div>
 
         <p className="mt-4 text-xs font-bold">{t("summary")}</p>
         <div className="mt-2 space-y-1.5" aria-hidden>
           {[92, 100, 78].map((width, i) => (
-            <motion.div key={i} {...rise(i, 0.1)} className="h-1.5 rounded-full bg-[#101d2f]/10" style={{ width: `${width}%` }} />
+            <motion.div key={i} {...rise(i, 0.1)} className="h-1.5 rounded-full bg-[#161616]/10" style={{ width: `${width}%` }} />
           ))}
         </div>
 

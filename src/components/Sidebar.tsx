@@ -110,7 +110,7 @@ export default function Sidebar({
             aria-label={t("close")}
             onClick={onClose}
             className="absolute inset-0"
-            style={{ background: "rgba(16, 29, 47, 0.88)" }}
+            style={{ background: "rgba(22, 22, 22, 0.88)" }}
             variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
             transition={{ duration: 0.35, ease }}
           />
@@ -131,7 +131,7 @@ export default function Sidebar({
             transition={{ duration: 0.45, ease }}
             style={{
               // Solid navy — nothing behind the panel shows through it.
-              background: "#101d2f",
+              background: "#161616",
               willChange: "transform",
             }}
           >

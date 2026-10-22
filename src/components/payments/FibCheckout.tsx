@@ -117,7 +117,7 @@ export default function FibCheckout(props: Props) {
 
       <div className="mt-10 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
         {/* ── The payment itself: first on a phone, right-hand on desktop ── */}
-        <div className="border-bone/12 rounded-3xl border bg-white p-6 shadow-[0_24px_60px_-30px_rgba(16,29,47,0.35)] sm:p-8 lg:order-2">
+        <div className="border-bone/12 rounded-3xl border bg-white p-6 shadow-[0_24px_60px_-30px_rgba(22,22,22,0.35)] sm:p-8 lg:order-2">
           <StatusBar status={shown} remaining={remaining} windowMs={windowMs} />
 
           {props.appLink && shown === "pending" && (

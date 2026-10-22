@@ -218,6 +218,49 @@ export async function clearServiceImage(formData: FormData) {
 }
 
 /**
+ * Adds one photo to a service's gallery, after the ones already there.
+ *
+ * One file per call: the console sends a multi-file pick as a sequence of
+ * these, which keeps every request under the server-action size limit however
+ * many photos were chosen.
+ */
+export async function addServiceGalleryImage(formData: FormData) {
+  await assertAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) throw new Error("Missing service id");
+
+  const image = await readImage(formData);
+  if (!image) throw new Error("No photo supplied");
+
+  const last = await prisma.serviceImage.findFirst({
+    where: { serviceId: id },
+    orderBy: { sortOrder: "desc" },
+    select: { sortOrder: true },
+  });
+
+  await prisma.serviceImage.create({
+    data: {
+      serviceId: id,
+      data: image.imageData,
+      type: image.imageType,
+      name: image.imageName,
+      sortOrder: (last?.sortOrder ?? -1) + 1,
+    },
+  });
+
+  revalidateServices();
+}
+
+export async function removeServiceGalleryImage(formData: FormData) {
+  await assertAdmin();
+  const imageId = String(formData.get("imageId") ?? "");
+  if (!imageId) throw new Error("Missing photo id");
+
+  await prisma.serviceImage.deleteMany({ where: { id: imageId } });
+  revalidateServices();
+}
+
+/**
  * Copies the thirteen compiled-in services into the database.
  *
  * Imagery is not copied: the existing files stay on disk and are still served
