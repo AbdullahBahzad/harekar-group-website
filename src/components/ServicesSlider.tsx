@@ -361,6 +361,21 @@ export default function ServicesSlider({
    */
   const [open, setOpen] = useState(false);
   const detail = open ? services[centre] : null;
+
+  /*
+   * The photo showing in the open service's gallery. Tied to the service it
+   * was chosen for, so moving to another service starts on its first photo.
+   */
+  const [photo, setPhoto] = useState({ service: "", index: 0 });
+  const photoIndex = detail && photo.service === detail.id ? photo.index : 0;
+  const photoCount = detail?.gallery.length ?? 0;
+  const turnPhoto = (by: 1 | -1) => {
+    if (!detail || photoCount < 2) return;
+    setPhoto({
+      service: detail.id,
+      index: (((photoIndex + by) % photoCount) + photoCount) % photoCount,
+    });
+  };
   const detailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -507,6 +522,8 @@ export default function ServicesSlider({
                   key={`gallery-${detail.id}`}
                   images={detail.gallery}
                   title={detail.title}
+                  index={photoIndex}
+                  onIndexChange={(index) => setPhoto({ service: detail.id, index })}
                 />
 
                 {/* Keyed so moving to another service replays the copy's entrance. */}
@@ -534,10 +551,14 @@ export default function ServicesSlider({
                     >
                       {t("detailCta")}
                     </Link>
-                    <div className="ms-auto flex gap-2">
-                      <ArrowButton direction="prev" label={t("orbitPrev")} className={cn(arrowClass, "size-11 sm:size-11")} onClick={() => step(-1)} />
-                      <ArrowButton direction="next" label={t("orbitNext")} className={cn(arrowClass, "size-11 sm:size-11")} onClick={() => step(1)} />
-                    </div>
+                    {/* These turn the service's photos; the arrows beside the
+                        row are the ones that change service. */}
+                    {photoCount > 1 && (
+                      <div className="ms-auto flex items-center gap-2">
+                        <ArrowButton direction="prev" label={t("galleryPrev")} className={cn(arrowClass, "size-11 sm:size-11")} onClick={() => turnPhoto(-1)} />
+                        <ArrowButton direction="next" label={t("galleryNext")} className={cn(arrowClass, "size-11 sm:size-11")} onClick={() => turnPhoto(1)} />
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               </div>

@@ -14,19 +14,42 @@ const SWIPE_PX = 40;
  * thumbnails beneath. Swipe on a phone, arrow keys once focused. A service
  * with a single photo shows just that photo, with no controls to suggest
  * there is more.
+ *
+ * Controlled: the parent holds which photo is showing, so arrows elsewhere on
+ * the page (beside the description) can turn the same photos.
  */
-export default function ServiceGallery({ images, title }: { images: string[]; title: string }) {
+export default function ServiceGallery({
+  images,
+  title,
+  index,
+  onIndexChange,
+}: {
+  images: string[];
+  title: string;
+  index: number;
+  onIndexChange: (index: number) => void;
+}) {
   const t = useTranslations("services");
   const reduceMotion = useReducedMotion();
-  const [index, setIndex] = useState(0);
-  const [direction, setDirection] = useState<1 | -1>(1);
   const swipeFrom = useRef<number | null>(null);
   const count = images.length;
   const many = count > 1;
 
+  /*
+   * Which way the photos slide, worked out from the change of index —
+   * wherever that change came from. Wrapping from the last photo to the
+   * first still slides forward.
+   */
+  const [shown, setShown] = useState(index);
+  const [direction, setDirection] = useState<1 | -1>(1);
+  if (shown !== index) {
+    const forward = index > shown ? index - shown <= count / 2 : shown - index > count / 2;
+    setDirection(forward ? 1 : -1);
+    setShown(index);
+  }
+
   function go(next: number) {
-    setDirection(next > index || (index === count - 1 && next === 0) ? 1 : -1);
-    setIndex(((next % count) + count) % count);
+    onIndexChange(((next % count) + count) % count);
   }
 
   const offset = reduceMotion ? 0 : 36;
