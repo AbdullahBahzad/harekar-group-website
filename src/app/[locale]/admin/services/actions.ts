@@ -100,6 +100,7 @@ function readCopy(formData: FormData) {
     descriptionKu: optional("descriptionKu"),
     icon: optional("icon"),
     published: formData.get("published") === "on",
+    comingSoon: formData.get("comingSoon") === "on",
     sortOrder: Number(formData.get("sortOrder") ?? 0) || 0,
   };
 }
@@ -261,7 +262,7 @@ export async function removeServiceGalleryImage(formData: FormData) {
 }
 
 /**
- * Copies the thirteen compiled-in services into the database.
+ * Copies the built-in services into the database.
  *
  * Imagery is not copied: the existing files stay on disk and are still served
  * by slug, so an imported service keeps its photo without duplicating four
@@ -273,7 +274,7 @@ export async function seedFromStaticServices() {
   const existing = await prisma.service.count();
   if (existing > 0) return;
 
-  const { serviceGroups } = await import("@/data/services");
+  const { comingSoonServices, serviceGroups } = await import("@/data/services");
   const enMessages = (await import("@/messages/en.json")).default;
   const arMessages = (await import("@/messages/ar.json")).default;
   const kuMessages = (await import("@/messages/ckb.json")).default;
@@ -303,6 +304,7 @@ export async function seedFromStaticServices() {
         titleKu: ku?.title ?? null,
         descriptionKu: ku?.description ?? null,
         published: true,
+        comingSoon: comingSoonServices.has(key),
         sortOrder: order++,
       };
     }),

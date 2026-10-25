@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import Panel from "@/components/admin/Panel";
+import { serviceKeys } from "@/data/services";
 import {
   addServiceGalleryImage,
   clearServiceImage,
@@ -31,6 +32,8 @@ export type ConsoleService = {
   hasUpload: boolean;
   imageUrl: string;
   published: boolean;
+  /** Marked "Coming soon" on the site. Absent in the preview's sample data. */
+  comingSoon?: boolean;
   sortOrder: number;
   /** Gallery photos after the main one. Absent in the preview's sample data. */
   gallery?: { id: string; url: string }[];
@@ -88,7 +91,7 @@ export default function ServiceConsole({
                   type="submit"
                   className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-xs transition-colors"
                 >
-                  {t("services.importExisting", { count: 13 })}
+                  {t("services.importExisting", { count: serviceKeys.length })}
                 </button>
               </form>
             )}
@@ -132,6 +135,11 @@ export default function ServiceConsole({
                     </span>
                   </span>
 
+                  {service.comingSoon && (
+                    <span className="text-gold/78 text-xs">
+                      {t("services.comingSoon")}
+                    </span>
+                  )}
                   {!service.published && (
                     <span className="text-bone/56 text-xs">
                       {t("common.hidden")}
@@ -319,6 +327,18 @@ function ServiceEditor({
             />
             <span className="text-bone/70 text-xs">
               {t("common.showOnSite")}
+            </span>
+          </label>
+
+          <label className="flex cursor-pointer items-center gap-2.5">
+            <input
+              type="checkbox"
+              name="comingSoon"
+              defaultChecked={service?.comingSoon ?? false}
+              className="accent-gold size-4 cursor-pointer"
+            />
+            <span className="text-bone/70 text-xs">
+              {t("services.comingSoonLabel")}
             </span>
           </label>
 

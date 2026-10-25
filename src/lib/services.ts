@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { logReadFallback, prisma } from "@/lib/prisma";
-import { serviceGroups, type ServiceKey } from "@/data/services";
+import { comingSoonServices, serviceGroups, type ServiceKey } from "@/data/services";
 
 /** What both the orbit and the grid need to render one service. */
 export type ResolvedService = {
@@ -13,6 +13,8 @@ export type ResolvedService = {
   imageUrl: string;
   /** Every photo for the service's gallery: the card image first. */
   gallery: string[];
+  /** Announced but not offered yet. */
+  comingSoon: boolean;
   /** Line icon to draw, when one of the known glyphs applies. */
   icon: ServiceKey | null;
 };
@@ -58,6 +60,7 @@ export async function getPublishedServices(
         imageData: false,
         imageType: true,
         updatedAt: true,
+        comingSoon: true,
         gallery: {
           select: { id: true },
           orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
@@ -98,6 +101,7 @@ export async function getPublishedServices(
           ...row.gallery.map((image) => `/api/services/gallery/${image.id}`),
         ],
         icon: asIcon(row.icon),
+        comingSoon: row.comingSoon,
       };
     });
   } catch (error) {
@@ -120,6 +124,7 @@ async function staticServices(locale: string): Promise<ResolvedService[]> {
       imageUrl: `/services/${key}.webp`,
       gallery: [`/services/${key}.webp`],
       icon: key as ServiceKey,
+      comingSoon: comingSoonServices.has(key),
     })),
   );
 }

@@ -160,6 +160,10 @@
       "equipment": {
         "title": "تأجير المعدات الثقيلة",
         "description": "توفير الآليات والمعدات التشغيلية لمواقع المشاريع والمخيمات."
+      },
+      "range": {
+        "title": "ميدان الرماية",
+        "description": "ميدان تدريب على التعامل مع الأسلحة ودقة الرماية، لفرق الأمن والعملاء المرخّصين. يُفتتح قريباً."
       }
     },
     "orbitHint": "اختر خدمة لعرض تفاصيلها وصورها",
@@ -169,7 +173,8 @@
     "detailCta": "اطلب هذه الخدمة",
     "galleryPrev": "الصورة السابقة",
     "galleryNext": "الصورة التالية",
-    "galleryPhoto": "{title}، الصورة {n} من {total}"
+    "galleryPhoto": "{title}، الصورة {n} من {total}",
+    "comingSoon": "قريباً"
   },
   "about": {
     "eyebrow": "من نحن",
@@ -1066,7 +1071,9 @@
       "galleryAdd": "إضافة صور",
       "galleryUploading": "جارٍ رفع {done} من {total}...",
       "galleryRemove": "حذف",
-      "galleryFailed": "تعذّر إضافة هذه الصور: {names}"
+      "galleryFailed": "تعذّر إضافة هذه الصور: {names}",
+      "comingSoon": "قريباً",
+      "comingSoonLabel": "قريباً (تظهر شارة على الموقع)"
     },
     "clients": {
       "title": "العملاء",

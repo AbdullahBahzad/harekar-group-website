@@ -9,10 +9,12 @@ import { getPublishedServices, type ResolvedService } from "@/lib/services";
 function ServiceCard({
   service,
   groupLabel,
+  comingSoonLabel,
   hidden = false,
 }: {
   service: ResolvedService;
   groupLabel: string;
+  comingSoonLabel: string;
   /** The loop's second copy: present for the eye, skipped by tab and readers. */
   hidden?: boolean;
 }) {
@@ -36,6 +38,11 @@ function ServiceCard({
             quality={90}
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           />
+          {service.comingSoon && (
+            <span className="bg-gold text-ink absolute start-3 top-3 rounded-full px-3 py-1 text-[11px] font-bold tracking-wide uppercase shadow">
+              {comingSoonLabel}
+            </span>
+          )}
         </span>
         <span className="text-gold-deep mt-4 block text-sm font-bold">{groupLabel}</span>
         <span className="font-display text-bone group-hover:text-gold-deep mt-1 block text-lg leading-snug font-bold transition-colors">
@@ -108,13 +115,19 @@ export default async function CapabilitiesSection() {
         >
           <ul className="marquee-track">
             {services.map((service) => (
-              <ServiceCard key={service.id} service={service} groupLabel={groupLabel(service.group)} />
+              <ServiceCard
+                key={service.id}
+                service={service}
+                groupLabel={groupLabel(service.group)}
+                comingSoonLabel={tServices("comingSoon")}
+              />
             ))}
             {services.map((service) => (
               <ServiceCard
                 key={`${service.id}-loop`}
                 service={service}
                 groupLabel={groupLabel(service.group)}
+                comingSoonLabel={tServices("comingSoon")}
                 hidden
               />
             ))}

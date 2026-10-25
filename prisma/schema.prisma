@@ -336,8 +336,10 @@ model Service {
   imageType String?
   imageName String?
 
-  published Boolean @default(true)
-  sortOrder Int     @default(0)
+  published  Boolean @default(true)
+  sortOrder  Int     @default(0)
+  /// Announced but not offered yet: the site marks it "Coming soon".
+  comingSoon Boolean @default(false)
 
   /// Further photos for the service's gallery, shown after the main one.
   gallery ServiceImage[]

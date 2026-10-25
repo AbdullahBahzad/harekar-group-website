@@ -14,6 +14,7 @@ export const serviceGroups = [
       "surveillance",
       "mobile",
       "k9",
+      "range",
     ],
   },
   {
@@ -34,3 +35,6 @@ export const serviceKeys = serviceGroups.flatMap(
 
 type ServiceKeyInternal = (typeof serviceGroups)[number]["services"][number];
 export type ServiceKey = ServiceKeyInternal;
+
+/** Services announced but not yet offered: shown with a "Coming soon" badge. */
+export const comingSoonServices: ReadonlySet<string> = new Set(["range"]);

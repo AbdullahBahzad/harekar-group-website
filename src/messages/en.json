@@ -163,13 +163,18 @@
       "equipment": {
         "title": "Heavy Equipment Rental",
         "description": "Machinery and operational plant supplied to project and camp sites."
+      },
+      "range": {
+        "title": "Shooting Range",
+        "description": "A training range for weapons handling and marksmanship, for security teams and licensed clients. Opening soon."
       }
     },
     "orbitSelect": "Show details",
     "detailCta": "Request this service",
     "galleryPrev": "Previous photo",
     "galleryNext": "Next photo",
-    "galleryPhoto": "{title}, photo {n} of {total}"
+    "galleryPhoto": "{title}, photo {n} of {total}",
+    "comingSoon": "Coming soon"
   },
   "about": {
     "eyebrow": "About Us",
@@ -1066,7 +1071,9 @@
       "galleryAdd": "Add photos",
       "galleryUploading": "Uploading {done} of {total}...",
       "galleryRemove": "Remove",
-      "galleryFailed": "These photos could not be added: {names}"
+      "galleryFailed": "These photos could not be added: {names}",
+      "comingSoon": "Coming soon",
+      "comingSoonLabel": "Coming soon (shows a badge on the site)"
     },
     "clients": {
       "title": "Clients",

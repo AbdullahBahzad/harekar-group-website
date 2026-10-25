@@ -468,6 +468,7 @@ export default function ServicesSlider({
             size={size}
             group={t(`groups.${service.group}`)}
             selectLabel={t("orbitSelect")}
+            comingSoonLabel={t("comingSoon")}
             selected={open && centre === index}
             onSelect={() => select(index)}
           />
@@ -537,7 +538,14 @@ export default function ServicesSlider({
                   transition={{ duration: reduceMotion ? 0 : 0.35, ease }}
                   className="flex flex-col justify-center lg:pe-6"
                 >
-                  <p className="text-gold-deep text-sm font-bold">{t(`groups.${detail.group}`)}</p>
+                  <p className="text-gold-deep flex flex-wrap items-center gap-3 text-sm font-bold">
+                    {t(`groups.${detail.group}`)}
+                    {detail.comingSoon && (
+                      <span className="bg-gold text-ink rounded-full px-3 py-1 text-[11px] tracking-wide uppercase">
+                        {t("comingSoon")}
+                      </span>
+                    )}
+                  </p>
                   <h3 className="font-display text-bone mt-2 pe-12 text-2xl leading-snug font-bold sm:text-3xl">
                     {detail.title}
                   </h3>
@@ -610,6 +618,7 @@ function SliderCard({
   size,
   group,
   selectLabel,
+  comingSoonLabel,
   selected,
   onSelect,
 }: {
@@ -620,6 +629,7 @@ function SliderCard({
   size: { w: number; h: number; gap: number };
   group: string;
   selectLabel: string;
+  comingSoonLabel: string;
   selected: boolean;
   onSelect: () => void;
 }) {
@@ -704,6 +714,12 @@ function SliderCard({
             {group}
           </em>
         </div>
+
+        {service.comingSoon && (
+          <span className="bg-gold text-ink absolute start-3 top-3 rounded-full px-3 py-1 text-[11px] font-bold tracking-wide uppercase shadow">
+            {comingSoonLabel}
+          </span>
+        )}
 
         {/* Hairline gold top edge. */}
         <div className="via-gold/40 pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent" />

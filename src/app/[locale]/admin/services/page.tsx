@@ -36,6 +36,7 @@ export default async function ServicesStation({
           titleEn: true, titleAr: true, titleKu: true,
           descriptionEn: true, descriptionAr: true, descriptionKu: true,
           imageType: true, published: true, sortOrder: true, updatedAt: true,
+          comingSoon: true,
           gallery: {
             select: { id: true },
             orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
@@ -60,6 +61,7 @@ export default async function ServicesStation({
           ? `/api/services/${row.id}/image?v=${row.updatedAt.getTime()}`
           : `/services/${row.slug}.webp`,
         published: row.published,
+        comingSoon: row.comingSoon,
         sortOrder: row.sortOrder,
         gallery: row.gallery.map((image) => ({
           id: image.id,

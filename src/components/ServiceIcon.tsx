@@ -36,6 +36,14 @@ const paths: Record<ServiceKey, React.ReactNode> = {
       <path d="M8 9h8" />
     </>
   ),
+  range: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="12" cy="12" r="1.5" />
+      <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" />
+    </>
+  ),
   k9: (
     <>
       <path d="M4 6l3 2v3c0 3.5 2.2 6 5 6s5-2.5 5-6V8l3-2v6a8 8 0 0 1-16 0V6z" />
