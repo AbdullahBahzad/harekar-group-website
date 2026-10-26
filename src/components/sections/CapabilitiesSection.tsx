@@ -45,10 +45,11 @@ function ServiceCard({
           )}
         </span>
         <span className="text-gold-deep mt-4 block text-sm font-bold">{groupLabel}</span>
-        <span className="font-display text-bone group-hover:text-gold-deep mt-1 block text-lg leading-snug font-bold transition-colors">
+        <span className="font-display text-bone group-hover:text-gold-deep mt-1 line-clamp-2 text-lg leading-snug font-bold transition-colors">
           {service.title}
         </span>
-        <span className="text-bone/70 mt-2 line-clamp-2 block text-[15px] leading-relaxed">
+        {/* `line-clamp` needs its own display; a `block` here would cancel it. */}
+        <span className="text-bone/70 mt-2 line-clamp-3 text-[15px] leading-relaxed">
           {service.description}
         </span>
       </Link>
