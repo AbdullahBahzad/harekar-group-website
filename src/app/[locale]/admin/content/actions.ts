@@ -20,10 +20,13 @@ async function assertAdmin(): Promise<string> {
 /**
  * Every English/Arabic/Kurdish text field on `SiteContent`, named by its
  * shared prefix (`"heroTitle"` covers `heroTitleEn`/`Ar`/`Ku`). Listed once
- * here rather than spelled out per field in `readSiteContent` and again in
- * the form component — both read this same list.
+ * here rather than spelled out per field in `readSiteContent`.
+ *
+ * Not exported, and neither is `VALUE_FIELDS`: a "use server" file may only
+ * export async functions. Next checks that when the module loads, so exporting
+ * anything else makes every action on the page throw before it runs.
  */
-export const TRIPLET_FIELDS = [
+const TRIPLET_FIELDS = [
   "heroEyebrow",
   "heroTitle",
   "heroSubtitle",
@@ -63,7 +66,7 @@ export const TRIPLET_FIELDS = [
 ] as const;
 
 /** The four stat figures — not per-locale, so one plain field each. */
-export const VALUE_FIELDS = [
+const VALUE_FIELDS = [
   "statExperienceValue",
   "statPersonnelValue",
   "statSitesValue",
