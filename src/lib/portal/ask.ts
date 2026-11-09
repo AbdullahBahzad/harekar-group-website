@@ -49,7 +49,11 @@ async function buildContext(): Promise<string> {
     prisma.dailyReport.findMany({
       orderBy: { date: "desc" },
       take: CONTEXT_BRIEFS,
-      select: { date: true, executiveSummary: true, content: true },
+      select: {
+        date: true,
+        executiveSummary: true,
+        events: { orderBy: { position: "asc" }, select: { title: true } },
+      },
     }),
   ]);
 
@@ -73,12 +77,9 @@ async function buildContext(): Promise<string> {
 
   const briefLines = briefs.flatMap((report) => {
     const date = report.date.toISOString().slice(0, 10);
-    const content = report.content as unknown as {
-      items?: { title: string; body: string }[];
-    };
     const summary =
       report.executiveSummary?.trim() ||
-      content.items?.map((item) => item.title).join("; ") ||
+      report.events.map((event) => event.title).join("; ") ||
       "";
     return [`- ${date}: ${summary}`];
   });

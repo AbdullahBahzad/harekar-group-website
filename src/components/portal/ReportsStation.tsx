@@ -2,7 +2,10 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import type { ConsoleReport } from "@/lib/report-shape";
+import type { ConsoleReport, ReportNewsItem } from "@/lib/report-shape";
+import { categoryColor, joinPlace } from "@/lib/pdf/report-labels";
+import { orderReportEvents } from "@/lib/report-order";
+import ReportEventMap from "@/components/portal/ReportEventMap";
 import { formatDate } from "@/lib/portal/format";
 import { cn } from "@/lib/utils";
 
@@ -135,8 +138,7 @@ function DailyBrief({
   const locale = useLocale();
   const greeting = useGreeting();
 
-  const keyIncidents = report.content.items.slice(0, 3);
-  const moreIncidents = report.content.items.slice(3);
+  const v = useTranslations("reportVocab");
   const summary =
     report.executiveSummary?.trim() ||
     t("summaryFallback", { count: report.content.items.length });
@@ -198,17 +200,7 @@ function DailyBrief({
                 <path d="m6.7 9 6.6-3.1M6.7 11l6.6 3.1" stroke="currentColor" strokeWidth="1.4" />
               </svg>
             </button>
-            <a
-              href={`/api/portal/reports/${report.id}/pdf`}
-              aria-label={t("download")}
-              title={t("download")}
-              className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold flex size-10 cursor-pointer items-center justify-center rounded-full border transition-colors"
-            >
-              <svg viewBox="0 0 20 20" className="size-4" fill="none" aria-hidden>
-                <path d="M10 3v9.5M6.5 9 10 12.5 13.5 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M3.75 14.5v1.25a1.5 1.5 0 0 0 1.5 1.5h9.5a1.5 1.5 0 0 0 1.5-1.5V14.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
-            </a>
+            <PdfLinks reportId={report.id} />
           </div>
         </div>
       )}
@@ -233,43 +225,15 @@ function DailyBrief({
         {summary}
       </p>
 
-      {keyIncidents.length > 0 && (
-        <>
-          <h3 className="text-gold/85 mt-7 text-xs font-medium tracking-[0.16em] uppercase">
-            {t("keyIncidents")}
-          </h3>
-          <ul className="mt-3 space-y-3">
-            {keyIncidents.map((item, i) => (
-              <li key={i} className="flex gap-3 text-sm leading-relaxed">
-                <span aria-hidden className="bg-gold/60 mt-2 size-1.5 shrink-0 rounded-full" />
-                <p className="text-bone/75">
-                  <span className="text-bone font-medium">{item.title}</span>
-                  {": "}
-                  {item.body}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      <ReportBody items={report.content.items} />
 
-      {moreIncidents.length > 0 && (
-        <>
-          <h3 className="text-gold/85 mt-7 text-xs font-medium tracking-[0.16em] uppercase">
-            {t("additionalActivity")}
+      {!compact && report.content.items.length > 0 && (
+        <section className="mt-8">
+          <h3 className="text-gold/85 mb-3 text-xs font-medium tracking-[0.16em] uppercase">
+            {v("eventMap")}
           </h3>
-          <ul className="mt-3 space-y-2">
-            {moreIncidents.map((item, i) => (
-              <li key={i} className="flex gap-3 text-sm leading-relaxed">
-                <span aria-hidden className="bg-bone/30 mt-2 size-1.5 shrink-0 rounded-full" />
-                <p className="text-bone/60">
-                  <span className="text-bone/80">{item.title}</span>
-                  {item.body ? `: ${item.body}` : ""}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </>
+          <ReportEventMap items={report.content.items} />
+        </section>
       )}
     </article>
   );
@@ -356,16 +320,117 @@ function ReportsTable({ reports }: { reports: ConsoleReport[] }) {
             <span className="text-bone/50 shrink-0 text-xs tabular-nums">
               {t("itemCount", { count: report.content.items.length })}
             </span>
-            <a
-              href={`/api/portal/reports/${report.id}/pdf`}
-              className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-9 shrink-0 items-center rounded-full border px-4 text-xs transition-colors"
-            >
-              {t("downloadPdf")}
-            </a>
+            <PdfLinks reportId={report.id} />
           </li>
         ))}
       </ul>
     </div>
+  );
+}
+
+/** The report's two PDF versions: identical content, with and without source links. */
+function PdfLinks({ reportId }: { reportId: string }) {
+  const v = useTranslations("reportVocab");
+  const link =
+    "border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-9 shrink-0 items-center rounded-full border px-4 text-xs transition-colors";
+  return (
+    <span className="flex flex-wrap gap-2">
+      <a href={`/api/portal/reports/${reportId}/pdf`} className={link}>
+        {v("pdfWithSources")}
+      </a>
+      <a href={`/api/portal/reports/${reportId}/pdf?sources=0`} className={link}>
+        {v("pdfWithoutSources")}
+      </a>
+    </span>
+  );
+}
+
+/**
+ * The report's events as the PDF orders them: the Kurdistan short summaries,
+ * then the five sections in turn (Kurdistan first within each), then anything
+ * filed before sections existed. Numbers match the event map and the PDF.
+ */
+function ReportBody({ items }: { items: ReportNewsItem[] }) {
+  const v = useTranslations("reportVocab");
+  const { sections, numbered } = orderReportEvents(items);
+  const kurdistan = numbered.filter(({ item }) => item.region === "KURDISTAN");
+
+  const place = (item: ReportNewsItem) =>
+    joinPlace([
+      item.area,
+      item.district,
+      item.governorate ? v(`governorates.${item.governorate}`) : null,
+    ]);
+
+  return (
+    <>
+      {kurdistan.length > 0 && (
+        <>
+          <h3 className="text-gold/85 mt-7 text-xs font-medium tracking-[0.16em] uppercase">
+            {v("shortSummaries")}
+          </h3>
+          <ul className="mt-3 space-y-2">
+            {kurdistan.map(({ item, number }) => (
+              <li key={number} className="flex gap-3 text-sm leading-relaxed">
+                <span aria-hidden className="bg-gold/60 mt-2 size-1.5 shrink-0 rounded-full" />
+                <p className="text-bone/75">{item.shortSummary?.trim() || item.title}</p>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {sections.map(({ category, events }) => (
+        <section key={category ?? "general"}>
+          <h3 className="mt-7 flex items-center gap-2 text-xs font-medium tracking-[0.16em] uppercase">
+            <span
+              aria-hidden
+              className="inline-block size-2.5 rounded-full"
+              style={{ background: categoryColor(category) }}
+            />
+            <span className="text-gold/85">
+              {category ? v(`categories.${category}`) : v("uncategorised")}
+            </span>
+          </h3>
+          <ul className="mt-3 space-y-4">
+            {events.map(({ item, number }) => {
+              const where = place(item);
+              const kind = item.classification ? v(`classifications.${item.classification}`) : "";
+              return (
+                <li key={number} className="flex gap-3 text-sm leading-relaxed">
+                  <span
+                    className="mt-0.5 flex h-5 min-w-5 shrink-0 items-center justify-center rounded px-1 text-[11px] font-semibold text-white tabular-nums"
+                    style={{ background: categoryColor(item.category) }}
+                  >
+                    {number}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-bone font-medium">{item.title}</p>
+                    {(where || kind) && (
+                      <p className="text-bone/50 mt-0.5 text-xs">
+                        {[where, kind].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+                    <p className="text-bone/70 mt-1">{item.body}</p>
+                    {item.url && (
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        dir="ltr"
+                        className="text-gold/70 hover:text-gold mt-1 block truncate text-xs"
+                      >
+                        {item.url}
+                      </a>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
+    </>
   );
 }
 

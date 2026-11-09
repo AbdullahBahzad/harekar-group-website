@@ -32,8 +32,11 @@ import {
   RISK_TRENDS,
   GOVERNORATES,
   REGION_GROUPS,
+  REPORT_CATEGORIES,
+  EVENT_CLASSIFICATIONS,
 } from "@/lib/report-shape";
 import { meetsMinimumSeverity } from "@/lib/headline-relevance";
+import { inIraq } from "@/lib/report-geo";
 import type {
   ConsoleReport,
   Region,
@@ -41,6 +44,8 @@ import type {
   ThreatLevel,
   RiskTrend,
   GovernorateKey,
+  ReportCategory,
+  EventClassification,
 } from "@/lib/report-shape";
 import type { Headline } from "@/lib/headlines";
 
@@ -350,7 +355,7 @@ export default function ReportConsole({
     setErrorKey(null);
     setDraftItems((items) => [
       ...(items ?? []),
-      { title: "", body: "", url: null, region: "KURDISTAN" },
+      { title: "", body: "", url: null, region: "KURDISTAN", category: null },
     ]);
   }
 
@@ -365,6 +370,24 @@ export default function ReportConsole({
   function handleSave() {
     if (!draftItems || draftItems.length === 0) return;
     setErrorKey(null);
+
+    // Every event is filed under one of the report's five sections.
+    if (draftItems.some((item) => !item.category)) {
+      setErrorKey("reports.categoryRequired");
+      return;
+    }
+    // A map pin needs both coordinates, inside Iraq — the server refuses
+    // anything else, so say which problem it is rather than "Save failed".
+    const badPin = draftItems.some((item) => {
+      const hasLat = item.latitude != null;
+      const hasLng = item.longitude != null;
+      if (!hasLat && !hasLng) return false;
+      return !(hasLat && hasLng && inIraq(item.latitude!, item.longitude!));
+    });
+    if (badPin) {
+      setErrorKey("reports.pinOutsideIraq");
+      return;
+    }
 
     // A day has one report: saving onto a day that already has one replaces
     // it, so that only happens once the operator has said so.
@@ -407,6 +430,14 @@ export default function ReportConsole({
       formData.append("finalBody", item.body);
       formData.append("finalUrl", item.url ?? "");
       formData.append("finalRegion", item.region);
+      formData.append("finalCategory", item.category ?? "");
+      formData.append("finalClassification", item.classification ?? "");
+      formData.append("finalSummary", item.shortSummary ?? "");
+      formData.append("finalGovernorate", item.governorate ?? "");
+      formData.append("finalDistrict", item.district ?? "");
+      formData.append("finalArea", item.area ?? "");
+      formData.append("finalLat", item.latitude == null ? "" : String(item.latitude));
+      formData.append("finalLng", item.longitude == null ? "" : String(item.longitude));
     }
 
     startTransition(async () => {
@@ -1079,6 +1110,10 @@ export default function ReportConsole({
                           {item.url}
                         </p>
                       )}
+                      <EventFilingFields
+                        item={item}
+                        onChange={(patch) => updateDraftItem(i, patch)}
+                      />
                     </div>
                   ))}
                 </div>
@@ -1170,7 +1205,13 @@ export default function ReportConsole({
                 href={`/api/admin/reports/${report.id}/pdf`}
                 className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
               >
-                {t("reports.downloadPdf")}
+                {t("reports.downloadWithSources")}
+              </a>
+              <a
+                href={`/api/admin/reports/${report.id}/pdf?sources=0`}
+                className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
+              >
+                {t("reports.downloadWithoutSources")}
               </a>
               <button
                 type="button"
@@ -1260,6 +1301,15 @@ function EmailReportForm({
         aria-label={t("reports.emailNotePlaceholder")}
         className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-2 border px-3 py-2 text-start text-xs outline-none transition-colors"
       />
+      <select
+        name="sources"
+        defaultValue="1"
+        aria-label={t("reports.emailVersion")}
+        className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-11 cursor-pointer border px-2 text-xs outline-none"
+      >
+        <option value="1">{t("reports.versionWithSources")}</option>
+        <option value="0">{t("reports.versionWithoutSources")}</option>
+      </select>
       <EmailSendButton />
 
       {state.status !== "idle" && state.messageKey && (
@@ -1290,6 +1340,161 @@ function EmailSendButton() {
     >
       {pending ? t("emailSending") : t("emailSend")}
     </button>
+  );
+}
+
+const filingInput =
+  "border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-11 w-full border px-3 text-xs outline-none transition-colors";
+
+/**
+ * Where an event is filed: its report section, what kind of event it was,
+ * where it happened, and its line for the Kurdistan short summaries. The
+ * weekly, monthly and six-week reports and every event map are built from
+ * these fields, so the section is required and the rest are filled in as far
+ * as the source allows.
+ */
+function EventFilingFields({
+  item,
+  onChange,
+}: {
+  item: ReportNewsItem;
+  onChange: (patch: Partial<ReportNewsItem>) => void;
+}) {
+  const t = useTranslations("admin.reports");
+  const v = useTranslations("reportVocab");
+  const coord = (value: number | null | undefined) =>
+    value == null ? "" : String(value);
+  const parseCoord = (raw: string) => {
+    const trimmed = raw.trim();
+    if (!trimmed) return null;
+    const value = Number(trimmed);
+    return Number.isFinite(value) ? value : null;
+  };
+
+  return (
+    <div className="border-bone/10 space-y-2 border-t pt-2">
+      <div className="grid gap-2 sm:grid-cols-2">
+        <label className="block">
+          <span className="text-bone/60 mb-1 block text-[11px]">
+            {t("filing.category")} *
+          </span>
+          <select
+            value={item.category ?? ""}
+            onChange={(e) =>
+              onChange({ category: (e.target.value || null) as ReportCategory | null })
+            }
+            className={`${filingInput} cursor-pointer ${item.category ? "" : "border-status-elevated/60"}`}
+          >
+            <option value="">{t("filing.choose")}</option>
+            {REPORT_CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {v(`categories.${category}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="text-bone/60 mb-1 block text-[11px]">
+            {t("filing.classification")}
+          </span>
+          <select
+            value={item.classification ?? ""}
+            onChange={(e) =>
+              onChange({
+                classification: (e.target.value || null) as EventClassification | null,
+              })
+            }
+            className={`${filingInput} cursor-pointer`}
+          >
+            <option value="">{t("filing.none")}</option>
+            {EVENT_CLASSIFICATIONS.map((kind) => (
+              <option key={kind} value={kind}>
+                {v(`classifications.${kind}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-3">
+        <label className="block">
+          <span className="text-bone/60 mb-1 block text-[11px]">
+            {t("filing.governorate")}
+          </span>
+          <select
+            value={item.governorate ?? ""}
+            onChange={(e) =>
+              onChange({ governorate: (e.target.value || null) as GovernorateKey | null })
+            }
+            className={`${filingInput} cursor-pointer`}
+          >
+            <option value="">{t("filing.none")}</option>
+            {GOVERNORATES.map(({ key }) => (
+              <option key={key} value={key}>
+                {v(`governorates.${key}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="text-bone/60 mb-1 block text-[11px]">{t("filing.district")}</span>
+          <input
+            value={item.district ?? ""}
+            onChange={(e) => onChange({ district: e.target.value || null })}
+            className={filingInput}
+          />
+        </label>
+        <label className="block">
+          <span className="text-bone/60 mb-1 block text-[11px]">{t("filing.area")}</span>
+          <input
+            value={item.area ?? ""}
+            onChange={(e) => onChange({ area: e.target.value || null })}
+            className={filingInput}
+          />
+        </label>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-2">
+        <label className="block">
+          <span className="text-bone/60 mb-1 block text-[11px]">{t("filing.latitude")}</span>
+          <input
+            dir="ltr"
+            inputMode="decimal"
+            placeholder="35.47"
+            value={coord(item.latitude)}
+            onChange={(e) => onChange({ latitude: parseCoord(e.target.value) })}
+            className={`${filingInput} text-start`}
+          />
+        </label>
+        <label className="block">
+          <span className="text-bone/60 mb-1 block text-[11px]">{t("filing.longitude")}</span>
+          <input
+            dir="ltr"
+            inputMode="decimal"
+            placeholder="44.39"
+            value={coord(item.longitude)}
+            onChange={(e) => onChange({ longitude: parseCoord(e.target.value) })}
+            className={`${filingInput} text-start`}
+          />
+        </label>
+      </div>
+      <p className="text-bone/45 text-[11px] leading-relaxed">{t("filing.pinHint")}</p>
+
+      {item.region === "KURDISTAN" && (
+        <label className="block">
+          <span className="text-bone/60 mb-1 block text-[11px]">
+            {t("filing.shortSummary")}
+          </span>
+          <textarea
+            value={item.shortSummary ?? ""}
+            onChange={(e) => onChange({ shortSummary: e.target.value || null })}
+            rows={2}
+            placeholder={t("filing.shortSummaryHint")}
+            className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-xs leading-relaxed outline-none transition-colors"
+          />
+        </label>
+      )}
+    </div>
   );
 }
 

@@ -1,7 +1,17 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { safeFetchText } from "@/lib/safe-fetch";
 import { extractArticleText } from "@/lib/article-extract";
-import type { RawNewsInput, ReportNewsItem } from "@/lib/report-shape";
+import {
+  EVENT_CLASSIFICATIONS,
+  GOVERNORATES,
+  REPORT_CATEGORIES,
+  type EventClassification,
+  type GovernorateKey,
+  type RawNewsInput,
+  type ReportCategory,
+  type ReportNewsItem,
+} from "@/lib/report-shape";
+import { inIraq } from "@/lib/report-geo";
 
 /*
  * The vocabulary lives in `report-shape.ts` so the client console can read it
@@ -75,8 +85,48 @@ const RETURN_ITEMS_TOOL = {
               description:
                 "One tight, factual paragraph in the neutral third-person register of a security bulletin — no speculation, no editorialising.",
             },
+            category: {
+              type: "string",
+              enum: [...REPORT_CATEGORIES],
+              description:
+                "The report section: SECURITY (incidents, threats, military activity, clashes, attacks), ECONOMIC (oil and gas, trade, markets, infrastructure, investment), MINISTERIAL (federal or KRG ministry activities and decisions), GOVERNANCE_POLITICAL (government decisions, parliament, political and administrative developments), LOCAL_INTERNATIONAL (local communities, international organisations, foreign companies, diplomatic missions, international personnel).",
+            },
+            classification: {
+              type: "string",
+              enum: [...EVENT_CLASSIFICATIONS],
+              description: "What kind of event this is.",
+            },
+            shortSummary: {
+              type: "string",
+              description:
+                "One or two plain sentences summarising the event, for the report's 'Short Summaries of Major Events in Kurdistan' section.",
+            },
+            governorate: {
+              type: "string",
+              enum: GOVERNORATES.map((g) => g.key),
+              description:
+                "The Iraqi governorate where the event happened. Omit when the event has no single location (e.g. a nationwide policy).",
+            },
+            district: {
+              type: "string",
+              description: "The district, when the source names one or it is unambiguous.",
+            },
+            area: {
+              type: "string",
+              description: "The most specific place named: town, neighbourhood or site.",
+            },
+            latitude: {
+              type: "number",
+              description:
+                "Latitude of the named town or site, only when you are confident of it. Omit otherwise.",
+            },
+            longitude: {
+              type: "number",
+              description:
+                "Longitude of the named town or site, only when you are confident of it. Omit otherwise.",
+            },
           },
-          required: ["title", "body"],
+          required: ["title", "body", "category", "classification", "shortSummary"],
         },
       },
     },
@@ -125,13 +175,14 @@ export async function draftReportItems(
    * ceiling, not a reservation, so an unused allowance costs nothing while a
    * cramped one costs the analyst a failed run.
    */
-  const maxTokens = Math.min(16_000, 2_048 + sourced.length * 512);
+  // Each item now also carries its filing (section, type, summary, place).
+  const maxTokens = Math.min(16_000, 2_048 + sourced.length * 768);
 
   const message = await anthropic.messages.create({
     model: "claude-opus-4-8",
     max_tokens: maxTokens,
     system:
-      "You write items for Harekar Group's Daily Security Report, a bulletin read by a private security company's operations team covering Kurdistan and Iraq. Match the register of a professional security bulletin: factual, concise, third person, no speculation or commentary. Each item is a short bold headline followed by one tight paragraph.",
+      "You write items for Harekar Group's Daily Security Report, a bulletin read by a private security company's operations team covering Kurdistan and Iraq. Match the register of a professional security bulletin: factual, concise, third person, no speculation or commentary. Each item is a short bold headline followed by one tight paragraph. Also file each item: its report section, the kind of event, a one-or-two sentence short summary, and where it happened as precisely as the source allows. Only give a location the source supports; leave out anything you would be guessing.",
     tools: [RETURN_ITEMS_TOOL],
     tool_choice: { type: "tool", name: "return_report_items" },
     messages: [{ role: "user", content: prompt }],
@@ -186,7 +237,7 @@ export async function draftReportItems(
   }
 
   return sourced.map((source, i) => {
-    const item = drafted[i] as { title?: unknown; body?: unknown };
+    const item = drafted[i] as Record<string, unknown>;
     const title = typeof item?.title === "string" ? item.title.trim() : "";
     const body = typeof item?.body === "string" ? item.body.trim() : "";
 
@@ -197,6 +248,47 @@ export async function draftReportItems(
       );
     }
 
-    return { title, body, url: source.url || null, region: source.region };
+    return {
+      title,
+      body,
+      url: source.url || null,
+      region: source.region,
+      ...draftedFiling(item),
+    };
   });
+}
+
+const text = (value: unknown): string | null =>
+  typeof value === "string" && value.trim() ? value.trim() : null;
+
+/**
+ * The model's suggested filing for one item — section, event type, summary,
+ * place. Every field is checked against the report's vocabulary and anything
+ * off-list is dropped rather than trusted: these are suggestions the analyst
+ * reviews, and an unknown value would fail the save rather than help.
+ */
+function draftedFiling(item: Record<string, unknown>): Partial<ReportNewsItem> {
+  const category = text(item.category);
+  const classification = text(item.classification);
+  const governorate = text(item.governorate);
+  const lat = typeof item.latitude === "number" ? item.latitude : NaN;
+  const lng = typeof item.longitude === "number" ? item.longitude : NaN;
+  const pinned = inIraq(lat, lng);
+
+  return {
+    category: REPORT_CATEGORIES.includes(category as ReportCategory)
+      ? (category as ReportCategory)
+      : null,
+    classification: EVENT_CLASSIFICATIONS.includes(classification as EventClassification)
+      ? (classification as EventClassification)
+      : null,
+    shortSummary: text(item.shortSummary),
+    governorate: GOVERNORATES.some((g) => g.key === governorate)
+      ? (governorate as GovernorateKey)
+      : null,
+    district: text(item.district),
+    area: text(item.area),
+    latitude: pinned ? lat : null,
+    longitude: pinned ? lng : null,
+  };
 }

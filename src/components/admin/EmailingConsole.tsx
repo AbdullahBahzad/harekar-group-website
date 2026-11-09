@@ -86,6 +86,8 @@ export default function EmailingConsole({
 
   const [templateId, setTemplateId] = useState(templates[0]?.id ?? "");
   const [note, setNote] = useState("");
+  // Which version of the report to attach: with or without source links.
+  const [withSources, setWithSources] = useState(true);
   const [sendState, setSendState] = useState<SendToSelectedState>({
     status: "idle",
   });
@@ -161,6 +163,7 @@ export default function EmailingConsole({
     const formData = new FormData();
     formData.set("reportId", templateId);
     formData.set("note", note);
+    formData.set("sources", withSources ? "1" : "0");
     for (const recipient of selectedRecipients) {
       formData.append("id", recipient.id);
     }
@@ -454,6 +457,16 @@ export default function EmailingConsole({
                   ))}
                 </select>
 
+                <select
+                  value={withSources ? "1" : "0"}
+                  onChange={(event) => setWithSources(event.target.value === "1")}
+                  aria-label={t("versionLabel")}
+                  className={cn(inputClass, "cursor-pointer")}
+                >
+                  <option value="1">{t("versionWithSources")}</option>
+                  <option value="0">{t("versionWithoutSources")}</option>
+                </select>
+
                 <textarea
                   value={note}
                   onChange={(event) => setNote(event.target.value)}
@@ -500,7 +513,7 @@ export default function EmailingConsole({
                     <p className="border-bone/16 text-bone/65 inline-flex max-w-full items-center gap-2 rounded-md border px-2.5 py-1 text-xs">
                       <span aria-hidden>📎</span>
                       <span className="truncate">
-                        {reportEmailFilename(dateLabel)}
+                        {reportEmailFilename(dateLabel, withSources)}
                       </span>
                     </p>
                   </div>

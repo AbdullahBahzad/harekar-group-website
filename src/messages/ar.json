@@ -1239,7 +1239,28 @@
         "SULAYMANIYAH": "السليمانية",
         "DUHOK": "دهوك",
         "HALABJA": "حلبجة"
-      }
+      },
+      "categoryRequired": "اختر فئة لكل عنصر قبل الحفظ.",
+      "filing": {
+        "category": "الفئة",
+        "choose": "اختر…",
+        "classification": "نوع الحدث",
+        "none": "—",
+        "governorate": "المحافظة",
+        "district": "القضاء",
+        "area": "المنطقة / البلدة",
+        "latitude": "خط العرض",
+        "longitude": "خط الطول",
+        "pinHint": "دبوس دقيق اختياري على الخريطة. بدونه يوضع الحدث في مركز محافظته.",
+        "shortSummary": "ملخص قصير (كردستان)",
+        "shortSummaryHint": "جملة أو جملتان لقسم «ملخصات قصيرة لأبرز الأحداث في كردستان». إذا تُرك فارغاً تُستخدم أول جملتين."
+      },
+      "downloadWithSources": "PDF مع المصادر",
+      "downloadWithoutSources": "PDF بدون مصادر",
+      "emailVersion": "نسخة التقرير",
+      "versionWithSources": "مع المصادر",
+      "versionWithoutSources": "بدون مصادر",
+      "pinOutsideIraq": "يحتاج كل دبوس على الخريطة إلى خط عرض وخط طول معاً داخل العراق. صحّح الدبوس أو امسحه ثم احفظ."
     },
     "emailing": {
       "title": "مراسلة العملاء",
@@ -1292,7 +1313,10 @@
       "sendFailed": "تعذّر الإرسال — تحقق من إعدادات البريد وحاول مرة أخرى.",
       "templateGone": "هذا التقرير لم يعد موجودًا.",
       "sent": "تم الإرسال إلى {count} عميل.",
-      "sentPartial": "تم الإرسال إلى {sent} من {total} عميل — تحقق من إعدادات البريد للبقية."
+      "sentPartial": "تم الإرسال إلى {sent} من {total} عميل — تحقق من إعدادات البريد للبقية.",
+      "versionLabel": "نسخة التقرير",
+      "versionWithSources": "مع المصادر (روابط قابلة للنقر)",
+      "versionWithoutSources": "بدون مصادر"
     },
     "media": {
       "title": "الوسائط",
@@ -1560,6 +1584,56 @@
         "HIGH": "مرتفع",
         "CRITICAL": "حرج"
       }
+    }
+  },
+  "reportVocab": {
+    "categories": {
+      "SECURITY": "التطورات الأمنية",
+      "ECONOMIC": "التطورات الاقتصادية",
+      "MINISTERIAL": "الأنشطة الوزارية",
+      "GOVERNANCE_POLITICAL": "الأنشطة الحكومية والسياسية",
+      "LOCAL_INTERNATIONAL": "المصالح المحلية والدولية"
+    },
+    "classifications": {
+      "ATTACK": "هجوم",
+      "EXPLOSION": "انفجار / عبوة ناسفة",
+      "KIDNAPPING": "اختطاف",
+      "ARREST": "اعتقال",
+      "MILITARY_OPERATION": "عملية عسكرية",
+      "PROTEST": "احتجاج",
+      "CRIME": "جريمة",
+      "ACCIDENT": "حادث",
+      "NATURAL_DISASTER": "كارثة طبيعية",
+      "POLITICAL": "سياسي",
+      "ECONOMIC": "اقتصادي",
+      "OTHER": "أخرى"
+    },
+    "uncategorised": "عام",
+    "shortSummaries": "ملخصات قصيرة لأبرز الأحداث في كردستان",
+    "eventMap": "خريطة الأحداث اليومية",
+    "approximateNote": "الدبابيس المفرغة تشير إلى أحداث معروفة على مستوى المحافظة فقط، وتُرسم في مركزها.",
+    "pdfWithSources": "PDF مع المصادر",
+    "pdfWithoutSources": "PDF بدون مصادر",
+    "governorates": {
+      "BAGHDAD": "بغداد",
+      "WASIT": "واسط",
+      "SALAH_AL_DIN": "صلاح الدين",
+      "DIYALA": "ديالى",
+      "ANBAR": "الأنبار",
+      "BABIL": "بابل",
+      "KARBALA": "كربلاء",
+      "NAJAF": "النجف",
+      "QADISIYAH": "القادسية",
+      "MUTHANNA": "المثنى",
+      "DHI_QAR": "ذي قار",
+      "MAYSAN": "ميسان",
+      "BASRA": "البصرة",
+      "NINAWA": "نينوى",
+      "KIRKUK": "كركوك",
+      "ERBIL": "أربيل",
+      "SULAYMANIYAH": "السليمانية",
+      "DUHOK": "دهوك",
+      "HALABJA": "حلبجة"
     }
   }
 }

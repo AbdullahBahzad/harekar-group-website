@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { orPreview, sampleReports } from "@/lib/admin-preview";
-import type { ConsoleReport, ReportContent } from "@/lib/report-shape";
+import type { ConsoleReport } from "@/lib/report-shape";
+import { REPORT_WITH_EVENTS, reportContentOf } from "@/lib/report-load";
 
 /**
  * Recent Daily Security Reports, for the Sources station's own list and for
@@ -8,16 +9,18 @@ import type { ConsoleReport, ReportContent } from "@/lib/report-shape";
  * just a different number of them.
  *
  * Dates become strings here because a Date cannot cross into a client
- * component, and `content` is cast rather than validated — it was written by
- * `saveReport` in this same shape, so a schema check on the way back out
- * would only duplicate what the write side already guarantees.
+ * component; `content` is assembled from the report's events by
+ * `reportContentOf`.
  */
 export async function getRecentReports(take: number) {
   return orPreview<ConsoleReport[]>(
     async () => {
       const rows = await prisma.dailyReport.findMany({
         orderBy: { date: "desc" },
-        include: { createdBy: { select: { name: true, email: true } } },
+        include: {
+          createdBy: { select: { name: true, email: true } },
+          ...REPORT_WITH_EVENTS,
+        },
         take,
       });
 
@@ -30,7 +33,7 @@ export async function getRecentReports(take: number) {
         politicalIraq: report.politicalIraq,
         weather: report.weather,
         executiveSummary: report.executiveSummary,
-        content: report.content as unknown as ReportContent,
+        content: reportContentOf(report),
         createdAt: report.createdAt.toISOString(),
         updatedAt: report.updatedAt.toISOString(),
         createdByName: report.createdBy?.name ?? report.createdBy?.email ?? null,

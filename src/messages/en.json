@@ -1239,7 +1239,28 @@
         "SULAYMANIYAH": "Sulaymaniyah",
         "DUHOK": "Duhok",
         "HALABJA": "Halabja"
-      }
+      },
+      "categoryRequired": "Choose a category for every item before saving.",
+      "filing": {
+        "category": "Category",
+        "choose": "Choose…",
+        "classification": "Event type",
+        "none": "—",
+        "governorate": "Governorate",
+        "district": "District",
+        "area": "Area / town",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "pinHint": "Optional exact map pin. Without one, the event is placed at the centre of its governorate.",
+        "shortSummary": "Short summary (Kurdistan)",
+        "shortSummaryHint": "One or two sentences for \"Short Summaries of Major Events in Kurdistan\". Left blank, the first two sentences are used."
+      },
+      "downloadWithSources": "PDF with sources",
+      "downloadWithoutSources": "PDF without sources",
+      "emailVersion": "Report version",
+      "versionWithSources": "With sources",
+      "versionWithoutSources": "Without sources",
+      "pinOutsideIraq": "Each map pin needs both latitude and longitude, inside Iraq. Fix or clear the pin, then save."
     },
     "emailing": {
       "title": "Client emailing",
@@ -1292,7 +1313,10 @@
       "sendFailed": "Couldn't send — check the mail settings and try again.",
       "templateGone": "This report no longer exists.",
       "sent": "Sent to {count} clients.",
-      "sentPartial": "Sent to {sent} of {total} clients — check the mail settings for the rest."
+      "sentPartial": "Sent to {sent} of {total} clients — check the mail settings for the rest.",
+      "versionLabel": "Report version",
+      "versionWithSources": "With sources (clickable links)",
+      "versionWithoutSources": "Without sources"
     },
     "media": {
       "title": "Media",
@@ -1560,6 +1584,56 @@
         "HIGH": "High",
         "CRITICAL": "Critical"
       }
+    }
+  },
+  "reportVocab": {
+    "categories": {
+      "SECURITY": "Security Developments",
+      "ECONOMIC": "Economic Developments",
+      "MINISTERIAL": "Ministerial Activities",
+      "GOVERNANCE_POLITICAL": "Governance and Political Activities",
+      "LOCAL_INTERNATIONAL": "Local and International Interests"
+    },
+    "classifications": {
+      "ATTACK": "Attack",
+      "EXPLOSION": "Explosion / IED",
+      "KIDNAPPING": "Kidnapping",
+      "ARREST": "Arrest",
+      "MILITARY_OPERATION": "Military operation",
+      "PROTEST": "Protest",
+      "CRIME": "Crime",
+      "ACCIDENT": "Accident",
+      "NATURAL_DISASTER": "Natural disaster",
+      "POLITICAL": "Political",
+      "ECONOMIC": "Economic",
+      "OTHER": "Other"
+    },
+    "uncategorised": "General",
+    "shortSummaries": "Short Summaries of Major Events in Kurdistan",
+    "eventMap": "Daily event map",
+    "approximateNote": "Hollow pins mark events located only to their governorate; they are drawn at its centre.",
+    "pdfWithSources": "PDF with sources",
+    "pdfWithoutSources": "PDF without sources",
+    "governorates": {
+      "BAGHDAD": "Baghdad",
+      "WASIT": "Wasit",
+      "SALAH_AL_DIN": "Salah al-Din",
+      "DIYALA": "Diyala",
+      "ANBAR": "Anbar",
+      "BABIL": "Babil",
+      "KARBALA": "Karbala",
+      "NAJAF": "Najaf",
+      "QADISIYAH": "Qadisiyah",
+      "MUTHANNA": "Muthanna",
+      "DHI_QAR": "Dhi Qar",
+      "MAYSAN": "Maysan",
+      "BASRA": "Basra",
+      "NINAWA": "Ninawa",
+      "KIRKUK": "Kirkuk",
+      "ERBIL": "Erbil",
+      "SULAYMANIYAH": "Sulaymaniyah",
+      "DUHOK": "Duhok",
+      "HALABJA": "Halabja"
     }
   }
 }

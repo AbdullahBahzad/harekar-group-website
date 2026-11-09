@@ -16,11 +16,66 @@ export type ThreatLevel = (typeof THREAT_LEVELS)[number];
 export const REGIONS = ["KURDISTAN", "IRAQ"] as const;
 export type Region = (typeof REGIONS)[number];
 
+/**
+ * The five sections every Daily Security Report is organised into, in the
+ * order the report prints them. Mirrors the `ReportCategory` database enum.
+ */
+export const REPORT_CATEGORIES = [
+  "SECURITY",
+  "ECONOMIC",
+  "MINISTERIAL",
+  "GOVERNANCE_POLITICAL",
+  "LOCAL_INTERNATIONAL",
+] as const;
+export type ReportCategory = (typeof REPORT_CATEGORIES)[number];
+
+/**
+ * What kind of event it was — finer than the category, and what an event map
+ * draws its icon from. Stored as plain text, so adding a value needs no
+ * migration, only an icon and a label.
+ */
+export const EVENT_CLASSIFICATIONS = [
+  "ATTACK",
+  "EXPLOSION",
+  "KIDNAPPING",
+  "ARREST",
+  "MILITARY_OPERATION",
+  "PROTEST",
+  "CRIME",
+  "ACCIDENT",
+  "NATURAL_DISASTER",
+  "POLITICAL",
+  "ECONOMIC",
+  "OTHER",
+] as const;
+export type EventClassification = (typeof EVENT_CLASSIFICATIONS)[number];
+
+/**
+ * One event in a daily report — a `ReportEvent` row, in the shape the console,
+ * the PDF and the portal all read. The weekly, monthly and six-week reports are
+ * built from these same rows, so everything past `region` is what lets them
+ * group by category and plot on a map.
+ *
+ * The extra fields are optional because AI drafts and headline pulls start
+ * without them and the operator fills them in; events migrated from reports
+ * filed before categories existed have no category at all.
+ */
 export type ReportNewsItem = {
   title: string;
   body: string;
   url: string | null;
   region: Region;
+  category?: ReportCategory | null;
+  classification?: EventClassification | null;
+  /** One or two sentences for the "Short Summaries of Major Events in Kurdistan" section. */
+  shortSummary?: string | null;
+  governorate?: GovernorateKey | null;
+  district?: string | null;
+  /** Town, neighbourhood or site — the most specific place named. */
+  area?: string | null;
+  /** Exact pin, when known. Without it the map places the event at its governorate. */
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 /**
@@ -78,7 +133,14 @@ export type GovernorateRiskEntry = {
   driver: string;
 };
 
-/** Shape of `DailyReport.content` in the database. */
+/**
+ * A report's content as every reader sees it.
+ *
+ * `items` comes from the report's `ReportEvent` rows (see `report-load.ts`),
+ * not from the `DailyReport.content` JSON column — that column now stores only
+ * the governorate matrix. Reports filed before events had their own table were
+ * copied into it by the `report_events` migration.
+ */
 export type ReportContent = {
   items: ReportNewsItem[];
   /**

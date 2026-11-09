@@ -1,5 +1,6 @@
 import { logReadFallback, prisma } from "@/lib/prisma";
 import type { ReportContent, ThreatLevel } from "@/lib/report-shape";
+import { REPORT_WITH_EVENTS, reportContentOf } from "@/lib/report-load";
 
 /**
  * Daily Security Reports, as a customer receives them.
@@ -47,14 +48,14 @@ export async function getReportSummaries(
     const rows = await prisma.dailyReport.findMany({
       orderBy: { date: "desc" },
       take,
-      // `content` is fetched only to count its items; it never leaves this
-      // function for an unentitled reader.
+      // Only a count of the events — no write-up is fetched for an
+      // unentitled reader at all.
       select: {
         id: true,
         date: true,
         kurdistanThreat: true,
         iraqThreat: true,
-        content: true,
+        _count: { select: { events: true } },
       },
     });
 
@@ -63,7 +64,7 @@ export async function getReportSummaries(
       date: row.date.toISOString(),
       kurdistanThreat: row.kurdistanThreat as ThreatLevel,
       iraqThreat: row.iraqThreat as ThreatLevel,
-      itemCount: ((row.content as ReportContent | null)?.items ?? []).length,
+      itemCount: row._count.events,
     }));
   } catch (error) {
     // A reports outage must not take the intelligence page down with it.
@@ -78,6 +79,7 @@ export async function getFullReports(take = 8): Promise<PublicReport[]> {
     const rows = await prisma.dailyReport.findMany({
       orderBy: { date: "desc" },
       take,
+      include: REPORT_WITH_EVENTS,
     });
 
     return rows.map((row) => ({
@@ -88,8 +90,8 @@ export async function getFullReports(take = 8): Promise<PublicReport[]> {
       politicalKurdistan: row.politicalKurdistan,
       politicalIraq: row.politicalIraq,
       weather: row.weather,
-      content: (row.content as ReportContent | null) ?? { items: [] },
-      itemCount: ((row.content as ReportContent | null)?.items ?? []).length,
+      content: reportContentOf(row),
+      itemCount: row.events.length,
     }));
   } catch (error) {
     logReadFallback("no daily reports", error);

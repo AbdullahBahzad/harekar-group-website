@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { renderSavedReportPdf } from "@/lib/pdf/saved-report";
+import { renderSavedReportPdf, wantsSources } from "@/lib/pdf/saved-report";
 
 /**
  * Renders a saved Daily Security Report as the branded PDF, for the client
@@ -12,7 +12,7 @@ import { renderSavedReportPdf } from "@/lib/pdf/saved-report";
  * report ids cannot be enumerated from the response alone.
  */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
@@ -24,19 +24,19 @@ export async function GET(
 
   let rendered: Awaited<ReturnType<typeof renderSavedReportPdf>>;
   try {
-    rendered = await renderSavedReportPdf(id);
+    rendered = await renderSavedReportPdf(id, {
+      withSources: wantsSources(request),
+    });
   } catch (error) {
     console.error("Failed to render portal report PDF", error);
     return new NextResponse("Could not render this report", { status: 500 });
   }
   if (!rendered) return notFound;
 
-  const filename = `harekar-daily-security-report-${rendered.dateLabel}.pdf`;
-
   return new NextResponse(new Uint8Array(rendered.pdf), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": `attachment; filename="${rendered.filename}"`,
       "X-Content-Type-Options": "nosniff",
       "Cache-Control": "private, no-store",
     },

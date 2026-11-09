@@ -1239,7 +1239,28 @@
         "SULAYMANIYAH": "سلێمانی",
         "DUHOK": "دهۆک",
         "HALABJA": "هەڵەبجە"
-      }
+      },
+      "categoryRequired": "پێش پاشەکەوتکردن، بۆ هەموو بابەتێک پۆلێک هەڵبژێرە.",
+      "filing": {
+        "category": "پۆل",
+        "choose": "هەڵبژێرە…",
+        "classification": "جۆری ڕووداو",
+        "none": "—",
+        "governorate": "پارێزگا",
+        "district": "قەزا",
+        "area": "ناوچە / شارۆچکە",
+        "latitude": "هێڵی پانی",
+        "longitude": "هێڵی درێژی",
+        "pinHint": "دەرزییەکی وردی ئارەزوومەندانە لەسەر نەخشە. بەبێ ئەوە، ڕووداوەکە لە ناوەڕاستی پارێزگاکەی دادەنرێت.",
+        "shortSummary": "کورتە (کوردستان)",
+        "shortSummaryHint": "یەک یان دوو ڕستە بۆ بەشی «کورتەی ڕووداوە سەرەکییەکانی کوردستان». ئەگەر بەتاڵ بێت، دوو ڕستەی یەکەم بەکاردێت."
+      },
+      "downloadWithSources": "PDF لەگەڵ سەرچاوە",
+      "downloadWithoutSources": "PDF بەبێ سەرچاوە",
+      "emailVersion": "وەشانی ڕاپۆرت",
+      "versionWithSources": "لەگەڵ سەرچاوە",
+      "versionWithoutSources": "بەبێ سەرچاوە",
+      "pinOutsideIraq": "هەر دەرزییەکی نەخشە پێویستی بە هێڵی پانی و درێژی هەیە لەناو عێراقدا. دەرزییەکە ڕاست بکەرەوە یان بیسڕەوە، پاشان پاشەکەوتی بکە."
     },
     "emailing": {
       "title": "ئیمەیلکردنی کڕیاران",
@@ -1292,7 +1313,10 @@
       "sendFailed": "نەتوانرا بنێردرێت — ڕێکخستنەکانی ئیمەیل بپشکنە و دووبارە هەوڵبدەوە.",
       "templateGone": "ئەم ڕاپۆرتە چیتر بوونی نییە.",
       "sent": "نێردرا بۆ {count} کڕیار.",
-      "sentPartial": "نێردرا بۆ {sent} لە {total} کڕیار — ڕێکخستنەکانی ئیمەیل بۆ ماوەکە بپشکنە."
+      "sentPartial": "نێردرا بۆ {sent} لە {total} کڕیار — ڕێکخستنەکانی ئیمەیل بۆ ماوەکە بپشکنە.",
+      "versionLabel": "وەشانی ڕاپۆرت",
+      "versionWithSources": "لەگەڵ سەرچاوە (بەستەری کرتەپێکراو)",
+      "versionWithoutSources": "بەبێ سەرچاوە"
     },
     "media": {
       "title": "میدیا",
@@ -1560,6 +1584,56 @@
         "HIGH": "بەرز",
         "CRITICAL": "مەترسیدار"
       }
+    }
+  },
+  "reportVocab": {
+    "categories": {
+      "SECURITY": "پێشهاتە ئەمنییەکان",
+      "ECONOMIC": "پێشهاتە ئابوورییەکان",
+      "MINISTERIAL": "چالاکییە وەزارییەکان",
+      "GOVERNANCE_POLITICAL": "چالاکییە حکومی و سیاسییەکان",
+      "LOCAL_INTERNATIONAL": "بەرژەوەندییە ناوخۆیی و نێودەوڵەتییەکان"
+    },
+    "classifications": {
+      "ATTACK": "هێرش",
+      "EXPLOSION": "تەقینەوە / بۆمبی چێنراو",
+      "KIDNAPPING": "ڕفاندن",
+      "ARREST": "دەستگیرکردن",
+      "MILITARY_OPERATION": "ئۆپەراسیۆنی سەربازی",
+      "PROTEST": "خۆپیشاندان",
+      "CRIME": "تاوان",
+      "ACCIDENT": "ڕووداو",
+      "NATURAL_DISASTER": "کارەساتی سروشتی",
+      "POLITICAL": "سیاسی",
+      "ECONOMIC": "ئابووری",
+      "OTHER": "هیتر"
+    },
+    "uncategorised": "گشتی",
+    "shortSummaries": "کورتەی ڕووداوە سەرەکییەکانی کوردستان",
+    "eventMap": "نەخشەی ڕووداوەکانی ڕۆژ",
+    "approximateNote": "دەرزییە بەتاڵەکان ئەو ڕووداوانەن کە تەنها پارێزگاکەیان زانراوە؛ لە ناوەڕاستی پارێزگاکە دانراون.",
+    "pdfWithSources": "PDF لەگەڵ سەرچاوە",
+    "pdfWithoutSources": "PDF بەبێ سەرچاوە",
+    "governorates": {
+      "BAGHDAD": "بەغدا",
+      "WASIT": "واست",
+      "SALAH_AL_DIN": "سەلاحەدین",
+      "DIYALA": "دیالە",
+      "ANBAR": "ئەنبار",
+      "BABIL": "بابل",
+      "KARBALA": "کەربەلا",
+      "NAJAF": "نەجەف",
+      "QADISIYAH": "قادیسییە",
+      "MUTHANNA": "موسەننا",
+      "DHI_QAR": "زیقار",
+      "MAYSAN": "مەیسان",
+      "BASRA": "بەسرە",
+      "NINAWA": "نەینەوا",
+      "KIRKUK": "کەرکووک",
+      "ERBIL": "هەولێر",
+      "SULAYMANIYAH": "سلێمانی",
+      "DUHOK": "دهۆک",
+      "HALABJA": "هەڵەبجە"
     }
   }
 }

@@ -1,19 +1,28 @@
 import { prisma } from "@/lib/prisma";
 import { renderReportPdf } from "@/lib/pdf/render-report-pdf";
-import type { ReportContent, ThreatLevel } from "@/lib/reports";
+import { reportEmailFilename } from "@/lib/report-email";
+import type { ThreatLevel } from "@/lib/reports";
+import { REPORT_WITH_EVENTS, reportContentOf } from "@/lib/report-load";
 
 /**
- * Loads a saved report and renders it as the same branded PDF the console's
- * "Download PDF" link produces — shared by every path that emails a report,
- * so a render failure is handled once rather than once per caller.
+ * Loads a saved report and renders it as the branded PDF — shared by the
+ * console and portal downloads and the email action, so a render failure is
+ * handled once rather than once per caller.
+ *
+ * `withSources` picks between the report's two versions: identical content,
+ * with or without each event's source link.
  */
 export async function renderSavedReportPdf(
   id: string,
-): Promise<{ dateLabel: string; pdf: Buffer } | null> {
-  const report = await prisma.dailyReport.findUnique({ where: { id } });
+  { withSources }: { withSources: boolean },
+): Promise<{ dateLabel: string; filename: string; pdf: Buffer } | null> {
+  const report = await prisma.dailyReport.findUnique({
+    where: { id },
+    include: REPORT_WITH_EVENTS,
+  });
   if (!report) return null;
 
-  const content = report.content as unknown as ReportContent;
+  const content = reportContentOf(report);
   const dateLabel = report.date.toISOString().slice(0, 10);
 
   const pdf = Buffer.from(
@@ -27,8 +36,14 @@ export async function renderSavedReportPdf(
       executiveSummary: report.executiveSummary,
       items: content.items,
       governorates: content.governorates ?? [],
+      withSources,
     }),
   );
 
-  return { dateLabel, pdf };
+  return { dateLabel, filename: reportEmailFilename(dateLabel, withSources), pdf };
+}
+
+/** `?sources=0` asks for the version without source links; anything else gets them. */
+export function wantsSources(request: Request): boolean {
+  return new URL(request.url).searchParams.get("sources") !== "0";
 }

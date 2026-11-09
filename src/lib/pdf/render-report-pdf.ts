@@ -38,6 +38,8 @@ export type RenderReportPdfInput = {
   executiveSummary: string | null;
   items: ReportPdfItem[];
   governorates: GovernorateRiskEntry[];
+  /** Print each event's source link (the "with sources" version). */
+  withSources: boolean;
 };
 
 /** `17 August 2026`, matching the template's own date format. */
@@ -69,6 +71,7 @@ export async function renderReportPdf(
       executiveSummary: report.executiveSummary,
       items: report.items,
       governorates: report.governorates,
+      withSources: report.withSources,
       logo,
       coverPhoto,
     }),

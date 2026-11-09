@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import type { ConsoleReport, ReportContent } from "@/lib/report-shape";
+import type { ConsoleReport } from "@/lib/report-shape";
+import { REPORT_WITH_EVENTS, reportContentOf } from "@/lib/report-load";
 
 /*
  * Deliberately its own query rather than a call to `getRecentReports` in
@@ -25,7 +26,7 @@ function toConsoleReport(
     politicalIraq: report.politicalIraq,
     weather: report.weather,
     executiveSummary: report.executiveSummary,
-    content: report.content as unknown as ReportContent,
+    content: reportContentOf(report),
     createdAt: report.createdAt.toISOString(),
     updatedAt: report.updatedAt.toISOString(),
     createdByName: report.createdBy?.name ?? report.createdBy?.email ?? null,
@@ -35,7 +36,10 @@ function toConsoleReport(
 function fetchOne(id: string) {
   return prisma.dailyReport.findUnique({
     where: { id },
-    include: { createdBy: { select: { name: true, email: true } } },
+    include: {
+      createdBy: { select: { name: true, email: true } },
+      ...REPORT_WITH_EVENTS,
+    },
   });
 }
 
@@ -43,7 +47,10 @@ function fetchOne(id: string) {
 export async function getLatestBrief(): Promise<ConsoleReport | null> {
   const report = await prisma.dailyReport.findFirst({
     orderBy: { date: "desc" },
-    include: { createdBy: { select: { name: true, email: true } } },
+    include: {
+      createdBy: { select: { name: true, email: true } },
+      ...REPORT_WITH_EVENTS,
+    },
   });
   return toConsoleReport(report);
 }
@@ -53,7 +60,10 @@ export async function getLatestBrief(): Promise<ConsoleReport | null> {
 export async function getRecentBriefs(take: number): Promise<ConsoleReport[]> {
   const rows = await prisma.dailyReport.findMany({
     orderBy: { date: "desc" },
-    include: { createdBy: { select: { name: true, email: true } } },
+    include: {
+      createdBy: { select: { name: true, email: true } },
+      ...REPORT_WITH_EVENTS,
+    },
     take,
   });
   return rows.map((report) => toConsoleReport(report)!);

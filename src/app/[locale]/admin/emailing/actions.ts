@@ -7,7 +7,6 @@ import { sendMail } from "@/lib/mail";
 import { renderSavedReportPdf } from "@/lib/pdf/saved-report";
 import {
   reportEmailBody,
-  reportEmailFilename,
   reportEmailSubject,
 } from "@/lib/report-email";
 
@@ -153,6 +152,8 @@ export async function sendReportToSelected(
   const note = String(formData.get("note") ?? "")
     .trim()
     .slice(0, 2000);
+  // "0" sends the version without source links.
+  const withSources = formData.get("sources") !== "0";
 
   const ids = [
     ...new Set(
@@ -183,14 +184,14 @@ export async function sendReportToSelected(
 
   let rendered: Awaited<ReturnType<typeof renderSavedReportPdf>>;
   try {
-    rendered = await renderSavedReportPdf(reportId);
+    rendered = await renderSavedReportPdf(reportId, { withSources });
   } catch (error) {
     console.error("Failed to render report PDF for bulk email", error);
     return { status: "error", messageKey: "sendFailed" };
   }
   if (!rendered) return { status: "error", messageKey: "templateGone" };
 
-  const { dateLabel, pdf } = rendered;
+  const { dateLabel, filename, pdf } = rendered;
 
   let sentCount = 0;
   for (let i = 0; i < recipients.length; i += SEND_BATCH) {
@@ -201,7 +202,7 @@ export async function sendReportToSelected(
           subject: reportEmailSubject(dateLabel),
           text: reportEmailBody(recipient.firstName, note),
           attachment: {
-            filename: reportEmailFilename(dateLabel),
+            filename,
             content: pdf,
             contentType: "application/pdf",
           },

@@ -8,15 +8,24 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 import { ACRONYM_COLUMNS } from "./acronyms";
+import { EventMap } from "./event-map";
+import { orderReportEvents } from "@/lib/report-order";
+import {
+  CATEGORY_HEADING,
+  CLASSIFICATION_LABEL,
+  GOVERNORATE_LABEL,
+  UNCATEGORISED_HEADING,
+  categoryColor,
+  locationLine,
+} from "./report-labels";
 import {
   GOVERNORATES,
   REGION_GROUPS,
-  type GovernorateKey,
   type GovernorateRiskEntry,
   type RegionGroup,
+  type ReportNewsItem,
   type RiskTrend,
   type ThreatLevel,
-  type Region,
 } from "@/lib/report-shape";
 
 /**
@@ -27,12 +36,7 @@ import {
  * decisions of its own.
  */
 
-export type ReportPdfItem = {
-  title: string;
-  body: string;
-  url: string | null;
-  region: Region;
-};
+export type ReportPdfItem = ReportNewsItem;
 
 export type ReportPdfProps = {
   dateLabel: string;
@@ -45,14 +49,12 @@ export type ReportPdfProps = {
   executiveSummary: string | null;
   items: ReportPdfItem[];
   governorates: GovernorateRiskEntry[];
+  /** The "with sources" version prints each event's source link; the other
+   * version is identical apart from leaving them out. */
+  withSources: boolean;
   /** Raw image bytes, read from disk by the caller — see `render-report-pdf.ts`. */
   logo: Buffer;
   coverPhoto: Buffer;
-};
-
-const REGION_HEADING: Record<Region, string> = {
-  KURDISTAN: "Kurdistan Region of Iraq",
-  IRAQ: "Iraq",
 };
 
 const THREAT_LABEL: Record<ThreatLevel, string> = {
@@ -60,28 +62,6 @@ const THREAT_LABEL: Record<ThreatLevel, string> = {
   MODERATE: "MODERATE",
   HIGH: "HIGH",
   CRITICAL: "CRITICAL",
-};
-
-const GOVERNORATE_LABEL: Record<GovernorateKey, string> = {
-  BAGHDAD: "Baghdad",
-  WASIT: "Wasit",
-  SALAH_AL_DIN: "Salah al-Din",
-  DIYALA: "Diyala",
-  ANBAR: "Anbar",
-  BABIL: "Babil",
-  KARBALA: "Karbala",
-  NAJAF: "Najaf",
-  QADISIYAH: "Qadisiyah",
-  MUTHANNA: "Muthanna",
-  DHI_QAR: "Dhi Qar",
-  MAYSAN: "Maysan",
-  BASRA: "Basra",
-  NINAWA: "Ninawa",
-  KIRKUK: "Kirkuk",
-  ERBIL: "Erbil",
-  SULAYMANIYAH: "Sulaymaniyah",
-  DUHOK: "Duhok",
-  HALABJA: "Halabja",
 };
 
 const REGION_GROUP_LABEL: Record<RegionGroup, string> = {
@@ -187,7 +167,39 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: "#ccc",
   },
-  itemTitle: { fontSize: 10, fontFamily: "Helvetica-Bold", marginBottom: 3 },
+  itemTitleRow: { flexDirection: "row", alignItems: "flex-start", gap: 5, marginBottom: 2 },
+  itemNumber: {
+    fontSize: 7,
+    fontFamily: "Helvetica-Bold",
+    color: "#fff",
+    paddingVertical: 1.5,
+    paddingHorizontal: 4,
+    borderRadius: 2,
+    marginTop: 1,
+  },
+  itemTitle: { fontSize: 10, fontFamily: "Helvetica-Bold", flex: 1 },
+  itemMeta: { fontSize: 7.5, color: "#6b6559", marginBottom: 3 },
+  shortSummaryHeading: {
+    fontSize: 12,
+    fontFamily: "Helvetica-Bold",
+    backgroundColor: "#e9e2d3",
+    padding: 6,
+    marginTop: 14,
+    marginBottom: 8,
+  },
+  shortSummaryRow: { flexDirection: "row", gap: 5, marginBottom: 5 },
+  shortSummaryBullet: { fontSize: 9, width: 8 },
+  shortSummaryText: { fontSize: 9, lineHeight: 1.4, flex: 1 },
+  categoryHeading: {
+    fontSize: 12,
+    fontFamily: "Helvetica-Bold",
+    color: "#fff",
+    padding: 6,
+    marginTop: 14,
+    marginBottom: 8,
+  },
+  mapTitle: { fontSize: 14, fontFamily: "Helvetica-Bold", marginBottom: 4 },
+  mapSubtitle: { fontSize: 9, color: "#555", marginBottom: 10 },
   itemBody: { fontSize: 9, lineHeight: 1.4, marginBottom: 3 },
   itemUrl: { fontSize: 8, color: gold },
 
@@ -248,6 +260,18 @@ const styles = StyleSheet.create({
   matrixTrendText: { fontSize: 7.5, fontFamily: "Helvetica-Bold" },
 });
 
+/**
+ * An event's line in "Short Summaries of Major Events in Kurdistan": the
+ * analyst's own short summary when written, otherwise the write-up's first
+ * two sentences.
+ */
+function shortSummaryOf(item: ReportNewsItem): string {
+  const own = item.shortSummary?.trim();
+  if (own) return own;
+  const sentences = item.body.match(/[^.!?]+[.!?]+(\s|$)/g);
+  return sentences ? sentences.slice(0, 2).join("").trim() : item.body.trim();
+}
+
 export function ReportDocument({
   dateLabel,
   kurdistanThreat,
@@ -258,18 +282,18 @@ export function ReportDocument({
   executiveSummary,
   items,
   governorates,
+  withSources,
   logo,
   coverPhoto,
 }: ReportPdfProps) {
-  // Kurdistan first, then Iraq-wide — matching the template's own ordering.
-  // A region with no items that day is skipped rather than printed empty.
-  const regions: Region[] = ["KURDISTAN", "IRAQ"];
-  const byRegion = regions
-    .map((region) => ({
-      region,
-      items: items.filter((item) => item.region === region),
-    }))
-    .filter((group) => group.items.length > 0);
+  // Sections, printed order and numbering are shared with the portal and the
+  // event map — see `orderReportEvents`. Events filed before categories
+  // existed print last, under "General"; an empty section is skipped.
+  const { sections, numbered } = orderReportEvents(items);
+
+  const kurdistanSummaries = numbered
+    .filter(({ item }) => item.region === "KURDISTAN")
+    .map(({ item, number }) => ({ number, text: shortSummaryOf(item) }));
 
   const governorateByGroup = REGION_GROUPS.map((group) => ({
     group,
@@ -426,6 +450,11 @@ export function ReportDocument({
 
       {/* ---- report body ---------------------------------------------------- */}
       <Page size="A4" style={styles.page}>
+        <Text style={styles.dateRow}>
+          <Text style={styles.dateLabel}>Date: </Text>
+          {dateLabel}
+        </Text>
+
         {executiveSummary?.trim() && (
           <View>
             <Text style={styles.summaryHeading}>Executive Summary</Text>
@@ -441,27 +470,57 @@ export function ReportDocument({
           </View>
         )}
 
-        {byRegion.map((group) => (
-          <View key={group.region} wrap={false} minPresenceAhead={40}>
-            <Text style={styles.regionHeading}>
-              {REGION_HEADING[group.region]}
+        {kurdistanSummaries.length > 0 && (
+          <View minPresenceAhead={60}>
+            <Text style={styles.shortSummaryHeading}>
+              Short Summaries of Major Events in Kurdistan
             </Text>
-            <Text style={styles.dateRow}>
-              <Text style={styles.dateLabel}>Date: </Text>
-              {dateLabel}
-            </Text>
-
-            {group.items.map((item, i) => (
-              <View key={i} style={styles.item} wrap={false}>
-                <Text style={styles.itemTitle}>{item.title}</Text>
-                <Text style={styles.itemBody}>{item.body}</Text>
-                {item.url && (
-                  <Link src={item.url} style={styles.itemUrl}>
-                    {item.url}
-                  </Link>
-                )}
+            {kurdistanSummaries.map(({ number, text }) => (
+              <View key={number} style={styles.shortSummaryRow} wrap={false}>
+                <Text style={styles.shortSummaryBullet}>•</Text>
+                <Text style={styles.shortSummaryText}>{text}</Text>
               </View>
             ))}
+          </View>
+        )}
+
+        {sections.map(({ category, events }) => (
+          <View key={category ?? "general"} minPresenceAhead={60}>
+            <Text
+              style={[styles.categoryHeading, { backgroundColor: categoryColor(category) }]}
+            >
+              {category ? CATEGORY_HEADING[category] : UNCATEGORISED_HEADING}
+            </Text>
+
+            {events.map(({ item, number }) => {
+              const place = locationLine(item);
+              const kind = item.classification
+                ? CLASSIFICATION_LABEL[item.classification]
+                : null;
+              return (
+                <View key={number} style={styles.item} wrap={false}>
+                  <View style={styles.itemTitleRow}>
+                    <Text
+                      style={[styles.itemNumber, { backgroundColor: categoryColor(item.category) }]}
+                    >
+                      {number}
+                    </Text>
+                    <Text style={styles.itemTitle}>{item.title}</Text>
+                  </View>
+                  {(place || kind) && (
+                    <Text style={styles.itemMeta}>
+                      {[place, kind].filter(Boolean).join("  ·  ")}
+                    </Text>
+                  )}
+                  <Text style={styles.itemBody}>{item.body}</Text>
+                  {withSources && item.url && (
+                    <Link src={item.url} style={styles.itemUrl}>
+                      {item.url}
+                    </Link>
+                  )}
+                </View>
+              );
+            })}
           </View>
         ))}
 
@@ -482,6 +541,17 @@ export function ReportDocument({
           </Text>
         </View>
       </Page>
+
+      {/* ---- daily event map ------------------------------------------------ */}
+      {numbered.some(({ item }) => item.governorate || item.latitude != null) && (
+        <Page size="A4" style={styles.page}>
+          <Text style={styles.mapTitle}>Daily Event Map</Text>
+          <Text style={styles.mapSubtitle}>
+            Events recorded on {dateLabel}. Numbers match the report above.
+          </Text>
+          <EventMap events={numbered} />
+        </Page>
+      )}
     </Document>
   );
 }

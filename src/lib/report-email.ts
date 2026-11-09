@@ -18,8 +18,15 @@ export function reportEmailSubject(dateLabel: string): string {
   return `Harekar Group — Daily Security Report — ${dateLabel}`;
 }
 
-export function reportEmailFilename(dateLabel: string): string {
-  return `harekar-daily-security-report-${dateLabel}.pdf`;
+/**
+ * `harekar-daily-security-report-2026-11-02-with-sources.pdf` — the same name
+ * the console and portal downloads use, so a client can tell the two versions
+ * apart whichever way the PDF reached them.
+ */
+export function reportEmailFilename(dateLabel: string, withSources: boolean): string {
+  return `harekar-daily-security-report-${dateLabel}-${
+    withSources ? "with-sources" : "without-sources"
+  }.pdf`;
 }
 
 /** Falls back to a plain "Hello," so a client saved without a first name is

@@ -14,9 +14,15 @@ import {
   type Region,
   type RiskTrend,
   type GovernorateKey,
-  type ReportContent,
   type ReportNewsItem,
 } from "@/lib/reports";
+import {
+  EVENT_CLASSIFICATIONS,
+  REPORT_CATEGORIES,
+  type EventClassification,
+  type ReportCategory,
+} from "@/lib/report-shape";
+import { inIraq } from "@/lib/report-geo";
 import { fetchHeadlines, type Headline } from "@/lib/headlines";
 import {
   listCombinedSources,
@@ -362,6 +368,28 @@ function readGovernorateMatrix(formData: FormData) {
  * day that would matter — cheaper to refuse it on the way in than to remember
  * on the way out.
  */
+/**
+ * An event's exact map pin, or none. Both coordinates or neither: a lone
+ * latitude is a half-typed pin, not a location. A pin outside Iraq is refused
+ * rather than drawn off the edge of every event map.
+ */
+function readPin(
+  rawLat: string | undefined,
+  rawLng: string | undefined,
+  index: number,
+): { latitude: number | null; longitude: number | null } {
+  const latText = (rawLat ?? "").trim();
+  const lngText = (rawLng ?? "").trim();
+  if (!latText && !lngText) return { latitude: null, longitude: null };
+
+  const latitude = Number(latText);
+  const longitude = Number(lngText);
+  if (!latText || !lngText || !inIraq(latitude, longitude)) {
+    throw new Error(`Item ${index + 1} has a map pin outside Iraq`);
+  }
+  return { latitude, longitude };
+}
+
 function readSourceUrl(value: string | undefined, index: number): string | null {
   const raw = (value ?? "").trim();
   if (!raw) return null;
@@ -406,6 +434,15 @@ export async function saveReport(formData: FormData): Promise<SaveReportResult> 
   const bodies = formData.getAll("finalBody").map(String);
   const urls = formData.getAll("finalUrl").map(String);
   const regions = formData.getAll("finalRegion").map(String);
+  // Parallel to the four above, one entry per item, "" for "not set".
+  const categories = formData.getAll("finalCategory").map(String);
+  const classifications = formData.getAll("finalClassification").map(String);
+  const summaries = formData.getAll("finalSummary").map(String);
+  const governorates = formData.getAll("finalGovernorate").map(String);
+  const districts = formData.getAll("finalDistrict").map(String);
+  const areas = formData.getAll("finalArea").map(String);
+  const lats = formData.getAll("finalLat").map(String);
+  const lngs = formData.getAll("finalLng").map(String);
 
   if (titles.length === 0) throw new Error("Nothing to save");
 
@@ -430,17 +467,44 @@ export async function saveReport(formData: FormData): Promise<SaveReportResult> 
       );
     }
 
+    // Every new item is filed under one of the report's five sections; the
+    // console will not send a save without one.
+    const category = categories[i] ?? "";
+    if (!REPORT_CATEGORIES.includes(category as ReportCategory)) {
+      throw new Error(`Item ${i + 1} needs a category`);
+    }
+
+    const classification = (classifications[i] ?? "").trim();
+    if (
+      classification &&
+      !EVENT_CLASSIFICATIONS.includes(classification as EventClassification)
+    ) {
+      throw new Error(`Item ${i + 1} has an unknown event type`);
+    }
+
+    const governorate = (governorates[i] ?? "").trim();
+    if (governorate && !GOVERNORATES.some((g) => g.key === governorate)) {
+      throw new Error(`Item ${i + 1} has an unknown governorate`);
+    }
+
     return {
       title,
       body,
       url: readSourceUrl(urls[i], i),
       region: region as Region,
+      category: category as ReportCategory,
+      classification: (classification || null) as EventClassification | null,
+      shortSummary: (summaries[i] ?? "").trim() || null,
+      governorate: (governorate || null) as GovernorateKey | null,
+      district: (districts[i] ?? "").trim() || null,
+      area: (areas[i] ?? "").trim() || null,
+      ...readPin(lats[i], lngs[i], i),
     };
   });
 
-  const governorates = readGovernorateMatrix(formData);
-
-  const content: ReportContent = { items, governorates };
+  // Only the governorate matrix is stored in `content` now; the items are the
+  // report's `ReportEvent` rows, written below.
+  const content = { governorates: readGovernorateMatrix(formData) };
 
   if (!replaceExisting) {
     const existing = await prisma.dailyReport.findUnique({
@@ -457,11 +521,39 @@ export async function saveReport(formData: FormData): Promise<SaveReportResult> 
    *
    * Authorship is set only on create: a corrected report is still the one that
    * analyst filed, and `updatedAt` already records that it was touched again.
+   *
+   * The report and its events are written in one transaction: the console
+   * edits a report as one document, so its events are replaced whole, and a
+   * failure part-way leaves the previous version intact rather than a report
+   * with half its events.
    */
-  await prisma.dailyReport.upsert({
-    where: { date: meta.date },
-    create: { ...meta, content, createdById: operatorId },
-    update: { ...meta, content },
+  await prisma.$transaction(async (tx) => {
+    const report = await tx.dailyReport.upsert({
+      where: { date: meta.date },
+      create: { ...meta, content, createdById: operatorId },
+      update: { ...meta, content },
+      select: { id: true },
+    });
+    await tx.reportEvent.deleteMany({ where: { reportId: report.id } });
+    await tx.reportEvent.createMany({
+      data: items.map((item, position) => ({
+        reportId: report.id,
+        position,
+        occurredOn: meta.date,
+        title: item.title,
+        body: item.body,
+        shortSummary: item.shortSummary ?? null,
+        category: item.category ?? null,
+        classification: item.classification ?? null,
+        region: item.region,
+        governorate: item.governorate ?? null,
+        district: item.district ?? null,
+        area: item.area ?? null,
+        latitude: item.latitude ?? null,
+        longitude: item.longitude ?? null,
+        sourceUrl: item.url,
+      })),
+    });
   });
 
   revalidateReports();
@@ -509,6 +601,8 @@ export async function sendReportEmail(
   const id = String(formData.get("id") ?? "");
   const email = String(formData.get("email") ?? "").trim();
   const note = String(formData.get("note") ?? "").trim();
+  // The form's version picker; "0" is the version without source links.
+  const withSources = formData.get("sources") !== "0";
 
   if (!id) throw new Error("Missing report id");
   if (!EMAIL_PATTERN.test(email)) {
@@ -517,7 +611,7 @@ export async function sendReportEmail(
 
   let rendered: Awaited<ReturnType<typeof renderSavedReportPdf>>;
   try {
-    rendered = await renderSavedReportPdf(id);
+    rendered = await renderSavedReportPdf(id, { withSources });
   } catch (error) {
     console.error("Failed to render report PDF for email", error);
     return { status: "error", messageKey: "emailFailed", email, note };
@@ -535,7 +629,7 @@ export async function sendReportEmail(
       "— Harekar Group",
     ].join("\n"),
     attachment: {
-      filename: `harekar-daily-security-report-${rendered.dateLabel}.pdf`,
+      filename: rendered.filename,
       content: rendered.pdf,
       contentType: "application/pdf",
     },

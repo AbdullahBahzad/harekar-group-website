@@ -402,13 +402,72 @@ model DailyReport {
   /// reports saved before this field existed have none, and a quiet day may not
   /// need one either, in which case the portal falls back to the item count.
   executiveSummary   String?
-  /// Drafted, reviewed report items — see `ReportContent` in `src/lib/reports.ts`.
+  /// The governorate risk matrix (`{ governorates: [...] }`). The report's
+  /// items live in `events`; reports filed before that table existed may still
+  /// carry a legacy `items` array here, already copied into `ReportEvent` and
+  /// no longer read.
   content            Json
+  events             ReportEvent[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   createdById String?
   createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+}
+
+/// The five sections a Daily Security Report is organised into.
+enum ReportCategory {
+  SECURITY
+  ECONOMIC
+  MINISTERIAL
+  GOVERNANCE_POLITICAL
+  LOCAL_INTERNATIONAL
+}
+
+/// One verified event, filed in a Daily Security Report.
+///
+/// This is the shared event record the client's reporting spec asks for: the
+/// weekly, monthly and six-week reports and their event maps are built by
+/// date range over these rows rather than by retyping the daily items, so a
+/// correction made once shows up everywhere.
+///
+/// Rows belong to their daily report and are replaced whole when it is
+/// re-saved (the console edits a report as one document).
+model ReportEvent {
+  id       String      @id @default(cuid())
+  reportId String
+  report   DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  /// Order within the report, as the analyst arranged it.
+  position Int
+  /// The report's day (UTC midnight), copied here so period reports can filter
+  /// events by date without joining back to `DailyReport`.
+  occurredOn DateTime
+
+  title        String
+  body         String
+  /// One or two sentences for "Short Summaries of Major Events in Kurdistan".
+  shortSummary String?
+  /// Null only for events migrated from reports filed before categories existed.
+  category       ReportCategory?
+  /// What kind of event — see `EVENT_CLASSIFICATIONS` in `src/lib/report-shape.ts`.
+  classification String?
+  /// "KURDISTAN" or "IRAQ" — see `REGIONS`.
+  region         String
+
+  /// A `GovernorateKey`, e.g. "KIRKUK".
+  governorate String?
+  district    String?
+  area        String?
+  /// Exact pin when known; otherwise maps place the event at its governorate.
+  latitude    Float?
+  longitude   Float?
+
+  sourceUrl String?
+
+  createdAt DateTime @default(now())
+
+  @@index([occurredOn])
+  @@index([reportId, position])
 }
 
 enum ThreatLevel {
