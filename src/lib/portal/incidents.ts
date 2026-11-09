@@ -24,6 +24,13 @@ export type PortalIncident = {
   longitude: number;
   /** Worked out from the position, not the typed province — see `governorateAt`. */
   governorate: GovernorateKey | null;
+  /** Where the report came from, and the analyst's Admiralty grading of it. */
+  sourceName: string | null;
+  sourceUrl: string | null;
+  /** A (completely reliable) to F (cannot be judged). */
+  sourceReliability: string | null;
+  /** 1 (confirmed) to 6 (cannot be judged). */
+  infoCredibility: string | null;
 };
 
 /**
@@ -58,6 +65,10 @@ export async function getIncidentFeed(take = 200): Promise<PortalIncident[]> {
       createdAt: true,
       latitude: true,
       longitude: true,
+      sourceName: true,
+      sourceUrl: true,
+      sourceReliability: true,
+      infoCredibility: true,
     },
   });
 
@@ -77,6 +88,69 @@ export async function getIncidentFeed(take = 200): Promise<PortalIncident[]> {
     occurredAt: (row.occurredAt ?? row.createdAt).toISOString(),
     latitude: row.latitude,
     longitude: row.longitude,
+    sourceName: row.sourceName,
+    sourceUrl: row.sourceUrl,
+    sourceReliability: row.sourceReliability,
+    infoCredibility: row.infoCredibility,
     governorate: governorateAt(row.longitude, row.latitude),
   }));
+}
+
+/** Everything the analyst recorded about one incident, for its full page. */
+export type PortalIncidentDetail = PortalIncident & {
+  incidentType: string | null;
+  keyPoints: string | null;
+  actorDetail: string | null;
+  targetDetail: string | null;
+  facility: string | null;
+  streetAddress: string | null;
+  district: string | null;
+  sourcePublishedAt: string | null;
+  sourceText: string | null;
+  /** When the analyst filed it — set against `occurredAt` for ingestion latency. */
+  createdAt: string;
+  updatedAt: string;
+};
+
+/**
+ * One published incident in full, for an entitled reader (the page calls
+ * `requirePortalUser` first). Null for a draft or an unknown id, so the page
+ * answers both with the same 404.
+ */
+export async function getPortalIncident(id: string): Promise<PortalIncidentDetail | null> {
+  const row = await prisma.intelMarker.findFirst({ where: { id, published: true } });
+  if (!row) return null;
+  return {
+    id: row.id,
+    label: row.label,
+    severity: row.severity,
+    headline: row.headline,
+    body: row.body,
+    category: row.category,
+    method: row.method,
+    actor: row.actor,
+    target: row.target,
+    province: row.province,
+    city: row.city,
+    resolved: row.resolved,
+    occurredAt: (row.occurredAt ?? row.createdAt).toISOString(),
+    latitude: row.latitude,
+    longitude: row.longitude,
+    governorate: governorateAt(row.longitude, row.latitude),
+    sourceName: row.sourceName,
+    sourceUrl: row.sourceUrl,
+    sourceReliability: row.sourceReliability,
+    infoCredibility: row.infoCredibility,
+    incidentType: row.incidentType,
+    keyPoints: row.keyPoints,
+    actorDetail: row.actorDetail,
+    targetDetail: row.targetDetail,
+    facility: row.facility,
+    streetAddress: row.streetAddress,
+    district: row.district,
+    sourcePublishedAt: row.sourcePublishedAt?.toISOString() ?? null,
+    sourceText: row.sourceText,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
 }

@@ -50,6 +50,10 @@ export const EVENT_CLASSIFICATIONS = [
 ] as const;
 export type EventClassification = (typeof EVENT_CLASSIFICATIONS)[number];
 
+/** How serious an event is — Conterra's Low / Medium / High scale. */
+export const EVENT_SEVERITIES = ["LOW", "MEDIUM", "HIGH"] as const;
+export type EventSeverity = (typeof EVENT_SEVERITIES)[number];
+
 /**
  * One event in a daily report — a `ReportEvent` row, in the shape the console,
  * the PDF and the portal all read. The weekly, monthly and six-week reports are
@@ -67,6 +71,7 @@ export type ReportNewsItem = {
   region: Region;
   category?: ReportCategory | null;
   classification?: EventClassification | null;
+  severity?: EventSeverity | null;
   /** One or two sentences for the "Short Summaries of Major Events in Kurdistan" section. */
   shortSummary?: string | null;
   governorate?: GovernorateKey | null;

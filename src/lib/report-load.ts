@@ -1,9 +1,11 @@
 import type { Prisma, ReportEvent } from "@prisma/client";
 import {
   EVENT_CLASSIFICATIONS,
+  EVENT_SEVERITIES,
   GOVERNORATES,
   REGIONS,
   type EventClassification,
+  type EventSeverity,
   type GovernorateKey,
   type GovernorateRiskEntry,
   type Region,
@@ -27,6 +29,8 @@ const isRegion = (value: string): value is Region =>
   (REGIONS as readonly string[]).includes(value);
 const isClassification = (value: string): value is EventClassification =>
   (EVENT_CLASSIFICATIONS as readonly string[]).includes(value);
+const isSeverity = (value: string): value is EventSeverity =>
+  (EVENT_SEVERITIES as readonly string[]).includes(value);
 const isGovernorate = (value: string): value is GovernorateKey =>
   GOVERNORATES.some((g) => g.key === value);
 
@@ -41,6 +45,7 @@ export function eventToItem(event: ReportEvent): ReportNewsItem {
       event.classification && isClassification(event.classification)
         ? event.classification
         : null,
+    severity: event.severity && isSeverity(event.severity) ? event.severity : null,
     shortSummary: event.shortSummary,
     governorate:
       event.governorate && isGovernorate(event.governorate)

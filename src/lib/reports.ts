@@ -3,9 +3,11 @@ import { safeFetchText } from "@/lib/safe-fetch";
 import { extractArticleText } from "@/lib/article-extract";
 import {
   EVENT_CLASSIFICATIONS,
+  EVENT_SEVERITIES,
   GOVERNORATES,
   REPORT_CATEGORIES,
   type EventClassification,
+  type EventSeverity,
   type GovernorateKey,
   type RawNewsInput,
   type ReportCategory,
@@ -95,6 +97,12 @@ const RETURN_ITEMS_TOOL = {
               type: "string",
               enum: [...EVENT_CLASSIFICATIONS],
               description: "What kind of event this is.",
+            },
+            severity: {
+              type: "string",
+              enum: ["LOW", "MEDIUM", "HIGH"],
+              description:
+                "How serious the event is for people operating in the area: HIGH (deaths, attacks, major disruption), MEDIUM (injuries, arrests, protests, notable threats), LOW (routine, administrative or minor).",
             },
             shortSummary: {
               type: "string",
@@ -270,6 +278,7 @@ const text = (value: unknown): string | null =>
 function draftedFiling(item: Record<string, unknown>): Partial<ReportNewsItem> {
   const category = text(item.category);
   const classification = text(item.classification);
+  const severity = text(item.severity);
   const governorate = text(item.governorate);
   const lat = typeof item.latitude === "number" ? item.latitude : NaN;
   const lng = typeof item.longitude === "number" ? item.longitude : NaN;
@@ -281,6 +290,9 @@ function draftedFiling(item: Record<string, unknown>): Partial<ReportNewsItem> {
       : null,
     classification: EVENT_CLASSIFICATIONS.includes(classification as EventClassification)
       ? (classification as EventClassification)
+      : null,
+    severity: EVENT_SEVERITIES.includes(severity as EventSeverity)
+      ? (severity as EventSeverity)
       : null,
     shortSummary: text(item.shortSummary),
     governorate: GOVERNORATES.some((g) => g.key === governorate)

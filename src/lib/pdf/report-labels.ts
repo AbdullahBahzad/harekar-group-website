@@ -1,5 +1,6 @@
 import type {
   EventClassification,
+  EventSeverity,
   GovernorateKey,
   ReportCategory,
   ReportNewsItem,
@@ -22,19 +23,44 @@ export const CATEGORY_HEADING: Record<ReportCategory, string> = {
 /** Heading for events filed before categories existed. */
 export const UNCATEGORISED_HEADING = "General";
 
-/** One colour per section, shared by the map pins and the section bars. */
+/**
+ * One colour per section, for the PDF (white page) — map pins, section bars,
+ * number badges. Slots 1, 2, 3, 7, 5 of the dataviz reference palette, in an
+ * order that passed its colour-blindness and contrast checks. Red, amber and
+ * green are left out on purpose: those mean severity on this site.
+ */
 export const CATEGORY_COLOR: Record<ReportCategory, string> = {
-  SECURITY: "#b23b34",
-  ECONOMIC: "#356d9e",
-  MINISTERIAL: "#6b5aa6",
-  GOVERNANCE_POLITICAL: "#a8792a",
-  LOCAL_INTERNATIONAL: "#3f7d55",
+  SECURITY: "#2a78d6",
+  ECONOMIC: "#eb6834",
+  MINISTERIAL: "#1baf7a",
+  GOVERNANCE_POLITICAL: "#6250d6",
+  LOCAL_INTERNATIONAL: "#e87ba4",
 };
 export const UNCATEGORISED_COLOR = "#77736a";
+
+/** The same five hues, stepped for the portal's dark background (validated on #0b0b0b). */
+export const CATEGORY_COLOR_DARK: Record<ReportCategory, string> = {
+  SECURITY: "#3987e5",
+  ECONOMIC: "#d95926",
+  MINISTERIAL: "#199e70",
+  GOVERNANCE_POLITICAL: "#9085e9",
+  LOCAL_INTERNATIONAL: "#d55181",
+};
+export const UNCATEGORISED_COLOR_DARK = "#8a8679";
 
 export function categoryColor(category: ReportCategory | null | undefined): string {
   return category ? CATEGORY_COLOR[category] : UNCATEGORISED_COLOR;
 }
+
+export function categoryColorDark(category: ReportCategory | null | undefined): string {
+  return category ? CATEGORY_COLOR_DARK[category] : UNCATEGORISED_COLOR_DARK;
+}
+
+export const SEVERITY_LABEL: Record<EventSeverity, string> = {
+  LOW: "Low",
+  MEDIUM: "Medium",
+  HIGH: "High",
+};
 
 export const CLASSIFICATION_LABEL: Record<EventClassification, string> = {
   ATTACK: "Attack",

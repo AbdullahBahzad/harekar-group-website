@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { PortalIncident } from "@/lib/portal/incidents";
 import { formatDate } from "@/lib/portal/format";
 import { cn } from "@/lib/utils";
+import { Link } from "@/i18n/navigation";
 
 type SeverityFilter = "ALL" | "CLEAR" | "ELEVATED" | "CRITICAL";
 
@@ -168,6 +169,12 @@ export default function IncidentFeed({
                         <Detail label={t("city")} value={incident.city} />
                       )}
                     </dl>
+                    <Link
+                      href={`/portal/incidents/${incident.id}`}
+                      className="border-gold/40 text-gold hover:bg-gold hover:text-ink inline-flex min-h-9 items-center rounded-full border px-4 text-xs transition-colors"
+                    >
+                      {t("viewFullReport")}
+                    </Link>
                   </div>
                 )}
               </li>

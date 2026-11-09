@@ -493,7 +493,8 @@
       "resolved": "Resolved",
       "actor": "Actor",
       "target": "Target",
-      "city": "City"
+      "city": "City",
+      "viewFullReport": "View full report"
     },
     "statistics": {
       "title": "Statistics",
@@ -558,7 +559,32 @@
       "empty": "No incidents match these filters.",
       "previous": "Previous",
       "next": "Next",
-      "page": "Page {page} of {pages}"
+      "page": "Page {page} of {pages}",
+      "advancedFilters": "Advanced filters",
+      "severity": "Severity",
+      "category": "Category",
+      "allCategories": "All categories",
+      "resetFilters": "Reset filters",
+      "sourceReliability": "Source reliability",
+      "infoReliability": "Info reliability",
+      "sourceDocumentation": "Source documentation",
+      "viewFullReport": "View full report",
+      "reliability": {
+        "A": "Completely reliable",
+        "B": "Usually reliable",
+        "C": "Fairly reliable",
+        "D": "Not usually reliable",
+        "E": "Unreliable",
+        "F": "Cannot be judged"
+      },
+      "credibility": {
+        "1": "Confirmed",
+        "2": "Probably true",
+        "3": "Possibly true",
+        "4": "Doubtful",
+        "5": "Improbable",
+        "6": "Cannot be judged"
+      }
     },
     "guests": {
       "title": "Guests",
@@ -586,6 +612,40 @@
       "planGuest": "Guest seat",
       "guestsHint": "Invite colleagues to view the portal under your own subscription from <link>Guests</link>.",
       "signOut": "Sign out"
+    },
+    "incident": {
+      "title": "Incident report",
+      "back": "Back to the console",
+      "resolved": "Resolved",
+      "brief": "Operations intelligence brief",
+      "classification": "Classification",
+      "category": "Category",
+      "incidentType": "Incident type",
+      "method": "Method",
+      "actor": "Suspected instigators",
+      "target": "Suspected targets",
+      "location": "Location",
+      "facility": "Facility / target entity",
+      "streetAddress": "Street address",
+      "city": "City",
+      "district": "District",
+      "province": "State / province",
+      "country": "Sovereignty",
+      "iraq": "Iraq",
+      "map": "Map",
+      "telemetry": "Intelligence telemetry",
+      "latency": "Ingestion latency",
+      "latencyMinutes": "{count, plural, one {# minute post-event} other {# minutes post-event}}",
+      "latencyHours": "{count, plural, one {# hour post-event} other {# hours post-event}}",
+      "latencyHint": "Time between the event and its entry in the register.",
+      "verification": "Verification",
+      "analystVerified": "Human analyst verified",
+      "verificationHint": "Reviewed and published by a Harekar analyst.",
+      "origin": "Raw origin signal",
+      "unnamedSource": "Unnamed source",
+      "published": "Published {date}",
+      "noSource": "No source recorded for this incident.",
+      "unknown": "Unknown"
     }
   },
   "pro": {
@@ -1253,7 +1313,8 @@
         "longitude": "Longitude",
         "pinHint": "Optional exact map pin. Without one, the event is placed at the centre of its governorate.",
         "shortSummary": "Short summary (Kurdistan)",
-        "shortSummaryHint": "One or two sentences for \"Short Summaries of Major Events in Kurdistan\". Left blank, the first two sentences are used."
+        "shortSummaryHint": "One or two sentences for \"Short Summaries of Major Events in Kurdistan\". Left blank, the first two sentences are used.",
+        "severity": "Severity"
       },
       "downloadWithSources": "PDF with sources",
       "downloadWithoutSources": "PDF without sources",
@@ -1634,6 +1695,34 @@
       "SULAYMANIYAH": "Sulaymaniyah",
       "DUHOK": "Duhok",
       "HALABJA": "Halabja"
+    },
+    "severities": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High"
+    },
+    "analytics": {
+      "noEvents": "No events in this report yet.",
+      "noneToday": "None in this brief",
+      "eventsToday": "{count, plural, one {# event in this brief} other {# events in this brief}}",
+      "eventCount": "{count, plural, one {# event} other {# events}}",
+      "trendTitle": "Trend velocity",
+      "trendSubtitle": "14-day event tempo · this week vs last week",
+      "vsLastWeek": "vs last week",
+      "lastWeek": "Last week",
+      "thisWeek": "This week",
+      "lastWeekTotal": "Last week (total)",
+      "unrated": "Severity not set",
+      "topTitle": "Top 5 incidents",
+      "whatHappened": "What happened:",
+      "nationwide": "Nationwide",
+      "byRegionTitle": "Incidents by region",
+      "byRegionSubtitle": "Geographic distribution",
+      "intensityTitle": "Threat intensity",
+      "intensitySubtitle": "Severity by location",
+      "typesTitle": "Types of incidents",
+      "typesSubtitle": "Event type breakdown",
+      "unspecified": "Not specified"
     }
   }
 }

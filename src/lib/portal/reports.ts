@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import type { ConsoleReport } from "@/lib/report-shape";
-import { REPORT_WITH_EVENTS, reportContentOf } from "@/lib/report-load";
+import { REPORT_WITH_EVENTS, eventToItem, reportContentOf } from "@/lib/report-load";
+import type { ReportNewsItem } from "@/lib/report-shape";
 
 /*
  * Deliberately its own query rather than a call to `getRecentReports` in
@@ -97,4 +98,28 @@ export function keyIncidents(report: ConsoleReport, n = 3) {
 /** Everything past `keyIncidents` — listed lighter, under its own heading. */
 export function additionalIncidents(report: ConsoleReport, n = 3) {
   return report.content.items.slice(n);
+}
+
+/** A report event with the day it was filed, for charts that span several reports. */
+export type DatedEvent = ReportNewsItem & { date: string };
+
+/**
+ * Every report event filed in the `days` days ending on `end` (inclusive),
+ * oldest first — the Daily Brief's 14-day trend reads this. Built from the
+ * same `ReportEvent` rows as the reports themselves.
+ */
+export async function getEventsEnding(end: Date, days: number): Promise<DatedEvent[]> {
+  const last = new Date(end);
+  last.setUTCHours(0, 0, 0, 0);
+  const first = new Date(last);
+  first.setUTCDate(first.getUTCDate() - (days - 1));
+
+  const rows = await prisma.reportEvent.findMany({
+    where: { occurredOn: { gte: first, lte: last } },
+    orderBy: [{ occurredOn: "asc" }, { position: "asc" }],
+  });
+  return rows.map((row) => ({
+    ...eventToItem(row),
+    date: row.occurredOn.toISOString().slice(0, 10),
+  }));
 }

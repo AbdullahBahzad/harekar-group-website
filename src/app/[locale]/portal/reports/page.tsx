@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requirePortalUser } from "@/lib/portal/entitlement";
-import { getLatestBrief, getRecentBriefs } from "@/lib/portal/reports";
-import { getPublishedMarkers } from "@/lib/intel";
-import IraqMap from "@/components/IraqMap";
+import { getEventsEnding, getLatestBrief, getRecentBriefs } from "@/lib/portal/reports";
 import ReportsStation from "@/components/portal/ReportsStation";
+
+/** How far back the Daily Brief's trend chart looks: this week and last. */
+const TREND_DAYS = 14;
 
 export async function generateMetadata({
   params,
@@ -27,20 +28,22 @@ export default async function PortalReportsPage({
   setRequestLocale(locale);
   const user = await requirePortalUser(locale);
 
-  const [latestBrief, recentBriefs, markers] = await Promise.all([
+  const [latestBrief, recentBriefs] = await Promise.all([
     getLatestBrief(),
     getRecentBriefs(BRIEFING_LOG_DEPTH),
-    // Always the entitled read: every visitor who reaches the portal has
-    // already been proven to have Pro, in `requirePortalUser` above.
-    getPublishedMarkers(true),
   ]);
+  // The two weeks ending on the latest brief's day — not "today", so a brief
+  // filed yesterday still shows a full this-week/last-week comparison.
+  const trendEvents = latestBrief
+    ? await getEventsEnding(new Date(latestBrief.date), TREND_DAYS)
+    : [];
 
   return (
     <ReportsStation
       name={user.name ?? user.email}
       latestBrief={latestBrief}
       recentBriefs={recentBriefs}
-      map={<IraqMap markers={markers} />}
+      trendEvents={trendEvents}
     />
   );
 }

@@ -34,6 +34,7 @@ import {
   REGION_GROUPS,
   REPORT_CATEGORIES,
   EVENT_CLASSIFICATIONS,
+  EVENT_SEVERITIES,
 } from "@/lib/report-shape";
 import { meetsMinimumSeverity } from "@/lib/headline-relevance";
 import { inIraq } from "@/lib/report-geo";
@@ -46,6 +47,7 @@ import type {
   GovernorateKey,
   ReportCategory,
   EventClassification,
+  EventSeverity,
 } from "@/lib/report-shape";
 import type { Headline } from "@/lib/headlines";
 
@@ -432,6 +434,7 @@ export default function ReportConsole({
       formData.append("finalRegion", item.region);
       formData.append("finalCategory", item.category ?? "");
       formData.append("finalClassification", item.classification ?? "");
+      formData.append("finalSeverity", item.severity ?? "");
       formData.append("finalSummary", item.shortSummary ?? "");
       formData.append("finalGovernorate", item.governorate ?? "");
       formData.append("finalDistrict", item.district ?? "");
@@ -1373,7 +1376,7 @@ function EventFilingFields({
 
   return (
     <div className="border-bone/10 space-y-2 border-t pt-2">
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="grid gap-2 sm:grid-cols-3">
         <label className="block">
           <span className="text-bone/60 mb-1 block text-[11px]">
             {t("filing.category")} *
@@ -1410,6 +1413,25 @@ function EventFilingFields({
             {EVENT_CLASSIFICATIONS.map((kind) => (
               <option key={kind} value={kind}>
                 {v(`classifications.${kind}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="text-bone/60 mb-1 block text-[11px]">
+            {t("filing.severity")}
+          </span>
+          <select
+            value={item.severity ?? ""}
+            onChange={(e) =>
+              onChange({ severity: (e.target.value || null) as EventSeverity | null })
+            }
+            className={`${filingInput} cursor-pointer`}
+          >
+            <option value="">{t("filing.none")}</option>
+            {EVENT_SEVERITIES.map((level) => (
+              <option key={level} value={level}>
+                {v(`severities.${level}`)}
               </option>
             ))}
           </select>

@@ -14,6 +14,7 @@ import {
   CATEGORY_HEADING,
   CLASSIFICATION_LABEL,
   GOVERNORATE_LABEL,
+  SEVERITY_LABEL,
   UNCATEGORISED_HEADING,
   categoryColor,
   locationLine,
@@ -494,9 +495,12 @@ export function ReportDocument({
 
             {events.map(({ item, number }) => {
               const place = locationLine(item);
-              const kind = item.classification
-                ? CLASSIFICATION_LABEL[item.classification]
-                : null;
+              const kind = [
+                item.severity ? `${SEVERITY_LABEL[item.severity]} severity` : null,
+                item.classification ? CLASSIFICATION_LABEL[item.classification] : null,
+              ]
+                .filter(Boolean)
+                .join("  ·  ");
               return (
                 <View key={number} style={styles.item} wrap={false}>
                   <View style={styles.itemTitleRow}>

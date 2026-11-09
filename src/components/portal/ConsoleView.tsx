@@ -8,6 +8,7 @@ import type { LeafletArea, LeafletPin } from "@/components/IraqLeafletMap";
 import type { PortalIncident } from "@/lib/portal/incidents";
 import type { GovernorateKey } from "@/lib/report-shape";
 import { cn } from "@/lib/utils";
+import { Link } from "@/i18n/navigation";
 
 // Leaflet touches `window` at import time.
 const IraqLeafletMap = dynamic(() => import("@/components/IraqLeafletMap"), { ssr: false });
@@ -24,6 +25,11 @@ const AREA_TONE = "#4ba07a";
 
 const toneFor = (severity: PortalIncident["severity"]) =>
   severityColor[severity.toLowerCase() as keyof typeof severityColor];
+
+const SEVERITIES = ["CRITICAL", "ELEVATED", "CLEAR"] as const;
+/** Incidents at (near enough) the same spot share one pin and one key. */
+const spotKeyOf = (incident: PortalIncident) =>
+  `${incident.latitude.toFixed(2)},${incident.longitude.toFixed(2)}`;
 
 /**
  * The client portal's live operational picture.
@@ -52,6 +58,16 @@ export default function ConsoleView({
   const [panelOpen, setPanelOpen] = useState(true);
   const [spot, setSpot] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  // Advanced filters: which severities to show, and one category or all.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [severities, setSeverities] = useState<PortalIncident["severity"][]>([...SEVERITIES]);
+  const [category, setCategory] = useState<string>("ALL");
+  const categories = useMemo(
+    () =>
+      [...new Set(incidents.map((incident) => incident.category).filter((c): c is string => Boolean(c)))].sort(),
+    [incidents],
+  );
+  const filtersActive = severities.length < SEVERITIES.length || category !== "ALL";
 
   const names = useMemo(() => new Map(areas.map((a) => [a.key, a.name])), [areas]);
 
@@ -59,10 +75,12 @@ export default function ConsoleView({
     () =>
       incidents.filter((incident) => {
         if (range !== "all" && Date.parse(incident.occurredAt) < now - Number(range) * DAY) return false;
+        if (!severities.includes(incident.severity)) return false;
+        if (category !== "ALL" && incident.category !== category) return false;
         if (selected.length > 0) return incident.governorate !== null && selected.includes(incident.governorate);
         return true;
       }),
-    [incidents, range, selected, now],
+    [incidents, range, selected, now, severities, category],
   );
 
   /*
@@ -73,7 +91,7 @@ export default function ConsoleView({
   const spots = useMemo(() => {
     const groups = new Map<string, PortalIncident[]>();
     for (const incident of filtered) {
-      const key = `${incident.latitude.toFixed(2)},${incident.longitude.toFixed(2)}`;
+      const key = spotKeyOf(incident);
       groups.set(key, [...(groups.get(key) ?? []), incident]);
     }
     return groups;
@@ -155,6 +173,23 @@ export default function ConsoleView({
           </button>
         ))}
 
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((open) => !open)}
+          aria-expanded={filtersOpen}
+          className={cn(
+            "flex min-h-9 cursor-pointer items-center gap-2 rounded-full border px-3.5 text-xs transition-colors",
+            filtersOpen || filtersActive
+              ? "border-gold bg-gold/15 text-gold"
+              : "border-bone/16 text-bone/65 hover:border-gold/50 hover:text-bone",
+          )}
+        >
+          <svg viewBox="0 0 20 20" className="size-3.5" fill="none" aria-hidden>
+            <path d="M3 5h14M6 10h8M8.5 15h3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+          {t("advancedFilters")}
+          {filtersActive && <span aria-hidden className="bg-status-clear size-1.5 rounded-full" />}
+        </button>
         <span className="flex-1" />
 
         <span className="border-status-clear/40 text-status-clear rounded-full border px-3 py-1 text-xs tabular-nums">
@@ -178,7 +213,76 @@ export default function ConsoleView({
         </div>
       </div>
 
+      {filtersOpen && (
+        <div className="border-bone/14 bg-surface/20 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border px-4 py-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-bone/55 text-[11px] tracking-[0.14em] uppercase">{t("severity")}</span>
+            {SEVERITIES.map((level) => {
+              const on = severities.includes(level);
+              return (
+                <button
+                  key={level}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => {
+                    setPage(0);
+                    setSpot(null);
+                    setSeverities((current) =>
+                      on ? current.filter((s) => s !== level) : [...current, level],
+                    );
+                  }}
+                  className={cn(
+                    "flex min-h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-xs transition-colors",
+                    on ? "border-bone/30 text-bone" : "border-bone/12 text-bone/40",
+                  )}
+                >
+                  <span
+                    aria-hidden
+                    className="size-2 rounded-full"
+                    style={{ background: toneFor(level), opacity: on ? 1 : 0.35 }}
+                  />
+                  {tSeverity(level.toLowerCase())}
+                </button>
+              );
+            })}
+          </div>
+          <label className="flex items-center gap-2">
+            <span className="text-bone/55 text-[11px] tracking-[0.14em] uppercase">{t("category")}</span>
+            <select
+              value={category}
+              onChange={(e) => {
+                setPage(0);
+                setSpot(null);
+                setCategory(e.target.value);
+              }}
+              className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-8 cursor-pointer rounded-full border px-3 text-xs outline-none"
+            >
+              <option value="ALL">{t("allCategories")}</option>
+              {categories.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
+          {filtersActive && (
+            <button
+              type="button"
+              onClick={() => {
+                setSeverities([...SEVERITIES]);
+                setCategory("ALL");
+                setPage(0);
+              }}
+              className="text-gold hover:text-gold-bright cursor-pointer text-xs"
+            >
+              {t("resetFilters")}
+            </button>
+          )}
+        </div>
+      )}
+
       {view === "map" ? (
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_21rem]">
         <div className="border-bone/14 bg-surface/20 relative overflow-hidden rounded-2xl border">
           <div className="h-[34rem] sm:h-[38rem]">
             <IraqLeafletMap
@@ -286,6 +390,18 @@ export default function ConsoleView({
                   <IncidentCard
                     key={incident.id}
                     incident={incident}
+                    labels={{
+                      reliability: incident.sourceReliability
+                        ? t(`reliability.${incident.sourceReliability}`)
+                        : null,
+                      credibility: incident.infoCredibility
+                        ? t(`credibility.${incident.infoCredibility}`)
+                        : null,
+                      sourceReliability: t("sourceReliability"),
+                      infoReliability: t("infoReliability"),
+                      source: t("sourceDocumentation"),
+                      fullReport: t("viewFullReport"),
+                    }}
                     severityLabel={tSeverity(incident.severity.toLowerCase())}
                     area={incident.governorate ? names.get(incident.governorate) : undefined}
                     when={formatWhen(incident.occurredAt)}
@@ -294,6 +410,74 @@ export default function ConsoleView({
               </ul>
             </aside>
           )}
+        </div>
+
+        {/* Conterra's side list: the same filtered incidents, paged, beside
+            the map. Picking one opens its spot on the map. */}
+        <div className="border-bone/14 bg-surface/20 flex flex-col overflow-hidden rounded-2xl border xl:h-[38rem]">
+          <div className="border-bone/10 flex items-center gap-2 border-b px-4 py-3 text-[11px] tracking-[0.12em] uppercase">
+            <span className="text-bone/85">{t("feedTitle")}</span>
+            <span className="text-bone/40">·</span>
+            <span className="text-bone/55 min-w-0 flex-1 truncate">
+              {selected.length > 0 ? selected.map((key) => names.get(key)).join(", ") : t("nationwide")}
+            </span>
+            <span className="text-status-clear shrink-0 tabular-nums">{t("count", { count: filtered.length })}</span>
+          </div>
+          {filtered.length === 0 ? (
+            <p className="text-bone/55 px-4 py-10 text-center text-sm">{t("empty")}</p>
+          ) : (
+            <>
+              <ul className="divide-bone/8 flex-1 divide-y overflow-y-auto">
+                {filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE).map((incident) => {
+                  const key = spotKeyOf(incident);
+                  return (
+                    <li key={incident.id}>
+                      <button
+                        type="button"
+                        onClick={() => setSpot(key)}
+                        aria-pressed={spot === key}
+                        className={cn(
+                          "w-full cursor-pointer px-4 py-3 text-start transition-colors",
+                          spot === key ? "bg-gold/10" : "hover:bg-bone/[0.04]",
+                        )}
+                      >
+                        <span className="flex items-center justify-between gap-3">
+                          <SeverityTag severity={incident.severity} label={tSeverity(incident.severity.toLowerCase())} />
+                          <span className="text-bone/45 text-[11px] tabular-nums">{formatWhen(incident.occurredAt)}</span>
+                        </span>
+                        <span className="text-bone mt-1.5 block text-sm leading-snug">{incident.headline ?? incident.label}</span>
+                        <span className="text-bone/45 mt-0.5 block text-xs">
+                          {[incident.city, incident.governorate ? names.get(incident.governorate) : incident.province]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="border-bone/10 flex items-center justify-between border-t px-4 py-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setPage(Math.max(0, currentPage - 1))}
+                  disabled={currentPage === 0}
+                  className="text-bone/70 hover:text-gold min-h-9 cursor-pointer px-2 disabled:cursor-default disabled:opacity-30"
+                >
+                  {t("previous")}
+                </button>
+                <span className="text-bone/50 tabular-nums">{t("page", { page: currentPage + 1, pages })}</span>
+                <button
+                  type="button"
+                  onClick={() => setPage(Math.min(pages - 1, currentPage + 1))}
+                  disabled={currentPage >= pages - 1}
+                  className="text-bone/70 hover:text-gold min-h-9 cursor-pointer px-2 disabled:cursor-default disabled:opacity-30"
+                >
+                  {t("next")}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
         </div>
       ) : (
         <div className="border-bone/14 bg-surface/20 overflow-hidden rounded-2xl border">
@@ -367,23 +551,73 @@ function IncidentCard({
   severityLabel,
   area,
   when,
+  labels,
 }: {
   incident: PortalIncident;
   severityLabel: string;
   area?: string;
   when: string;
+  labels: {
+    reliability: string | null;
+    credibility: string | null;
+    sourceReliability: string;
+    infoReliability: string;
+    source: string;
+    fullReport: string;
+  };
 }) {
   return (
     <li className="border-bone/12 rounded-lg border p-3">
-      <div className="flex flex-wrap items-center gap-2">
+      <ul className="text-bone/60 space-y-1 text-[11px]">
+        <li>{when}</li>
+        <li dir="ltr" className="text-start tabular-nums">
+          {incident.latitude.toFixed(5)}, {incident.longitude.toFixed(5)}
+        </li>
+        {(incident.city || area) && <li>{[incident.city, area].filter(Boolean).join(", ")}</li>}
+      </ul>
+
+      <div className="mt-3 flex flex-col gap-2">
+        {incident.sourceUrl && (
+          <a
+            href={incident.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-status-clear/85 text-ink hover:bg-status-clear flex min-h-9 items-center justify-center rounded-lg text-xs font-medium transition-colors"
+          >
+            {labels.source}
+          </a>
+        )}
+        <Link
+          href={`/portal/incidents/${incident.id}`}
+          className="bg-bone text-ink hover:bg-bone/85 flex min-h-9 items-center justify-center rounded-lg text-xs font-semibold tracking-[0.12em] uppercase transition-colors"
+        >
+          {labels.fullReport}
+        </Link>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
         <SeverityTag severity={incident.severity} label={severityLabel} />
         {incident.category && <span className="text-bone/55 text-[10px] tracking-wide uppercase">{incident.category}</span>}
       </div>
       <p className="text-bone mt-2 text-sm leading-snug font-medium">{incident.headline ?? incident.label}</p>
       {incident.body && <p className="text-bone/65 mt-1.5 line-clamp-4 text-xs leading-relaxed">{incident.body}</p>}
-      <p className="text-bone/45 mt-2 text-[11px]">
-        {[when, incident.city, area].filter(Boolean).join(" · ")}
-      </p>
+
+      {(labels.reliability || labels.credibility) && (
+        <dl className="border-bone/10 mt-3 space-y-1 border-t pt-2 text-[11px]">
+          {labels.reliability && (
+            <div className="flex justify-between gap-3">
+              <dt className="text-bone/50 uppercase">{labels.sourceReliability}</dt>
+              <dd className="text-status-clear text-end">{labels.reliability}</dd>
+            </div>
+          )}
+          {labels.credibility && (
+            <div className="flex justify-between gap-3">
+              <dt className="text-bone/50 uppercase">{labels.infoReliability}</dt>
+              <dd className="text-status-elevated text-end">{labels.credibility}</dd>
+            </div>
+          )}
+        </dl>
+      )}
     </li>
   );
 }

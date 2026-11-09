@@ -451,6 +451,9 @@ model ReportEvent {
   category       ReportCategory?
   /// What kind of event — see `EVENT_CLASSIFICATIONS` in `src/lib/report-shape.ts`.
   classification String?
+  /// "LOW", "MEDIUM" or "HIGH" — see `EVENT_SEVERITIES`. Drives the portal's
+  /// severity counters, Top Incidents and threat-intensity chart.
+  severity       String?
   /// "KURDISTAN" or "IRAQ" — see `REGIONS`.
   region         String
 

@@ -1,11 +1,20 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { ConsoleReport, ReportNewsItem } from "@/lib/report-shape";
-import { categoryColor, joinPlace } from "@/lib/pdf/report-labels";
+import { categoryColorDark as categoryColor, joinPlace } from "@/lib/pdf/report-labels";
 import { orderReportEvents } from "@/lib/report-order";
 import ReportEventMap from "@/components/portal/ReportEventMap";
+import {
+  ByGovernorate,
+  EventTypes,
+  SeverityCounters,
+  ThreatIntensity,
+  TopIncidents,
+  TrendVelocity,
+} from "@/components/portal/BriefAnalytics";
+import type { DatedEvent } from "@/lib/portal/reports";
 import { formatDate } from "@/lib/portal/format";
 import { cn } from "@/lib/utils";
 
@@ -31,15 +40,13 @@ export default function ReportsStation({
   name,
   latestBrief,
   recentBriefs,
-  map,
+  trendEvents,
 }: {
   name: string;
   latestBrief: ConsoleReport | null;
   recentBriefs: ConsoleReport[];
-  /** The interactive Iraq map, rendered by the server page — kept as a prop
-   * rather than fetched here so this stays a plain client component with no
-   * server-only imports of its own. */
-  map: ReactNode;
+  /** Report events from the 14 days ending on the latest brief's day. */
+  trendEvents: DatedEvent[];
 }) {
   const t = useTranslations("portal.reports");
   const [tab, setTab] = useState<Tab>("brief");
@@ -83,9 +90,24 @@ export default function ReportsStation({
 
       {tab === "brief" &&
         (latestBrief ? (
-          <div className="space-y-8">
-            <DailyBrief report={latestBrief} name={name} />
-            <section aria-label={t("mapLabel")}>{map}</section>
+          <div className="space-y-6">
+            {/* Conterra's brief layout: the write-up beside a column holding
+                the day's event map and its severity counts, the analytics
+                underneath. */}
+            <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_23rem]">
+              <DailyBrief report={latestBrief} name={name} />
+              <aside className="space-y-4 xl:sticky xl:top-6" aria-label={t("mapLabel")}>
+                <ReportEventMap items={latestBrief.content.items} compact />
+                <SeverityCounters items={latestBrief.content.items} />
+              </aside>
+            </div>
+            <TrendVelocity events={trendEvents} endDate={latestBrief.date} />
+            <TopIncidents items={latestBrief.content.items} />
+            <div className="grid gap-6 lg:grid-cols-3">
+              <ByGovernorate items={latestBrief.content.items} />
+              <ThreatIntensity items={latestBrief.content.items} />
+              <EventTypes items={latestBrief.content.items} />
+            </div>
           </div>
         ) : (
           <EmptyState message={t("noBriefYet")} />
@@ -138,7 +160,6 @@ function DailyBrief({
   const locale = useLocale();
   const greeting = useGreeting();
 
-  const v = useTranslations("reportVocab");
   const summary =
     report.executiveSummary?.trim() ||
     t("summaryFallback", { count: report.content.items.length });
@@ -226,15 +247,6 @@ function DailyBrief({
       </p>
 
       <ReportBody items={report.content.items} />
-
-      {!compact && report.content.items.length > 0 && (
-        <section className="mt-8">
-          <h3 className="text-gold/85 mb-3 text-xs font-medium tracking-[0.16em] uppercase">
-            {v("eventMap")}
-          </h3>
-          <ReportEventMap items={report.content.items} />
-        </section>
-      )}
     </article>
   );
 }

@@ -18,8 +18,10 @@ import {
 } from "@/lib/reports";
 import {
   EVENT_CLASSIFICATIONS,
+  EVENT_SEVERITIES,
   REPORT_CATEGORIES,
   type EventClassification,
+  type EventSeverity,
   type ReportCategory,
 } from "@/lib/report-shape";
 import { inIraq } from "@/lib/report-geo";
@@ -437,6 +439,7 @@ export async function saveReport(formData: FormData): Promise<SaveReportResult> 
   // Parallel to the four above, one entry per item, "" for "not set".
   const categories = formData.getAll("finalCategory").map(String);
   const classifications = formData.getAll("finalClassification").map(String);
+  const severities = formData.getAll("finalSeverity").map(String);
   const summaries = formData.getAll("finalSummary").map(String);
   const governorates = formData.getAll("finalGovernorate").map(String);
   const districts = formData.getAll("finalDistrict").map(String);
@@ -482,6 +485,11 @@ export async function saveReport(formData: FormData): Promise<SaveReportResult> 
       throw new Error(`Item ${i + 1} has an unknown event type`);
     }
 
+    const severity = (severities[i] ?? "").trim();
+    if (severity && !EVENT_SEVERITIES.includes(severity as EventSeverity)) {
+      throw new Error(`Item ${i + 1} has an unknown severity`);
+    }
+
     const governorate = (governorates[i] ?? "").trim();
     if (governorate && !GOVERNORATES.some((g) => g.key === governorate)) {
       throw new Error(`Item ${i + 1} has an unknown governorate`);
@@ -494,6 +502,7 @@ export async function saveReport(formData: FormData): Promise<SaveReportResult> 
       region: region as Region,
       category: category as ReportCategory,
       classification: (classification || null) as EventClassification | null,
+      severity: (severity || null) as EventSeverity | null,
       shortSummary: (summaries[i] ?? "").trim() || null,
       governorate: (governorate || null) as GovernorateKey | null,
       district: (districts[i] ?? "").trim() || null,
@@ -545,6 +554,7 @@ export async function saveReport(formData: FormData): Promise<SaveReportResult> 
         shortSummary: item.shortSummary ?? null,
         category: item.category ?? null,
         classification: item.classification ?? null,
+        severity: item.severity ?? null,
         region: item.region,
         governorate: item.governorate ?? null,
         district: item.district ?? null,
