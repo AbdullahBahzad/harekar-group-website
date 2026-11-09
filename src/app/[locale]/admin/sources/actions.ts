@@ -380,10 +380,27 @@ function readSourceUrl(value: string | undefined, index: number): string | null 
   return parsed.toString();
 }
 
-/** Persists a report the admin has reviewed and approved. */
-export async function saveReport(formData: FormData) {
+/**
+ * What `saveReport` tells the console. A returned value rather than a thrown
+ * error, because a server action's error message does not survive to the
+ * browser in production — "this day already has a report" has to arrive as
+ * data to be shown as anything more specific than "Save failed".
+ */
+export type SaveReportResult = { status: "saved" } | { status: "exists" };
+
+/**
+ * Persists a report the admin has reviewed and approved.
+ *
+ * A day has one report, so saving onto a date that already has one replaces
+ * it. That only happens when the console sends `replaceExisting=1`, which it
+ * does after the operator has confirmed the replacement. Without it, an
+ * existing report is left alone and `exists` comes back: that covers a second
+ * operator saving the same day between this one loading the page and saving.
+ */
+export async function saveReport(formData: FormData): Promise<SaveReportResult> {
   const operatorId = await assertReportsAccess();
   const meta = readMeta(formData);
+  const replaceExisting = formData.get("replaceExisting") === "1";
 
   const titles = formData.getAll("finalTitle").map(String);
   const bodies = formData.getAll("finalBody").map(String);
@@ -425,10 +442,18 @@ export async function saveReport(formData: FormData) {
 
   const content: ReportContent = { items, governorates };
 
+  if (!replaceExisting) {
+    const existing = await prisma.dailyReport.findUnique({
+      where: { date: meta.date },
+      select: { id: true },
+    });
+    if (existing) return { status: "exists" };
+  }
+
   /*
-   * Upsert, not create. Saving a day that already has a report is an analyst
-   * revising it — the alternative was two rows for one date and no rule for
-   * which one operations should read.
+   * Upsert, not create. A confirmed save onto a day that already has a report
+   * is an analyst revising it — the alternative was two rows for one date and
+   * no rule for which one operations should read.
    *
    * Authorship is set only on create: a corrected report is still the one that
    * analyst filed, and `updatedAt` already records that it was touched again.
@@ -440,6 +465,7 @@ export async function saveReport(formData: FormData) {
   });
 
   revalidateReports();
+  return { status: "saved" };
 }
 
 export async function deleteReport(formData: FormData) {

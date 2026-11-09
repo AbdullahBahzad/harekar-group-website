@@ -31,5 +31,7 @@ declare module "next-auth/jwt" {
     id?: string;
     isPro?: boolean;
     isGuest?: boolean;
+    /** When `isPro`/`isGuest` were last read from the database (ms epoch). */
+    checkedAt?: number;
   }
 }

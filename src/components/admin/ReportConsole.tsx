@@ -366,8 +366,28 @@ export default function ReportConsole({
     if (!draftItems || draftItems.length === 0) return;
     setErrorKey(null);
 
+    // A day has one report: saving onto a day that already has one replaces
+    // it, so that only happens once the operator has said so.
+    const replacing = reports.some((report) => report.date.slice(0, 10) === date);
+    if (
+      replacing &&
+      !window.confirm(
+        t("reports.replaceConfirm", {
+          date: formatDate(new Date(`${date}T00:00:00Z`), locale, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            timeZone: "UTC",
+          }),
+        }),
+      )
+    ) {
+      return;
+    }
+
     const formData = new FormData();
     formData.set("date", date);
+    if (replacing) formData.set("replaceExisting", "1");
     formData.set("kurdistanThreat", kurdistanThreat);
     formData.set("iraqThreat", iraqThreat);
     formData.set("politicalKurdistan", politicalKurdistan);
@@ -391,7 +411,12 @@ export default function ReportConsole({
 
     startTransition(async () => {
       try {
-        await saveReport(formData);
+        const result = await saveReport(formData);
+        if (result.status === "exists") {
+          // Someone saved this day after the page loaded; nothing was written.
+          setErrorKey("reports.replaceRefused");
+          return;
+        }
         setDraftItems(null);
         setSources([newRow()]);
         setSavedNotice(true);

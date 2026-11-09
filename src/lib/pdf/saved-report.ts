@@ -24,6 +24,7 @@ export async function renderSavedReportPdf(
       politicalKurdistan: report.politicalKurdistan,
       politicalIraq: report.politicalIraq,
       weather: report.weather,
+      executiveSummary: report.executiveSummary,
       items: content.items,
       governorates: content.governorates ?? [],
     }),

@@ -1171,6 +1171,8 @@
       "politicalKurdistan": "Political situation — Kurdistan",
       "politicalIraq": "Political situation — Iraq wide",
       "saveReport": "Save report",
+      "replaceConfirm": "A report for {date} already exists. Replace it with this one? The saved report will be overwritten.",
+      "replaceRefused": "A report for this date was saved by someone else while you were working, so nothing was saved. Reload the page to see it, then save again to replace it.",
       "discard": "Discard",
       "history": "History",
       "historyEmpty": "No reports yet.",

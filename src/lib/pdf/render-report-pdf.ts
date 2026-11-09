@@ -35,6 +35,7 @@ export type RenderReportPdfInput = {
   politicalKurdistan: string | null;
   politicalIraq: string | null;
   weather: string | null;
+  executiveSummary: string | null;
   items: ReportPdfItem[];
   governorates: GovernorateRiskEntry[];
 };
@@ -65,6 +66,7 @@ export async function renderReportPdf(
       politicalKurdistan: report.politicalKurdistan,
       politicalIraq: report.politicalIraq,
       weather: report.weather,
+      executiveSummary: report.executiveSummary,
       items: report.items,
       governorates: report.governorates,
       logo,

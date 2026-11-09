@@ -41,6 +41,8 @@ export type ReportPdfProps = {
   politicalKurdistan: string | null;
   politicalIraq: string | null;
   weather: string | null;
+  /** The analyst's overview — printed ahead of the itemised write-ups. */
+  executiveSummary: string | null;
   items: ReportPdfItem[];
   governorates: GovernorateRiskEntry[];
   /** Raw image bytes, read from disk by the caller — see `render-report-pdf.ts`. */
@@ -189,6 +191,15 @@ const styles = StyleSheet.create({
   itemBody: { fontSize: 9, lineHeight: 1.4, marginBottom: 3 },
   itemUrl: { fontSize: 8, color: gold },
 
+  summaryHeading: {
+    fontSize: 12,
+    fontFamily: "Helvetica-Bold",
+    backgroundColor: "#e9e2d3",
+    padding: 6,
+    marginBottom: 8,
+  },
+  summaryBody: { fontSize: 9.5, lineHeight: 1.45, marginBottom: 4 },
+
   contactBlock: { marginTop: 20 },
   contactLine: { fontSize: 9, marginBottom: 2 },
   contactBold: { fontFamily: "Helvetica-Bold" },
@@ -244,6 +255,7 @@ export function ReportDocument({
   politicalKurdistan,
   politicalIraq,
   weather,
+  executiveSummary,
   items,
   governorates,
   logo,
@@ -414,6 +426,21 @@ export function ReportDocument({
 
       {/* ---- report body ---------------------------------------------------- */}
       <Page size="A4" style={styles.page}>
+        {executiveSummary?.trim() && (
+          <View>
+            <Text style={styles.summaryHeading}>Executive Summary</Text>
+            {/* One <Text> per paragraph, so blank lines in the console read as breaks here too. */}
+            {executiveSummary
+              .trim()
+              .split(/\n\s*\n/)
+              .map((paragraph, i) => (
+                <Text key={i} style={styles.summaryBody}>
+                  {paragraph.trim()}
+                </Text>
+              ))}
+          </View>
+        )}
+
         {byRegion.map((group) => (
           <View key={group.region} wrap={false} minPresenceAhead={40}>
             <Text style={styles.regionHeading}>

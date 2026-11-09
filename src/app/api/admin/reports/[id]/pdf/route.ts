@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { renderReportPdf } from "@/lib/pdf/render-report-pdf";
-import type { ReportContent, ThreatLevel } from "@/lib/report-shape";
+import { renderSavedReportPdf } from "@/lib/pdf/saved-report";
 
 /**
  * Renders a saved Daily Security Report as the branded PDF, on demand.
  *
- * Same guard as `/api/admin/cv/[id]`: `isAdmin` is re-checked against the
- * database rather than trusted from the page that linked here, and a missing
- * row and an unauthorised caller both come back as 404 so report ids cannot
- * be enumerated from the response alone.
+ * Open to the same operators as the Sources station that links here:
+ * administrators and reports-only operators (`canManageReports`). Both flags
+ * are re-checked against the database rather than trusted from the page that
+ * linked here, and a missing row and an unauthorised caller both come back as
+ * 404 so report ids cannot be enumerated from the response alone.
  */
 export async function GET(
   _request: Request,
@@ -23,32 +23,24 @@ export async function GET(
 
   const operator = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { isAdmin: true },
+    select: { isAdmin: true, canManageReports: true },
   });
-  if (!operator?.isAdmin) return notFound;
+  if (!operator?.isAdmin && !operator?.canManageReports) return notFound;
 
   const { id } = await params;
-  const report = await prisma.dailyReport.findUnique({ where: { id } });
-  if (!report) return notFound;
 
-  const content = report.content as unknown as ReportContent;
+  let rendered: Awaited<ReturnType<typeof renderSavedReportPdf>>;
+  try {
+    rendered = await renderSavedReportPdf(id);
+  } catch (error) {
+    console.error("Failed to render report PDF", error);
+    return new NextResponse("Could not render this report", { status: 500 });
+  }
+  if (!rendered) return notFound;
 
-  const pdf = await renderReportPdf({
-    date: report.date,
-    kurdistanThreat: report.kurdistanThreat as ThreatLevel,
-    iraqThreat: report.iraqThreat as ThreatLevel,
-    politicalKurdistan: report.politicalKurdistan,
-    politicalIraq: report.politicalIraq,
-    weather: report.weather,
-    items: content.items,
-    governorates: content.governorates ?? [],
-  });
+  const filename = `harekar-daily-security-report-${rendered.dateLabel}.pdf`;
 
-  const filename = `harekar-daily-security-report-${report.date
-    .toISOString()
-    .slice(0, 10)}.pdf`;
-
-  return new NextResponse(new Uint8Array(pdf), {
+  return new NextResponse(new Uint8Array(rendered.pdf), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="${filename}"`,

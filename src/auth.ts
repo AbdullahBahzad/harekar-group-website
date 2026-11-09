@@ -16,20 +16,15 @@ import { hasProAccess } from "@/lib/entitlement";
  *
  * `isPro` on the session is the *resolved* entitlement from `hasProAccess` —
  * a permanent manual grant or unexpired purchased access — not the raw column.
- * It is copied into the token at sign-in and refreshed on update, so gated
- * pages read entitlement without a query.
+ * It is copied into the token at sign-in, refreshed on `update()`, and
+ * re-read at most every ENTITLEMENT_RECHECK_MS, so gated pages read
+ * entitlement without a query on every request.
  *
- * The trade-off is staleness in both directions: a purchase does not appear,
- * and an expiry does not bite, until the token refreshes. Checkout calls
- * `update()` so a new purchase lands immediately; expiry is bounded by
- * `SESSION_MAX_AGE`.
+ * Checkout calls `update()` so a new purchase lands immediately; an expiry or
+ * revocation takes effect within ENTITLEMENT_RECHECK_MS. SESSION_MAX_AGE does
+ * not bound it, because every session fetch re-signs the token.
  */
 
-/**
- * How long a session lasts, and therefore the longest a stale `isPro` can
- * survive. Kept short enough that granting Pro is felt the same day without
- * forcing the user to sign in again constantly.
- */
 /**
  * The password was right, but the address has not been confirmed with its
  * emailed code yet. Raised only after a correct password, so it reveals
@@ -40,6 +35,7 @@ export class UnverifiedEmailError extends CredentialsSignin {
   code = "unverified";
 }
 
+/** How long a session lasts without being used. */
 const SESSION_MAX_AGE = 60 * 60 * 24; // 24 hours
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -109,24 +105,34 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
         token.isPro = user.isPro;
         token.isGuest = user.isGuest;
+        token.checkedAt = Date.now();
         return token;
       }
 
       /*
-       * On an explicit `update()` call, re-read entitlement. This is what lets
-       * a user who has just been granted Pro (or a guest seat) pick it up
-       * without signing out, and it is the only place we pay for a query on an
-       * existing session.
+       * Re-read entitlement on an explicit `update()` call (so a purchase or a
+       * new guest seat shows at once), and otherwise whenever the last check is
+       * older than ENTITLEMENT_RECHECK_MS.
+       *
+       * The periodic re-read is what makes expiry and revocation actually bite.
+       * Every session fetch re-signs the token with a fresh expiry, so an
+       * account that visits daily would otherwise keep the `isPro` it signed in
+       * with indefinitely: past `proUntil`, after a guest seat is revoked, after
+       * a comp is withdrawn. At most one small query per user per window.
        */
-      if (trigger === "update" && token.id) {
+      const stale =
+        typeof token.checkedAt !== "number" ||
+        Date.now() - token.checkedAt > ENTITLEMENT_RECHECK_MS;
+      if (token.id && (trigger === "update" || stale)) {
         const fresh = await prisma.user.findUnique({
           where: { id: String(token.id) },
           select: { isPro: true, proUntil: true, guestOf: true },
         });
-        if (fresh) {
-          token.isPro = hasProAccess(fresh);
-          token.isGuest = fresh.guestOf !== null;
-        }
+        // A deleted account keeps its cookie until it expires, but nothing it
+        // was entitled to.
+        token.isPro = fresh ? hasProAccess(fresh) : false;
+        token.isGuest = fresh ? fresh.guestOf !== null : false;
+        token.checkedAt = Date.now();
       }
 
       return token;
@@ -141,6 +147,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
 });
+
+/**
+ * How long a session may go on trusting its own copy of `isPro`/`isGuest`
+ * before the jwt callback re-reads them from the database. This, not
+ * SESSION_MAX_AGE, is the bound on how long lapsed access can linger.
+ */
+const ENTITLEMENT_RECHECK_MS = 5 * 60 * 1000;
 
 /**
  * A real bcrypt hash of a value nobody can sign in with.
