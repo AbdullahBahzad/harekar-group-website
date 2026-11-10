@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
+import { answerLocally, type AskCitation } from "@/lib/portal/ask-local";
 
 /** How many recent incidents and briefs are handed to Claude as context.
  * Bounded on purpose: this runs on every question a client types, unlike
@@ -103,7 +104,7 @@ export type AskErrorKey =
   | "errorGeneric";
 
 export type AskResult =
-  | { status: "ok"; answer: string }
+  | { status: "ok"; answer: string; citations: AskCitation[] }
   | { status: "error"; errorKey: AskErrorKey };
 
 /**
@@ -111,8 +112,23 @@ export type AskResult =
  * never from the model's own general knowledge of Iraq, which is out of date
  * the moment it was trained and not analyst-verified the way this data is.
  */
-export async function askAboutIraq(question: string): Promise<AskResult> {
+export async function askAboutIraq(question: string, locale: string): Promise<AskResult> {
   const trimmed = question.trim();
+
+  /*
+   * Without an Anthropic key, Ask Harekar answers by searching the register
+   * itself (see `ask-local.ts`): free to run, and it never says anything
+   * that is not on file. With a key, Claude writes the answer instead.
+   */
+  if (!process.env.ANTHROPIC_API_KEY) {
+    try {
+      const local = await answerLocally(trimmed, locale);
+      return { status: "ok", ...local };
+    } catch (error) {
+      console.error("Ask Harekar (search mode) failed", error);
+      return { status: "error", errorKey: "errorGeneric" };
+    }
+  }
 
   let anthropic: Anthropic;
   try {
@@ -154,7 +170,7 @@ export async function askAboutIraq(question: string): Promise<AskResult> {
       return { status: "error", errorKey: "errorNoAnswer" };
     }
 
-    return { status: "ok", answer: text.text.trim() };
+    return { status: "ok", answer: text.text.trim(), citations: [] };
   } catch (error) {
     console.error("Ask Harekar failed", error);
     return { status: "error", errorKey: "errorGeneric" };

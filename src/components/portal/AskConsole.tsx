@@ -2,12 +2,24 @@
 
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { askQuestion, type AskState } from "@/app/[locale]/portal/ask/actions";
+import { Link } from "@/i18n/navigation";
+import { formatDate } from "@/lib/portal/format";
+
+/** Status colours for a cited match, whichever scale it uses. */
+const CITATION_TONE: Record<string, string> = {
+  CRITICAL: "var(--color-status-critical)",
+  HIGH: "var(--color-status-critical)",
+  ELEVATED: "var(--color-status-elevated)",
+  MEDIUM: "var(--color-status-elevated)",
+  CLEAR: "var(--color-status-clear)",
+  LOW: "var(--color-status-clear)",
+};
 
 const initialState: AskState = { status: "idle" };
 
-const SUGGESTIONS_COUNT = 3;
+const SUGGESTIONS_COUNT = 4;
 
 /**
  * "Ask Harekar" — a plain question box over the recent, verified operational
@@ -19,6 +31,7 @@ const SUGGESTIONS_COUNT = 3;
  */
 export default function AskConsole() {
   const t = useTranslations("portal.ask");
+  const locale = useLocale();
   const [state, formAction] = useActionState(askQuestion, initialState);
   const [question, setQuestion] = useState("");
 
@@ -26,6 +39,7 @@ export default function AskConsole() {
     t("suggestion1"),
     t("suggestion2"),
     t("suggestion3"),
+    t("suggestion4"),
   ].slice(0, SUGGESTIONS_COUNT);
 
   return (
@@ -40,6 +54,7 @@ export default function AskConsole() {
       </header>
 
       <form action={formAction} className="space-y-4">
+        <input type="hidden" name="locale" value={locale} />
         <textarea
           name="question"
           value={question}
@@ -52,7 +67,7 @@ export default function AskConsole() {
         <SubmitButton label={t("submit")} pendingLabel={t("thinking")} />
       </form>
 
-      {state.status === "idle" && (
+      {(state.status === "idle" || state.status === "answered") && (
         <div className="mt-6 flex flex-wrap gap-2">
           {suggestions.map((text) => (
             <button
@@ -81,6 +96,40 @@ export default function AskConsole() {
           <p className="text-bone/85 mt-3 text-sm leading-relaxed whitespace-pre-line text-pretty">
             {state.answer}
           </p>
+
+          {state.citations && state.citations.length > 0 && (
+            <div className="border-bone/10 mt-5 border-t pt-4">
+              <p className="text-bone/55 mb-3 text-[11px] tracking-[0.14em] uppercase">{t("sources")}</p>
+              <ol className="space-y-2">
+                {state.citations.map((citation, i) => (
+                  <li key={`${citation.href}-${i}`}>
+                    <Link
+                      href={citation.href}
+                      className="border-bone/12 hover:border-gold/50 flex items-start gap-3 rounded-xl border px-3 py-2.5 transition-colors"
+                    >
+                      <span
+                        aria-hidden
+                        className="mt-1.5 size-2 shrink-0 rounded-full"
+                        style={{ background: CITATION_TONE[citation.severity ?? ""] ?? "var(--color-bone)", opacity: citation.severity ? 1 : 0.3 }}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="text-bone block text-sm leading-snug">{citation.title}</span>
+                        <span className="text-bone/50 mt-0.5 block text-xs">
+                          {[
+                            formatDate(new Date(citation.date), locale, { day: "numeric", month: "short", year: "numeric" }),
+                            citation.place,
+                            citation.kind === "incident" ? t("kindIncident") : t("kindEvent"),
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
         </div>
       )}
     </div>

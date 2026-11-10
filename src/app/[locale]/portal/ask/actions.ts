@@ -1,7 +1,10 @@
 "use server";
 
 import { auth } from "@/auth";
+import { hasLocale } from "next-intl";
 import { askAboutIraq } from "@/lib/portal/ask";
+import type { AskCitation } from "@/lib/portal/ask-local";
+import { locales } from "@/i18n/routing";
 import { withinRateLimit } from "@/lib/rate-limit";
 
 /** Questions per window, per account — generous for a person reading and
@@ -15,6 +18,8 @@ export type AskState = {
   status: "idle" | "answered" | "error";
   question?: string;
   answer?: string;
+  /** The incidents and report events the answer was built from. */
+  citations?: AskCitation[];
   /** A key under `portal.ask`, not a sentence — matches how the sign-in and
    * emailing forms elsewhere in the app report failure, so the message is
    * always shown in the visitor's own language rather than baked into the
@@ -52,10 +57,12 @@ export async function askQuestion(
     return { status: "error", errorKey: "errorTooMany", question };
   }
 
-  const result = await askAboutIraq(question);
+  const rawLocale = String(formData.get("locale") ?? "");
+  const locale = hasLocale(locales, rawLocale) ? rawLocale : "en";
+  const result = await askAboutIraq(question, locale);
 
   if (result.status === "error") {
     return { status: "error", errorKey: result.errorKey, question };
   }
-  return { status: "answered", question, answer: result.answer };
+  return { status: "answered", question, answer: result.answer, citations: result.citations };
 }
