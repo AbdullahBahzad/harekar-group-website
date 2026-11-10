@@ -38,7 +38,7 @@ type Tab = "individual" | "tags" | "companies";
 type Group = { key: string; label: string; members: ReportRecipient[] };
 
 const inputClass =
-  "border-bone/16 bg-ink/60 text-bone placeholder:text-bone/35 focus:border-gold min-h-11 w-full min-w-0 rounded-md border px-3 py-2 text-sm outline-none transition-colors";
+  "border-bone/16 bg-white text-bone placeholder:text-bone/35 focus:border-gold min-h-11 w-full min-w-0 rounded-md border px-3 py-2 text-sm outline-none transition-colors";
 
 /**
  * Groups the list by one field. Entries with no value are gathered into a
@@ -214,7 +214,7 @@ export default function EmailingConsole({
                   <span
                     aria-hidden
                     className={cn(
-                      "bg-bone absolute start-0.5 top-0.5 size-4.5 rounded-full transition-transform",
+                      "bg-white absolute start-0.5 top-0.5 size-4.5 rounded-full shadow-sm transition-transform",
                       allSelected && "translate-x-5 rtl:-translate-x-5",
                     )}
                   />
@@ -240,7 +240,7 @@ export default function EmailingConsole({
                   className={cn(
                     "flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3.5 text-sm transition-colors",
                     tab === id
-                      ? "border-gold/60 bg-gold/12 text-gold"
+                      ? "border-gold/60 bg-gold/12 text-gold-deep"
                       : "border-bone/16 text-bone/70 hover:border-bone/30 hover:text-bone",
                   )}
                 >
@@ -431,7 +431,7 @@ export default function EmailingConsole({
                 {t("noTemplates")}{" "}
                 <Link
                   href="/admin/sources"
-                  className="text-gold hover:text-gold-bright underline underline-offset-2"
+                  className="text-gold-deep hover:text-gold-bright underline underline-offset-2"
                 >
                   {t("openSources")}
                 </Link>

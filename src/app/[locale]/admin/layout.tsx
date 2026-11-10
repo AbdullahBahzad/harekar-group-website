@@ -88,7 +88,7 @@ export default async function AdminLayout({
 
   return (
     <NextIntlClientProvider messages={consoleMessages}>
-      <div className="bg-ink text-bone min-h-svh md:flex">
+      <div className="tone-light tone-console bg-white text-bone min-h-svh md:flex">
         {/*
          * Owns the whole nav chrome — brand, grouped links, operator label and
          * sign-out — for both the persistent tablet/desktop sidebar and the

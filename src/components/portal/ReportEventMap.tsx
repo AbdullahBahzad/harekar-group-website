@@ -7,10 +7,7 @@ import type { LeafletArea, LeafletPin } from "@/components/IraqLeafletMap";
 import { governorateShapes } from "@/data/iraq-governorates";
 import { eventPin } from "@/lib/report-geo";
 import { REPORT_CATEGORIES, type ReportNewsItem } from "@/lib/report-shape";
-import {
-  CATEGORY_COLOR_DARK as CATEGORY_COLOR,
-  categoryColorDark as categoryColor,
-} from "@/lib/pdf/report-labels";
+import { CATEGORY_COLOR, categoryColor } from "@/lib/pdf/report-labels";
 import { orderReportEvents } from "@/lib/report-order";
 
 // Leaflet touches `window` at import time — see `ReportLocationMap`.

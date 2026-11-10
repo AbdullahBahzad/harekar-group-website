@@ -307,7 +307,7 @@ export default function IraqLeafletMap({
             ${pin.pulse ? `<span class="harekar-pin-pulse" style="--tone:${pin.tone}"></span>` : ""}
             ${pin.selected ? `<span class="harekar-pin-selected"></span>` : ""}
             ${pin.ring ? `<span class="harekar-pin-ring" style="--tone:${pin.tone}"></span>` : ""}
-            <span class="harekar-pin" style="--tone:${pin.tone};${pin.dim ? "background:var(--color-ink);" : ""}"></span>
+            <span class="harekar-pin" style="--tone:${pin.tone};${pin.dim ? "background:var(--color-white);" : ""}"></span>
             ${countBadge}
           `,
         iconSize: [size, size],

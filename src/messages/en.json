@@ -484,7 +484,7 @@
     },
     "incidents": {
       "title": "Incident Feed",
-      "intro": "Every published incident, most recent first — filter by severity or governorate to narrow the picture.",
+      "intro": "Every published incident — search, filter by severity, place, category, method, period and status, and sort the list.",
       "allSeverities": "All severities",
       "allProvinces": "All governorates",
       "filterByProvince": "Filter by governorate",
@@ -494,7 +494,35 @@
       "actor": "Actor",
       "target": "Target",
       "city": "City",
-      "viewFullReport": "View full report"
+      "viewFullReport": "View full report",
+      "filters": "Filters",
+      "search": "Search",
+      "searchPlaceholder": "Title, place, actor, target…",
+      "governorate": "Governorate",
+      "category": "Category",
+      "allCategories": "All categories",
+      "method": "Method",
+      "allMethods": "All methods",
+      "period": "Period",
+      "ranges": {
+        "1": "Last 24 hours",
+        "7": "Last 7 days",
+        "30": "Last 30 days",
+        "90": "Last 90 days",
+        "all": "All time",
+        "custom": "Custom dates"
+      },
+      "status": "Status",
+      "statusAll": "Open and resolved",
+      "statusOpen": "Open only",
+      "statusResolved": "Resolved only",
+      "sort": "Sort",
+      "sortNewest": "Newest first",
+      "sortOldest": "Oldest first",
+      "sortSeverity": "Most severe first",
+      "from": "From",
+      "to": "To",
+      "resetFilters": "Reset filters"
     },
     "statistics": {
       "title": "Statistics",
@@ -1723,6 +1751,27 @@
       "typesTitle": "Types of incidents",
       "typesSubtitle": "Event type breakdown",
       "unspecified": "Not specified"
+    },
+    "threatLevels": {
+      "LOW": "Low",
+      "MODERATE": "Moderate",
+      "HIGH": "High",
+      "CRITICAL": "Critical"
+    },
+    "filters": {
+      "title": "Filter reports",
+      "search": "Search",
+      "searchPlaceholder": "Words in the summary or any event…",
+      "from": "From",
+      "to": "To",
+      "kurdistanThreat": "Kurdistan threat",
+      "iraqThreat": "Iraq threat",
+      "section": "Contains section",
+      "severity": "Contains severity",
+      "governorate": "Mentions governorate",
+      "any": "Any",
+      "count": "{count, plural, one {# report} other {# reports}}",
+      "reset": "Reset filters"
     }
   }
 }

@@ -191,7 +191,7 @@ export default function PortalRail({
 
   return (
     <>
-      <aside className="border-bone/12 bg-ink/60 sticky top-0 hidden h-svh w-64 shrink-0 flex-col gap-6 border-e p-4 md:flex">
+      <aside className="tone-navy border-bone/12 bg-ink sticky top-0 hidden h-svh w-64 shrink-0 flex-col gap-6 border-e p-4 md:flex">
         {brand}
         {nav()}
         {footer()}
@@ -234,7 +234,7 @@ function MobilePortalNav({
 
   return (
     <div className="md:hidden">
-      <div className="border-bone/12 bg-ink/80 sticky top-0 z-40 flex items-center justify-between border-b px-4 py-3 backdrop-blur-xl">
+      <div className="tone-navy border-bone/12 bg-ink/95 sticky top-0 z-40 flex items-center justify-between border-b px-4 py-3 backdrop-blur-xl">
         {brand}
         <button
           type="button"
@@ -267,8 +267,7 @@ function MobilePortalNav({
               role="dialog"
               aria-modal="true"
               aria-label={t("drawerLabel")}
-              className="border-bone/14 absolute inset-y-0 start-0 flex w-[85vw] max-w-xs flex-col gap-6 border-e p-4"
-              style={{ background: "#000" }}
+              className="tone-navy border-bone/14 bg-ink absolute inset-y-0 start-0 flex w-[85vw] max-w-xs flex-col gap-6 border-e p-4"
               variants={{
                 hidden: { x: reduceMotion ? 0 : offscreen, opacity: reduceMotion ? 0 : 1 },
                 visible: { x: 0, opacity: 1 },

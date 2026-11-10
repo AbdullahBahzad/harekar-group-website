@@ -518,7 +518,7 @@ export default function ReportConsole({
                       key={source.url}
                       className={`flex items-center gap-1 border py-1 pe-1 ps-2 text-[11px] transition-colors ${
                         isSelected
-                          ? "border-gold/40 text-gold"
+                          ? "border-gold/40 text-gold-deep"
                           : "border-bone/12 text-bone/40"
                       }`}
                     >
@@ -544,7 +544,7 @@ export default function ReportConsole({
                         onClick={() => handleFetchOneSource(source.url)}
                         disabled={isFetchingHeadlines}
                         title={t("reports.fetchOnlyThis")}
-                        className="text-bone/30 hover:text-gold cursor-pointer px-1 disabled:cursor-not-allowed"
+                        className="text-bone/30 hover:text-gold-deep cursor-pointer px-1 disabled:cursor-not-allowed"
                       >
                         ⟳
                       </button>
@@ -565,7 +565,7 @@ export default function ReportConsole({
                 <button
                   type="button"
                   onClick={() => setShowAddSource((v) => !v)}
-                  className="border-bone/12 text-bone/40 hover:border-gold hover:text-gold flex min-h-8 cursor-pointer items-center border px-2.5 text-[11px] transition-colors"
+                  className="border-bone/12 text-bone/40 hover:border-gold hover:text-gold-deep flex min-h-8 cursor-pointer items-center border px-2.5 text-[11px] transition-colors"
                 >
                   {t("reports.addSourceButton")}
                 </button>
@@ -577,21 +577,21 @@ export default function ReportConsole({
                     value={newSourceName}
                     onChange={(e) => setNewSourceName(e.target.value)}
                     placeholder={t("reports.newSourceName")}
-                    className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-h-8 flex-1 border px-2 text-xs outline-none"
+                    className="border-bone/12 bg-white text-bone focus:border-gold min-h-8 flex-1 border px-2 text-xs outline-none"
                   />
                   <input
                     value={newSourceUrl}
                     onChange={(e) => setNewSourceUrl(e.target.value)}
                     placeholder={t("reports.urlPlaceholder")}
                     dir="ltr"
-                    className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-h-8 flex-[2] border px-2 text-start text-xs outline-none"
+                    className="border-bone/12 bg-white text-bone focus:border-gold min-h-8 flex-[2] border px-2 text-start text-xs outline-none"
                   />
                   <select
                     value={newSourceRegion}
                     onChange={(e) =>
                       setNewSourceRegion(e.target.value as Region)
                     }
-                    className="border-bone/12 bg-ink/60 text-bone focus:border-gold min-h-8 cursor-pointer border px-2 text-xs outline-none"
+                    className="border-bone/12 bg-white text-bone focus:border-gold min-h-8 cursor-pointer border px-2 text-xs outline-none"
                   >
                     {REGIONS.map((region) => (
                       <option key={region} value={region}>
@@ -620,7 +620,7 @@ export default function ReportConsole({
                   type="button"
                   onClick={handleFetchHeadlines}
                   disabled={isFetchingHeadlines || selectedSourceUrls.size === 0}
-                  className="border-gold/40 text-gold hover:bg-gold hover:text-ink cursor-pointer border px-4 py-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                  className="border-gold/40 text-gold-deep hover:bg-gold hover:text-ink cursor-pointer border px-4 py-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isFetchingHeadlines
                     ? t("reports.fetchingHeadlines")
@@ -633,7 +633,7 @@ export default function ReportConsole({
                       setHeadlineGroups(null);
                       setCheckedHeadlines(new Map());
                     }}
-                    className="text-bone/40 hover:text-gold ms-auto cursor-pointer text-xs transition-colors"
+                    className="text-bone/40 hover:text-gold-deep ms-auto cursor-pointer text-xs transition-colors"
                   >
                     {t("common.hide")}
                   </button>
@@ -648,7 +648,7 @@ export default function ReportConsole({
                       onChange={(e) =>
                         setMinSeverity(e.target.value as ThreatLevel)
                       }
-                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold cursor-pointer border px-2 py-1.5 text-xs outline-none"
+                      className="border-bone/12 bg-white text-bone focus:border-gold cursor-pointer border px-2 py-1.5 text-xs outline-none"
                     >
                       {THREAT_LEVELS.map((level) => (
                         <option key={level} value={level}>
@@ -662,7 +662,7 @@ export default function ReportConsole({
                       type="date"
                       value={dateFrom}
                       onChange={(e) => setDateFrom(e.target.value)}
-                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold border px-2 py-1.5 text-xs outline-none"
+                      className="border-bone/12 bg-white text-bone focus:border-gold border px-2 py-1.5 text-xs outline-none"
                     />
                   </Field>
                   <Field label={t("reports.dateTo")}>
@@ -670,7 +670,7 @@ export default function ReportConsole({
                       type="date"
                       value={dateTo}
                       onChange={(e) => setDateTo(e.target.value)}
-                      className="border-bone/12 bg-ink/60 text-bone focus:border-gold border px-2 py-1.5 text-xs outline-none"
+                      className="border-bone/12 bg-white text-bone focus:border-gold border px-2 py-1.5 text-xs outline-none"
                     />
                   </Field>
                   {(minSeverity !== "LOW" || dateFrom || dateTo) && (
@@ -681,7 +681,7 @@ export default function ReportConsole({
                         setDateFrom("");
                         setDateTo("");
                       }}
-                      className="text-bone/40 hover:text-gold cursor-pointer text-xs transition-colors"
+                      className="text-bone/40 hover:text-gold-deep cursor-pointer text-xs transition-colors"
                     >
                       {t("reports.clearFilters")}
                     </button>
@@ -696,7 +696,7 @@ export default function ReportConsole({
                       const visible = group.headlines.filter(isHeadlineVisible);
                       return (
                       <div key={group.name}>
-                        <p className="text-gold/70 text-xs font-semibold">
+                        <p className="text-gold-deep/70 text-xs font-semibold">
                           {group.name}
                           {group.failed && group.headlines.length === 0 && (
                             <span className="text-bone/35 ms-2 font-normal">
@@ -742,7 +742,7 @@ export default function ReportConsole({
                                         e.target.value as Region,
                                       )
                                     }
-                                    className="border-bone/12 bg-ink/60 text-gold/70 shrink-0 cursor-pointer border px-1.5 py-0.5 text-[10px] outline-none"
+                                    className="border-bone/12 bg-white text-gold-deep/70 shrink-0 cursor-pointer border px-1.5 py-0.5 text-[10px] outline-none"
                                   >
                                     {REGIONS.map((region) => (
                                       <option key={region} value={region}>
@@ -760,7 +760,7 @@ export default function ReportConsole({
                                     )
                                   }
                                   disabled={isPullingHeadlines}
-                                  className="border-gold/30 text-gold/80 hover:bg-gold hover:text-ink shrink-0 cursor-pointer border px-1.5 py-0.5 text-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                                  className="border-gold/30 text-gold-deep/80 hover:bg-gold hover:text-ink shrink-0 cursor-pointer border px-1.5 py-0.5 text-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                   {pullingUrl === headline.url
                                     ? t("reports.pulling")
@@ -807,7 +807,7 @@ export default function ReportConsole({
                         region: e.target.value as Region,
                       })
                     }
-                    className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-11 cursor-pointer border px-2 text-xs outline-none"
+                    className="border-bone/16 bg-white text-bone focus:border-gold min-h-11 cursor-pointer border px-2 text-xs outline-none"
                   >
                     {REGIONS.map((region) => (
                       <option key={region} value={region}>
@@ -838,7 +838,7 @@ export default function ReportConsole({
                   }
                   placeholder={t("reports.urlPlaceholder")}
                   autoComplete="off"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-start text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-start text-sm outline-none transition-colors"
                 />
                 <textarea
                   value={row.notes}
@@ -847,7 +847,7 @@ export default function ReportConsole({
                   }
                   placeholder={t("reports.notesPlaceholder")}
                   rows={2}
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </div>
             ))}
@@ -856,7 +856,7 @@ export default function ReportConsole({
               <button
                 type="button"
                 onClick={() => setSources((rows) => [...rows, newRow()])}
-                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 {t("reports.addSource")}
               </button>
@@ -885,7 +885,7 @@ export default function ReportConsole({
                 <button
                   type="button"
                   onClick={handleAddManualItem}
-                  className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                  className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep cursor-pointer border px-4 py-2 text-xs transition-colors"
                 >
                   {t("reports.addManualItem")}
                 </button>
@@ -900,7 +900,7 @@ export default function ReportConsole({
                       type="date"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                      className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                     />
                   </Field>
                   <Field label={t("reports.weather")}>
@@ -908,7 +908,7 @@ export default function ReportConsole({
                       value={weather}
                       onChange={(e) => setWeather(e.target.value)}
                       placeholder={t("reports.weatherPlaceholder")}
-                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                      className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                     />
                   </Field>
                   <Field label={t("reports.kurdistanThreat")}>
@@ -917,7 +917,7 @@ export default function ReportConsole({
                       onChange={(e) =>
                         setKurdistanThreat(e.target.value as ThreatLevel)
                       }
-                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+                      className="border-bone/16 bg-white text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
                     >
                       {THREAT_LEVELS.map((level) => (
                         <option key={level} value={level}>
@@ -932,7 +932,7 @@ export default function ReportConsole({
                       onChange={(e) =>
                         setIraqThreat(e.target.value as ThreatLevel)
                       }
-                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+                      className="border-bone/16 bg-white text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
                     >
                       {THREAT_LEVELS.map((level) => (
                         <option key={level} value={level}>
@@ -945,14 +945,14 @@ export default function ReportConsole({
                     <input
                       value={politicalKurdistan}
                       onChange={(e) => setPoliticalKurdistan(e.target.value)}
-                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                      className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                     />
                   </Field>
                   <Field label={t("reports.politicalIraq")}>
                     <input
                       value={politicalIraq}
                       onChange={(e) => setPoliticalIraq(e.target.value)}
-                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                      className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                     />
                   </Field>
                 </div>
@@ -963,7 +963,7 @@ export default function ReportConsole({
                     onChange={(e) => setExecutiveSummary(e.target.value)}
                     placeholder={t("reports.executiveSummaryPlaceholder")}
                     rows={4}
-                    className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm outline-none transition-colors"
+                    className="border-bone/16 bg-white text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm outline-none transition-colors"
                   />
                   <p className="text-bone/45 mt-1.5 text-xs">
                     {t("reports.executiveSummaryHint")}
@@ -985,7 +985,7 @@ export default function ReportConsole({
                   <div className="mt-4 space-y-5">
                     {REGION_GROUPS.map((group) => (
                       <div key={group} className="space-y-2">
-                        <h4 className="text-gold/78 text-xs font-medium tracking-wide uppercase">
+                        <h4 className="text-gold-deep/78 text-xs font-medium tracking-wide uppercase">
                           {t(`reports.regionGroups.${group}`)}
                         </h4>
                         <div className="space-y-2">
@@ -1008,7 +1008,7 @@ export default function ReportConsole({
                                           risk: e.target.value as ThreatLevel,
                                         })
                                       }
-                                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-9 cursor-pointer border px-2 text-xs outline-none"
+                                      className="border-bone/16 bg-white text-bone focus:border-gold min-h-9 cursor-pointer border px-2 text-xs outline-none"
                                     >
                                       {THREAT_LEVELS.map((level) => (
                                         <option key={level} value={level}>
@@ -1023,7 +1023,7 @@ export default function ReportConsole({
                                           trend: e.target.value as RiskTrend,
                                         })
                                       }
-                                      className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-9 cursor-pointer border px-2 text-xs outline-none"
+                                      className="border-bone/16 bg-white text-bone focus:border-gold min-h-9 cursor-pointer border px-2 text-xs outline-none"
                                     >
                                       {RISK_TRENDS.map((trend) => (
                                         <option key={trend} value={trend}>
@@ -1042,7 +1042,7 @@ export default function ReportConsole({
                                     placeholder={t(
                                       "reports.governorateDriverPlaceholder",
                                     )}
-                                    className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-2.5 py-1.5 text-xs outline-none transition-colors"
+                                    className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-2.5 py-1.5 text-xs outline-none transition-colors"
                                   />
                                 </div>
                               );
@@ -1071,7 +1071,7 @@ export default function ReportConsole({
                               region: e.target.value as Region,
                             })
                           }
-                          className="border-bone/16 bg-ink/60 text-gold/78 focus:border-gold min-h-11 cursor-pointer border px-2 text-xs outline-none"
+                          className="border-bone/16 bg-white text-gold-deep/78 focus:border-gold min-h-11 cursor-pointer border px-2 text-xs outline-none"
                         >
                           {REGIONS.map((region) => (
                             <option key={region} value={region}>
@@ -1098,7 +1098,7 @@ export default function ReportConsole({
                         onChange={(e) =>
                           updateDraftItem(i, { title: e.target.value })
                         }
-                        className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm font-semibold outline-none transition-colors"
+                        className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm font-semibold outline-none transition-colors"
                       />
                       <textarea
                         value={item.body}
@@ -1106,7 +1106,7 @@ export default function ReportConsole({
                           updateDraftItem(i, { body: e.target.value })
                         }
                         rows={4}
-                        className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
+                        className="border-bone/16 bg-white text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
                       />
                       {item.url && (
                         <p dir="ltr" className="text-bone/56 truncate text-start text-xs">
@@ -1124,7 +1124,7 @@ export default function ReportConsole({
                 <button
                   type="button"
                   onClick={handleAddManualItem}
-                  className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                  className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep cursor-pointer border px-4 py-2 text-xs transition-colors"
                 >
                   {t("reports.addManualItem")}
                 </button>
@@ -1143,7 +1143,7 @@ export default function ReportConsole({
                   <button
                     type="button"
                     onClick={() => setDraftItems(null)}
-                    className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                    className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep cursor-pointer border px-4 py-2 text-xs transition-colors"
                   >
                     {t("reports.discard")}
                   </button>
@@ -1160,7 +1160,7 @@ export default function ReportConsole({
           <p className="min-w-0 flex-1">{t("reports.recipientsIntro")}</p>
           <Link
             href="/admin/emailing"
-            className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-11 shrink-0 items-center border px-3 text-xs transition-colors"
+            className="border-gold/40 text-gold-deep hover:bg-gold hover:text-ink flex min-h-11 shrink-0 items-center border px-3 text-xs transition-colors"
           >
             {t("reports.recipientsOpen")}
           </Link>
@@ -1206,13 +1206,13 @@ export default function ReportConsole({
               )}
               <a
                 href={`/api/admin/reports/${report.id}/pdf`}
-                className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
+                className="border-gold/40 text-gold-deep hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
               >
                 {t("reports.downloadWithSources")}
               </a>
               <a
                 href={`/api/admin/reports/${report.id}/pdf?sources=0`}
-                className="border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
+                className="border-gold/40 text-gold-deep hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
               >
                 {t("reports.downloadWithoutSources")}
               </a>
@@ -1222,7 +1222,7 @@ export default function ReportConsole({
                   setEmailOpenId(emailOpenId === report.id ? null : report.id)
                 }
                 aria-expanded={emailOpenId === report.id}
-                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
+                className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold-deep flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
               >
                 {t("reports.emailReport")}
               </button>
@@ -1283,7 +1283,7 @@ function EmailReportForm({
   return (
     <form
       action={formAction}
-      className="border-bone/12 bg-ink/30 mt-1 flex flex-wrap items-start gap-2 border p-3"
+      className="border-bone/12 bg-surface mt-1 flex flex-wrap items-start gap-2 border p-3"
     >
       <input type="hidden" name="id" value={reportId} />
       <input
@@ -1294,7 +1294,7 @@ function EmailReportForm({
         defaultValue={state.email}
         placeholder={t("reports.emailPlaceholder")}
         aria-label={t("reports.emailPlaceholder")}
-        className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
+        className="border-bone/16 bg-white text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
       />
       <input
         type="text"
@@ -1302,13 +1302,13 @@ function EmailReportForm({
         defaultValue={state.note}
         placeholder={t("reports.emailNotePlaceholder")}
         aria-label={t("reports.emailNotePlaceholder")}
-        className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-2 border px-3 py-2 text-start text-xs outline-none transition-colors"
+        className="border-bone/16 bg-white text-bone focus:border-gold min-w-0 flex-2 border px-3 py-2 text-start text-xs outline-none transition-colors"
       />
       <select
         name="sources"
         defaultValue="1"
         aria-label={t("reports.emailVersion")}
-        className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-11 cursor-pointer border px-2 text-xs outline-none"
+        className="border-bone/16 bg-white text-bone focus:border-gold min-h-11 cursor-pointer border px-2 text-xs outline-none"
       >
         <option value="1">{t("reports.versionWithSources")}</option>
         <option value="0">{t("reports.versionWithoutSources")}</option>
@@ -1347,7 +1347,7 @@ function EmailSendButton() {
 }
 
 const filingInput =
-  "border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-11 w-full border px-3 text-xs outline-none transition-colors";
+  "border-bone/16 bg-white text-bone focus:border-gold min-h-11 w-full border px-3 text-xs outline-none transition-colors";
 
 /**
  * Where an event is filed: its report section, what kind of event it was,
@@ -1512,7 +1512,7 @@ function EventFilingFields({
             onChange={(e) => onChange({ shortSummary: e.target.value || null })}
             rows={2}
             placeholder={t("filing.shortSummaryHint")}
-            className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-xs leading-relaxed outline-none transition-colors"
+            className="border-bone/16 bg-white text-bone focus:border-gold w-full resize-y border px-3 py-2 text-xs leading-relaxed outline-none transition-colors"
           />
         </label>
       )}

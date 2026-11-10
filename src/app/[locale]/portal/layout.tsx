@@ -49,7 +49,7 @@ export default async function PortalLayout({
     // layout already supplies it — without it, every portal page embedding
     // the map would crash rather than just fail to know who is looking.
     <SessionProvider>
-      <div className="bg-ink text-bone min-h-svh md:flex">
+      <div className="tone-light tone-console bg-white text-bone min-h-svh md:flex">
         <PortalRail
           name={user.name ?? user.email}
           hideGuests={user.isGuest}

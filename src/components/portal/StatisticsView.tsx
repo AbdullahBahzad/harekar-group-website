@@ -49,7 +49,7 @@ export default function StatisticsView({ stats }: { stats: PortalStats }) {
 
       {/* Severity breakdown. */}
       <section className="mt-10">
-        <h2 className="text-gold/85 text-xs font-medium tracking-[0.16em] uppercase">
+        <h2 className="text-gold-deep/85 text-xs font-medium tracking-[0.16em] uppercase">
           {t("bySeverity")}
         </h2>
         <div className="mt-4 space-y-3">
@@ -81,7 +81,7 @@ export default function StatisticsView({ stats }: { stats: PortalStats }) {
       {/* By province. */}
       {stats.byProvince.length > 0 && (
         <section className="mt-10">
-          <h2 className="text-gold/85 text-xs font-medium tracking-[0.16em] uppercase">
+          <h2 className="text-gold-deep/85 text-xs font-medium tracking-[0.16em] uppercase">
             {t("byProvince")}
           </h2>
           <div className="mt-4 space-y-3">
@@ -107,7 +107,7 @@ export default function StatisticsView({ stats }: { stats: PortalStats }) {
 
       {/* 14-day trend. */}
       <section className="mt-10">
-        <h2 className="text-gold/85 text-xs font-medium tracking-[0.16em] uppercase">
+        <h2 className="text-gold-deep/85 text-xs font-medium tracking-[0.16em] uppercase">
           {t("dailyTrend")}
         </h2>
         {/* `h-full` on each bar's wrapper matters: a percentage `height` on the

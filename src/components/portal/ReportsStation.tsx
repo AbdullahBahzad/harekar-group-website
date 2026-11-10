@@ -1,11 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import type { ConsoleReport, ReportNewsItem } from "@/lib/report-shape";
-import { categoryColorDark as categoryColor, joinPlace } from "@/lib/pdf/report-labels";
+import {
+  EVENT_SEVERITIES,
+  GOVERNORATES,
+  REPORT_CATEGORIES,
+  THREAT_LEVELS,
+  type ConsoleReport,
+  type ReportNewsItem,
+} from "@/lib/report-shape";
+import { categoryColor, joinPlace } from "@/lib/pdf/report-labels";
 import { orderReportEvents } from "@/lib/report-order";
 import ReportEventMap from "@/components/portal/ReportEventMap";
+import Reveal from "@/components/Reveal";
 import {
   ByGovernorate,
   EventTypes,
@@ -50,6 +58,8 @@ export default function ReportsStation({
 }) {
   const t = useTranslations("portal.reports");
   const [tab, setTab] = useState<Tab>("brief");
+  const [filters, setFilters] = useState<ReportFilterState>(NO_FILTERS);
+  const filteredBriefs = useMemo(() => applyReportFilters(recentBriefs, filters), [recentBriefs, filters]);
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "brief", label: t("tabBrief") },
@@ -79,7 +89,7 @@ export default function ReportsStation({
             className={cn(
               "flex min-h-11 cursor-pointer items-center rounded-full border px-5 text-sm transition-colors",
               tab === id
-                ? "border-gold/60 bg-gold/12 text-gold"
+                ? "border-gold/60 bg-gold/12 text-gold-deep"
                 : "border-bone/16 text-bone/70 hover:border-bone/35 hover:text-bone",
             )}
           >
@@ -101,21 +111,36 @@ export default function ReportsStation({
                 <SeverityCounters items={latestBrief.content.items} />
               </aside>
             </div>
-            <TrendVelocity events={trendEvents} endDate={latestBrief.date} />
-            <TopIncidents items={latestBrief.content.items} />
+            {/* Each block fades up as it scrolls in, as on the public site. */}
+            <Reveal>
+              <TrendVelocity events={trendEvents} endDate={latestBrief.date} />
+            </Reveal>
+            <Reveal>
+              <TopIncidents items={latestBrief.content.items} />
+            </Reveal>
             <div className="grid gap-6 lg:grid-cols-3">
-              <ByGovernorate items={latestBrief.content.items} />
-              <ThreatIntensity items={latestBrief.content.items} />
-              <EventTypes items={latestBrief.content.items} />
+              <Reveal>
+                <ByGovernorate items={latestBrief.content.items} />
+              </Reveal>
+              <Reveal delay={0.08}>
+                <ThreatIntensity items={latestBrief.content.items} />
+              </Reveal>
+              <Reveal delay={0.16}>
+                <EventTypes items={latestBrief.content.items} />
+              </Reveal>
             </div>
           </div>
         ) : (
           <EmptyState message={t("noBriefYet")} />
         ))}
 
-      {tab === "logs" && <BriefingLogs reports={recentBriefs} />}
+      {tab !== "brief" && (
+        <ReportFilters reports={recentBriefs} filters={filters} onChange={setFilters} count={filteredBriefs.length} />
+      )}
 
-      {tab === "reports" && <ReportsTable reports={recentBriefs} />}
+      {tab === "logs" && <BriefingLogs reports={filteredBriefs} />}
+
+      {tab === "reports" && <ReportsTable reports={filteredBriefs} />}
     </div>
   );
 }
@@ -184,7 +209,7 @@ function DailyBrief({
       {!compact && (
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <span className="border-gold/35 bg-gold/10 text-gold flex size-11 shrink-0 items-center justify-center rounded-full border">
+            <span className="border-gold/35 bg-gold/10 text-gold-deep flex size-11 shrink-0 items-center justify-center rounded-full border">
               <svg viewBox="0 0 20 20" className="size-5" fill="none" aria-hidden>
                 <path d="m2.5 4.5 7.5 5.5 7.5-5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 <rect x="2.5" y="4.5" width="15" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
@@ -212,7 +237,7 @@ function DailyBrief({
               onClick={handleShare}
               aria-label={t("share")}
               title={t("share")}
-              className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold flex size-10 cursor-pointer items-center justify-center rounded-full border transition-colors"
+              className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold-deep flex size-10 cursor-pointer items-center justify-center rounded-full border transition-colors"
             >
               <svg viewBox="0 0 20 20" className="size-4" fill="none" aria-hidden>
                 <circle cx="15" cy="5" r="2" stroke="currentColor" strokeWidth="1.4" />
@@ -227,7 +252,7 @@ function DailyBrief({
       )}
 
       {!compact && (
-        <p className="text-gold/70 mt-5 text-xs tracking-[0.14em] uppercase">
+        <p className="text-gold-deep/70 mt-5 text-xs tracking-[0.14em] uppercase">
           {t("snapshotGenerated", {
             date: formatDate(new Date(report.updatedAt), locale, {
               month: "short",
@@ -239,7 +264,7 @@ function DailyBrief({
         </p>
       )}
 
-      <h3 className={cn("text-gold/85 text-xs font-medium tracking-[0.16em] uppercase", compact ? "" : "mt-6")}>
+      <h3 className={cn("text-gold-deep/85 text-xs font-medium tracking-[0.16em] uppercase", compact ? "" : "mt-6")}>
         {t("executiveSummary")}
       </h3>
       <p className="text-bone/80 mt-2 text-sm leading-relaxed text-pretty">
@@ -272,7 +297,7 @@ function BriefingLogs({ reports }: { reports: ConsoleReport[] }) {
             >
               <svg
                 viewBox="0 0 20 20"
-                className={cn("text-gold/70 size-3.5 shrink-0 transition-transform", open && "rotate-90 rtl:-rotate-90")}
+                className={cn("text-gold-deep/70 size-3.5 shrink-0 transition-transform", open && "rotate-90 rtl:-rotate-90")}
                 fill="none"
                 aria-hidden
               >
@@ -344,7 +369,7 @@ function ReportsTable({ reports }: { reports: ConsoleReport[] }) {
 function PdfLinks({ reportId }: { reportId: string }) {
   const v = useTranslations("reportVocab");
   const link =
-    "border-gold/40 text-gold hover:bg-gold hover:text-ink flex min-h-9 shrink-0 items-center rounded-full border px-4 text-xs transition-colors";
+    "border-gold/40 text-gold-deep hover:bg-gold hover:text-ink flex min-h-9 shrink-0 items-center rounded-full border px-4 text-xs transition-colors";
   return (
     <span className="flex flex-wrap gap-2">
       <a href={`/api/portal/reports/${reportId}/pdf`} className={link}>
@@ -378,7 +403,7 @@ function ReportBody({ items }: { items: ReportNewsItem[] }) {
     <>
       {kurdistan.length > 0 && (
         <>
-          <h3 className="text-gold/85 mt-7 text-xs font-medium tracking-[0.16em] uppercase">
+          <h3 className="text-gold-deep/85 mt-7 text-xs font-medium tracking-[0.16em] uppercase">
             {v("shortSummaries")}
           </h3>
           <ul className="mt-3 space-y-2">
@@ -400,7 +425,7 @@ function ReportBody({ items }: { items: ReportNewsItem[] }) {
               className="inline-block size-2.5 rounded-full"
               style={{ background: categoryColor(category) }}
             />
-            <span className="text-gold/85">
+            <span className="text-gold-deep/85">
               {category ? v(`categories.${category}`) : v("uncategorised")}
             </span>
           </h3>
@@ -430,7 +455,7 @@ function ReportBody({ items }: { items: ReportNewsItem[] }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         dir="ltr"
-                        className="text-gold/70 hover:text-gold mt-1 block truncate text-xs"
+                        className="text-gold-deep/70 hover:text-gold-deep mt-1 block truncate text-xs"
                       >
                         {item.url}
                       </a>
@@ -462,5 +487,176 @@ function EmptyState({ message }: { message: string }) {
     <p className="border-bone/14 text-bone/50 rounded-2xl border border-dashed px-6 py-14 text-center text-sm">
       {message}
     </p>
+  );
+}
+
+/* ---- report filters --------------------------------------------------------- */
+
+type ReportFilterState = {
+  query: string;
+  from: string;
+  to: string;
+  kurdistanThreat: string;
+  iraqThreat: string;
+  category: string;
+  severity: string;
+  governorate: string;
+};
+
+const NO_FILTERS: ReportFilterState = {
+  query: "",
+  from: "",
+  to: "",
+  kurdistanThreat: "",
+  iraqThreat: "",
+  category: "",
+  severity: "",
+  governorate: "",
+};
+
+/**
+ * Narrows the report archive. Report-level filters (date, the two threat
+ * levels) test the report itself; event-level ones (text, section, severity,
+ * governorate) keep a report when at least one of its events matches, since
+ * a reader looking for "Kirkuk" wants every report that mentions Kirkuk.
+ */
+function applyReportFilters(reports: ConsoleReport[], f: ReportFilterState): ConsoleReport[] {
+  const query = f.query.trim().toLowerCase();
+  return reports.filter((report) => {
+    const day = report.date.slice(0, 10);
+    if (f.from && day < f.from) return false;
+    if (f.to && day > f.to) return false;
+    if (f.kurdistanThreat && report.kurdistanThreat !== f.kurdistanThreat) return false;
+    if (f.iraqThreat && report.iraqThreat !== f.iraqThreat) return false;
+    const items = report.content.items;
+    if (f.category && !items.some((item) => item.category === f.category)) return false;
+    if (f.severity && !items.some((item) => item.severity === f.severity)) return false;
+    if (f.governorate && !items.some((item) => item.governorate === f.governorate)) return false;
+    if (query) {
+      const text = [
+        report.executiveSummary,
+        ...items.flatMap((item) => [item.title, item.body, item.shortSummary, item.area, item.district]),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      if (!text.includes(query)) return false;
+    }
+    return true;
+  });
+}
+
+function ReportFilters({
+  reports,
+  filters,
+  onChange,
+  count,
+}: {
+  reports: ConsoleReport[];
+  filters: ReportFilterState;
+  onChange: (next: ReportFilterState) => void;
+  count: number;
+}) {
+  const v = useTranslations("reportVocab");
+  const set = (patch: Partial<ReportFilterState>) => onChange({ ...filters, ...patch });
+  const active = JSON.stringify(filters) !== JSON.stringify(NO_FILTERS);
+  // Only governorates that actually appear in the archive are offered.
+  const governorates = GOVERNORATES.map((g) => g.key).filter((key) =>
+    reports.some((report) => report.content.items.some((item) => item.governorate === key)),
+  );
+  const control =
+    "border-bone/16 bg-white text-bone focus:border-gold min-h-11 w-full cursor-pointer rounded-xl border px-3 text-sm outline-none";
+  const label = "text-bone/55 mb-1 block text-[11px] tracking-[0.14em] uppercase";
+
+  return (
+    <section aria-label={v("filters.title")} className="border-bone/14 bg-surface/40 mb-6 space-y-3 rounded-2xl border p-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <label className="sm:col-span-2">
+          <span className={label}>{v("filters.search")}</span>
+          <input
+            type="search"
+            value={filters.query}
+            onChange={(e) => set({ query: e.target.value })}
+            placeholder={v("filters.searchPlaceholder")}
+            className={`${control} cursor-text`}
+          />
+        </label>
+        <label>
+          <span className={label}>{v("filters.from")}</span>
+          <input type="date" value={filters.from} onChange={(e) => set({ from: e.target.value })} className={control} />
+        </label>
+        <label>
+          <span className={label}>{v("filters.to")}</span>
+          <input type="date" value={filters.to} onChange={(e) => set({ to: e.target.value })} className={control} />
+        </label>
+        <label>
+          <span className={label}>{v("filters.kurdistanThreat")}</span>
+          <select value={filters.kurdistanThreat} onChange={(e) => set({ kurdistanThreat: e.target.value })} className={control}>
+            <option value="">{v("filters.any")}</option>
+            {THREAT_LEVELS.map((level) => (
+              <option key={level} value={level}>
+                {v(`threatLevels.${level}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span className={label}>{v("filters.iraqThreat")}</span>
+          <select value={filters.iraqThreat} onChange={(e) => set({ iraqThreat: e.target.value })} className={control}>
+            <option value="">{v("filters.any")}</option>
+            {THREAT_LEVELS.map((level) => (
+              <option key={level} value={level}>
+                {v(`threatLevels.${level}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span className={label}>{v("filters.section")}</span>
+          <select value={filters.category} onChange={(e) => set({ category: e.target.value })} className={control}>
+            <option value="">{v("filters.any")}</option>
+            {REPORT_CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {v(`categories.${category}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span className={label}>{v("filters.severity")}</span>
+          <select value={filters.severity} onChange={(e) => set({ severity: e.target.value })} className={control}>
+            <option value="">{v("filters.any")}</option>
+            {EVENT_SEVERITIES.map((level) => (
+              <option key={level} value={level}>
+                {v(`severities.${level}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span className={label}>{v("filters.governorate")}</span>
+          <select value={filters.governorate} onChange={(e) => set({ governorate: e.target.value })} className={control}>
+            <option value="">{v("filters.any")}</option>
+            {governorates.map((key) => (
+              <option key={key} value={key}>
+                {v(`governorates.${key}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="text-bone/60 text-xs tabular-nums">{v("filters.count", { count })}</span>
+        {active && (
+          <button
+            type="button"
+            onClick={() => onChange(NO_FILTERS)}
+            className="text-gold-deep hover:text-gold-deep cursor-pointer text-xs underline-offset-4 hover:underline"
+          >
+            {v("filters.reset")}
+          </button>
+        )}
+      </div>
+    </section>
   );
 }

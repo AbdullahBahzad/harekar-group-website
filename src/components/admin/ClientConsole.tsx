@@ -28,7 +28,7 @@ export type ConsoleClient = {
 };
 
 const inputClass =
-  "border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
+  "border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
 
 /**
  * The clients station.
@@ -63,7 +63,7 @@ export default function ClientConsole({
               setEditing(null);
               setCreating(true);
             }}
-            className="border-gold/50 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
+            className="border-gold/50 text-gold-deep hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
           >
             {t("clients.newLogo")}
           </button>
@@ -76,7 +76,7 @@ export default function ClientConsole({
               <form action={seedFromStaticClients} className="mt-6">
                 <button
                   type="submit"
-                  className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
+                  className="border-gold/50 text-gold-deep hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
                 >
                   {t("clients.importExisting", { count: 37 })}
                 </button>
@@ -194,7 +194,7 @@ function ClientEditor({
               className="object-contain p-6"
               unoptimized={client.hasUpload}
             />
-            <span className="bg-ink/70 text-bone/70 absolute bottom-0 start-0 px-2 py-1 text-xs backdrop-blur">
+            <span className="bg-white/95 text-bone/70 absolute bottom-0 start-0 px-2 py-1 text-xs backdrop-blur">
               {client.hasUpload
                 ? t("common.uploaded")
                 : t("common.shippedImage")}
@@ -209,7 +209,7 @@ function ClientEditor({
             name="image"
             accept="image/webp,image/png,image/jpeg,image/avif"
             required={!editing}
-            className="text-bone/70 file:border-gold/50 file:text-gold hover:file:bg-gold hover:file:text-ink w-full cursor-pointer text-xs file:me-3 file:cursor-pointer file:border file:bg-transparent file:px-3 file:py-1.5 file:text-xs file:transition-colors"
+            className="text-bone/70 file:border-gold/50 file:text-gold-deep hover:file:bg-gold hover:file:text-ink w-full cursor-pointer text-xs file:me-3 file:cursor-pointer file:border file:bg-transparent file:px-3 file:py-1.5 file:text-xs file:transition-colors"
           />
           {client?.hasUpload && (
             <span className="text-bone/56 mt-1.5 block text-xs">
@@ -310,7 +310,7 @@ function ClientEditor({
               name="sortOrder"
               dir="ltr"
               defaultValue={client?.sortOrder ?? 0}
-              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
+              className="border-bone/16 bg-white text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
             />
           </label>
         </div>
@@ -329,7 +329,7 @@ function ClientEditor({
                 type="submit"
                 formAction={toggleClientPublished}
                 formNoValidate
-                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
               >
                 {client.published ? t("common.hide") : t("common.show")}
               </button>

@@ -47,7 +47,7 @@ export default function AskConsole() {
           placeholder={t("placeholder")}
           rows={3}
           maxLength={600}
-          className="border-bone/16 bg-ink/60 text-bone placeholder:text-bone/35 focus:border-gold w-full resize-y rounded-xl border px-4 py-3 text-sm outline-none transition-colors"
+          className="border-bone/16 bg-white text-bone placeholder:text-bone/35 focus:border-gold w-full resize-y rounded-xl border px-4 py-3 text-sm outline-none transition-colors"
         />
         <SubmitButton label={t("submit")} pendingLabel={t("thinking")} />
       </form>
@@ -59,7 +59,7 @@ export default function AskConsole() {
               key={text}
               type="button"
               onClick={() => setQuestion(text)}
-              className="border-bone/16 text-bone/65 hover:border-gold/50 hover:text-gold cursor-pointer rounded-full border px-4 py-2 text-xs transition-colors"
+              className="border-bone/16 text-bone/65 hover:border-gold/50 hover:text-gold-deep cursor-pointer rounded-full border px-4 py-2 text-xs transition-colors"
             >
               {text}
             </button>
@@ -75,7 +75,7 @@ export default function AskConsole() {
 
       {state.status === "answered" && (
         <div className="border-bone/14 bg-surface/20 mt-6 rounded-2xl border p-6">
-          <p className="text-gold/70 text-xs tracking-[0.14em] uppercase">
+          <p className="text-gold-deep/70 text-xs tracking-[0.14em] uppercase">
             {state.question}
           </p>
           <p className="text-bone/85 mt-3 text-sm leading-relaxed whitespace-pre-line text-pretty">

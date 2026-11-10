@@ -21,7 +21,7 @@ type Range = (typeof RANGES)[number];
 const DAY = 86_400_000;
 const PAGE_SIZE = 12;
 /** The shade a switched-on tactical area takes on the map. */
-const AREA_TONE = "#4ba07a";
+const AREA_TONE = "var(--color-status-clear)";
 
 const toneFor = (severity: PortalIncident["severity"]) =>
   severityColor[severity.toLowerCase() as keyof typeof severityColor];
@@ -165,7 +165,7 @@ export default function ConsoleView({
             className={cn(
               "min-h-9 cursor-pointer rounded-full border px-3.5 text-xs transition-colors",
               range === value
-                ? "border-gold bg-gold/15 text-gold"
+                ? "border-gold bg-gold/15 text-gold-deep"
                 : "border-bone/16 text-bone/65 hover:border-gold/50 hover:text-bone",
             )}
           >
@@ -180,7 +180,7 @@ export default function ConsoleView({
           className={cn(
             "flex min-h-9 cursor-pointer items-center gap-2 rounded-full border px-3.5 text-xs transition-colors",
             filtersOpen || filtersActive
-              ? "border-gold bg-gold/15 text-gold"
+              ? "border-gold bg-gold/15 text-gold-deep"
               : "border-bone/16 text-bone/65 hover:border-gold/50 hover:text-bone",
           )}
         >
@@ -255,7 +255,7 @@ export default function ConsoleView({
                 setSpot(null);
                 setCategory(e.target.value);
               }}
-              className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-8 cursor-pointer rounded-full border px-3 text-xs outline-none"
+              className="border-bone/16 bg-white text-bone focus:border-gold min-h-8 cursor-pointer rounded-full border px-3 text-xs outline-none"
             >
               <option value="ALL">{t("allCategories")}</option>
               {categories.map((name) => (
@@ -273,7 +273,7 @@ export default function ConsoleView({
                 setCategory("ALL");
                 setPage(0);
               }}
-              className="text-gold hover:text-gold-bright cursor-pointer text-xs"
+              className="text-gold-deep hover:text-gold-bright cursor-pointer text-xs"
             >
               {t("resetFilters")}
             </button>
@@ -302,7 +302,7 @@ export default function ConsoleView({
               type="button"
               onClick={() => setPanelOpen((open) => !open)}
               aria-expanded={panelOpen}
-              className="border-bone/16 bg-ink/85 text-bone/85 hover:border-gold/50 flex min-h-9 cursor-pointer items-center gap-2 rounded-full border px-3.5 text-xs backdrop-blur"
+              className="border-bone/16 bg-white/95 text-bone/85 hover:border-gold/50 flex min-h-9 cursor-pointer items-center gap-2 rounded-full border px-3.5 text-xs backdrop-blur"
             >
               <svg viewBox="0 0 20 20" className="size-3.5" fill="none" aria-hidden>
                 <path d="M3 5.5 7.5 3.5l5 2 4.5-2v11l-4.5 2-5-2L3 16.5v-11Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
@@ -316,7 +316,7 @@ export default function ConsoleView({
             </button>
 
             {panelOpen && (
-              <div className="border-bone/14 bg-ink/92 mt-2 overflow-hidden rounded-xl border backdrop-blur">
+              <div className="border-bone/14 bg-white/95 mt-2 overflow-hidden rounded-xl border backdrop-blur">
                 <div className="border-bone/10 flex items-center justify-between border-b px-3 py-2">
                   <span className="text-bone/55 text-[10px] tracking-[0.18em] uppercase">{t("tacticalAreas")}</span>
                   <button
@@ -326,7 +326,7 @@ export default function ConsoleView({
                       setSpot(null);
                     }}
                     disabled={selected.length === 0}
-                    className="text-gold hover:text-gold-bright cursor-pointer text-xs disabled:cursor-default disabled:opacity-40"
+                    className="text-gold-deep hover:text-gold-bright cursor-pointer text-xs disabled:cursor-default disabled:opacity-40"
                   >
                     {t("clear")}
                   </button>
@@ -357,7 +357,7 @@ export default function ConsoleView({
                           >
                             <span
                               className={cn(
-                                "bg-bone absolute top-0.5 size-3 rounded-full transition-all",
+                                "bg-white absolute top-0.5 size-3 rounded-full shadow-sm transition-all",
                                 on ? "end-0.5" : "start-0.5",
                               )}
                             />
@@ -373,7 +373,7 @@ export default function ConsoleView({
 
           {/* The incidents at a clicked pin. */}
           {spotIncidents.length > 0 && (
-            <aside className="border-bone/14 bg-ink/94 absolute end-3 top-3 bottom-3 z-[500] flex w-80 max-w-[calc(100%-1.5rem)] flex-col overflow-hidden rounded-xl border backdrop-blur">
+            <aside className="border-bone/14 bg-white/95 absolute end-3 top-3 bottom-3 z-[500] flex w-80 max-w-[calc(100%-1.5rem)] flex-col overflow-hidden rounded-xl border backdrop-blur">
               <div className="border-bone/10 flex items-center justify-between border-b px-4 py-3">
                 <p className="text-bone text-sm font-medium">{t("atLocation", { count: spotIncidents.length })}</p>
                 <button
@@ -461,7 +461,7 @@ export default function ConsoleView({
                   type="button"
                   onClick={() => setPage(Math.max(0, currentPage - 1))}
                   disabled={currentPage === 0}
-                  className="text-bone/70 hover:text-gold min-h-9 cursor-pointer px-2 disabled:cursor-default disabled:opacity-30"
+                  className="text-bone/70 hover:text-gold-deep min-h-9 cursor-pointer px-2 disabled:cursor-default disabled:opacity-30"
                 >
                   {t("previous")}
                 </button>
@@ -470,7 +470,7 @@ export default function ConsoleView({
                   type="button"
                   onClick={() => setPage(Math.min(pages - 1, currentPage + 1))}
                   disabled={currentPage >= pages - 1}
-                  className="text-bone/70 hover:text-gold min-h-9 cursor-pointer px-2 disabled:cursor-default disabled:opacity-30"
+                  className="text-bone/70 hover:text-gold-deep min-h-9 cursor-pointer px-2 disabled:cursor-default disabled:opacity-30"
                 >
                   {t("next")}
                 </button>
@@ -513,7 +513,7 @@ export default function ConsoleView({
                   type="button"
                   onClick={() => setPage(Math.max(0, currentPage - 1))}
                   disabled={currentPage === 0}
-                  className="text-bone/70 hover:text-gold min-h-9 cursor-pointer px-2 disabled:cursor-default disabled:opacity-30"
+                  className="text-bone/70 hover:text-gold-deep min-h-9 cursor-pointer px-2 disabled:cursor-default disabled:opacity-30"
                 >
                   {t("previous")}
                 </button>
@@ -522,7 +522,7 @@ export default function ConsoleView({
                   type="button"
                   onClick={() => setPage(Math.min(pages - 1, currentPage + 1))}
                   disabled={currentPage >= pages - 1}
-                  className="text-bone/70 hover:text-gold min-h-9 cursor-pointer px-2 disabled:cursor-default disabled:opacity-30"
+                  className="text-bone/70 hover:text-gold-deep min-h-9 cursor-pointer px-2 disabled:cursor-default disabled:opacity-30"
                 >
                   {t("next")}
                 </button>
@@ -589,7 +589,7 @@ function IncidentCard({
         )}
         <Link
           href={`/portal/incidents/${incident.id}`}
-          className="bg-bone text-ink hover:bg-bone/85 flex min-h-9 items-center justify-center rounded-lg text-xs font-semibold tracking-[0.12em] uppercase transition-colors"
+          className="bg-ink text-white hover:bg-ink/85 flex min-h-9 items-center justify-center rounded-lg text-xs font-semibold tracking-[0.12em] uppercase transition-colors"
         >
           {labels.fullReport}
         </Link>

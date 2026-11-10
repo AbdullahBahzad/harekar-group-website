@@ -25,7 +25,7 @@ export type ConsoleBenefit = {
 };
 
 const inputClass =
-  "border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
+  "border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
 
 /** The careers page's "why work here" cards — list + editor, as everywhere else. */
 export default function BenefitConsole({
@@ -52,7 +52,7 @@ export default function BenefitConsole({
               setEditing(null);
               setCreating(true);
             }}
-            className="border-gold/50 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
+            className="border-gold/50 text-gold-deep hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
           >
             {t("benefits.newCard")}
           </button>
@@ -65,7 +65,7 @@ export default function BenefitConsole({
               <form action={seedFromStaticBenefits} className="mt-6">
                 <button
                   type="submit"
-                  className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
+                  className="border-gold/50 text-gold-deep hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
                 >
                   {t("benefits.importExisting", { count: 5 })}
                 </button>
@@ -159,7 +159,7 @@ function BenefitEditor({
          * operator is working in Arabic or Kurdish.
          */}
         <fieldset className="border-bone/12 space-y-2 border-s-2 ps-3">
-          <legend className="text-gold/70 text-xs">
+          <legend className="text-gold-deep/70 text-xs">
             {t("common.english")}
           </legend>
           <input
@@ -183,7 +183,7 @@ function BenefitEditor({
         </fieldset>
 
         <fieldset className="border-bone/12 space-y-2 border-s-2 ps-3">
-          <legend className="text-gold/70 text-xs">
+          <legend className="text-gold-deep/70 text-xs">
             {t("common.arabic")}{" "}
             <span className="text-bone/52 ms-2">{t("common.optional")}</span>
           </legend>
@@ -206,7 +206,7 @@ function BenefitEditor({
         </fieldset>
 
         <fieldset className="border-bone/12 space-y-2 border-s-2 ps-3">
-          <legend className="text-gold/70 text-xs">
+          <legend className="text-gold-deep/70 text-xs">
             {t("common.kurdish")}{" "}
             <span className="text-bone/52 ms-2">{t("common.optional")}</span>
           </legend>
@@ -248,7 +248,7 @@ function BenefitEditor({
               name="sortOrder"
               dir="ltr"
               defaultValue={benefit?.sortOrder ?? 0}
-              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
+              className="border-bone/16 bg-white text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
             />
           </label>
         </div>
@@ -267,7 +267,7 @@ function BenefitEditor({
                 type="submit"
                 formAction={toggleBenefitPublished}
                 formNoValidate
-                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
               >
                 {benefit.published ? t("common.hide") : t("common.show")}
               </button>

@@ -17,7 +17,8 @@ export async function generateMetadata({
   return { title: t("title") };
 }
 
-const BRIEFING_LOG_DEPTH = 30;
+/** How many reports the Briefing Logs and Reports archive load — a year. */
+const BRIEFING_LOG_DEPTH = 365;
 
 export default async function PortalReportsPage({
   params,

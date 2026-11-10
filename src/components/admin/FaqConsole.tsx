@@ -28,7 +28,7 @@ export type ConsoleFaqItem = {
 };
 
 const inputClass =
-  "border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
+  "border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
 
 /**
  * The FAQ station. A list on the left, an editor on the right — the same
@@ -60,7 +60,7 @@ export default function FaqConsole({
               setEditing(null);
               setCreating(true);
             }}
-            className="border-gold/50 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
+            className="border-gold/50 text-gold-deep hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center rounded-full border px-3 text-xs transition-colors"
           >
             {t("faq.newQuestion")}
           </button>
@@ -73,7 +73,7 @@ export default function FaqConsole({
               <form action={seedFromStaticFaq} className="mt-6">
                 <button
                   type="submit"
-                  className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
+                  className="border-gold/50 text-gold-deep hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-sm transition-colors"
                 >
                   {t("faq.importExisting", { count: 6 })}
                 </button>
@@ -279,7 +279,7 @@ function FaqEditor({
               name="sortOrder"
               dir="ltr"
               defaultValue={item?.sortOrder ?? 0}
-              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
+              className="border-bone/16 bg-white text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
             />
           </label>
         </div>
@@ -298,7 +298,7 @@ function FaqEditor({
                 type="submit"
                 formAction={toggleFaqPublished}
                 formNoValidate
-                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors"
               >
                 {item.published ? t("common.hide") : t("common.show")}
               </button>
@@ -346,7 +346,7 @@ function LocaleBlock({
 
   return (
     <fieldset className="border-bone/12 space-y-2 border-s-2 ps-3">
-      <legend className="text-gold/70 text-xs">
+      <legend className="text-gold-deep/70 text-xs">
         {locale}
         {!required && (
           <span className="text-bone/52 ms-2">{t("common.optional")}</span>

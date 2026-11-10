@@ -9,7 +9,7 @@ import {
   type ReportCategory,
   type ReportNewsItem,
 } from "@/lib/report-shape";
-import { categoryColorDark, joinPlace } from "@/lib/pdf/report-labels";
+import { categoryColor, joinPlace } from "@/lib/pdf/report-labels";
 import { formatDate } from "@/lib/portal/format";
 import type { DatedEvent } from "@/lib/portal/reports";
 
@@ -57,7 +57,7 @@ function Panel({
     <section className={`border-bone/14 bg-surface/20 rounded-2xl border p-5 ${className}`}>
       <h3 className="text-bone text-sm font-medium tracking-[0.08em] uppercase">{title}</h3>
       {subtitle && (
-        <p className="text-gold/70 mt-1 text-[11px] tracking-[0.14em] uppercase">{subtitle}</p>
+        <p className="text-gold-deep/70 mt-1 text-[11px] tracking-[0.14em] uppercase">{subtitle}</p>
       )}
       <div className="mt-4">{children}</div>
     </section>
@@ -290,7 +290,7 @@ export function TopIncidents({ items }: { items: ReportNewsItem[] }) {
             return (
               <li
                 key={i}
-                className="bg-ink/40 rounded-xl border-s-4 px-4 py-3"
+                className="bg-surface rounded-xl border-s-4 px-4 py-3"
                 style={{ borderInlineStartColor: tone }}
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -392,7 +392,7 @@ export function ByGovernorate({ items }: { items: ReportNewsItem[] }) {
                 segments={sections.map((category) => ({
                   key: category ?? "none",
                   label: category ? v(`categories.${category}`) : v("uncategorised"),
-                  color: categoryColorDark(category),
+                  color: categoryColor(category),
                   count: row.rows.filter((item) => (item.category ?? null) === category).length,
                 }))}
               />
@@ -401,7 +401,7 @@ export function ByGovernorate({ items }: { items: ReportNewsItem[] }) {
           <Legend
             items={shown.map((category) => ({
               label: category ? v(`categories.${category}`) : v("uncategorised"),
-              color: categoryColorDark(category),
+              color: categoryColor(category),
             }))}
           />
         </>

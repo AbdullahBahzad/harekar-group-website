@@ -57,7 +57,7 @@ export default function GuestsConsole({ guests }: { guests: PortalGuestRow[] }) 
           required
           placeholder={t("emailPlaceholder")}
           aria-label={t("emailPlaceholder")}
-          className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 rounded-lg border px-3 py-2 text-start text-sm outline-none transition-colors"
+          className="border-bone/16 bg-white text-bone focus:border-gold min-w-0 flex-1 rounded-lg border px-3 py-2 text-start text-sm outline-none transition-colors"
         />
         <InviteButton label={t("invite")} pendingLabel={t("inviting")} />
       </form>

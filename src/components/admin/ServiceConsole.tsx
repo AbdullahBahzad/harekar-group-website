@@ -76,7 +76,7 @@ export default function ServiceConsole({
               setEditing(null);
               setCreating(true);
             }}
-            className="border-gold/50 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
+            className="border-gold/50 text-gold-deep hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
           >
             {t("services.newService")}
           </button>
@@ -89,7 +89,7 @@ export default function ServiceConsole({
               <form action={seedFromStaticServices} className="mt-6">
                 <button
                   type="submit"
-                  className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-xs transition-colors"
+                  className="border-gold/50 text-gold-deep hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-xs transition-colors"
                 >
                   {t("services.importExisting", { count: serviceKeys.length })}
                 </button>
@@ -136,7 +136,7 @@ export default function ServiceConsole({
                   </span>
 
                   {service.comingSoon && (
-                    <span className="text-gold/78 text-xs">
+                    <span className="text-gold-deep/78 text-xs">
                       {t("services.comingSoon")}
                     </span>
                   )}
@@ -146,7 +146,7 @@ export default function ServiceConsole({
                     </span>
                   )}
                   {service.hasUpload && (
-                    <span className="text-gold/78 text-xs">
+                    <span className="text-gold-deep/78 text-xs">
                       {t("services.newTag")}
                     </span>
                   )}
@@ -224,7 +224,7 @@ function ServiceEditor({
               className="object-cover"
               unoptimized={service.hasUpload}
             />
-            <span className="bg-ink/70 text-bone/70 absolute bottom-0 start-0 px-2 py-1 text-xs backdrop-blur">
+            <span className="bg-white/95 text-bone/70 absolute bottom-0 start-0 px-2 py-1 text-xs backdrop-blur">
               {service.hasUpload
                 ? t("common.uploaded")
                 : t("common.shippedImage")}
@@ -238,7 +238,7 @@ function ServiceEditor({
             type="file"
             name="image"
             accept="image/webp,image/jpeg,image/png,image/avif"
-            className="text-bone/70 file:border-gold/50 file:text-gold hover:file:bg-gold hover:file:text-ink w-full cursor-pointer text-xs file:me-3 file:cursor-pointer file:border file:bg-transparent file:px-3 file:py-1.5 file:text-xs file:transition-colors"
+            className="text-bone/70 file:border-gold/50 file:text-gold-deep hover:file:bg-gold hover:file:text-ink w-full cursor-pointer text-xs file:me-3 file:cursor-pointer file:border file:bg-transparent file:px-3 file:py-1.5 file:text-xs file:transition-colors"
           />
           {service?.hasUpload && (
             <span className="text-bone/56 mt-1.5 block text-xs">
@@ -256,7 +256,7 @@ function ServiceEditor({
               defaultValue={service?.slug ?? ""}
               required
               autoComplete="off"
-              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-start text-xs outline-none"
+              className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-start text-xs outline-none"
             />
           </Field>
 
@@ -264,7 +264,7 @@ function ServiceEditor({
             <select
               name="group"
               defaultValue={service?.group ?? "protection"}
-              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+              className="border-bone/16 bg-white text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
             >
               {GROUP_IDS.map((id) => (
                 <option key={id} value={id}>
@@ -279,7 +279,7 @@ function ServiceEditor({
           <select
             name="icon"
             defaultValue={service?.icon ?? ""}
-            className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+            className="border-bone/16 bg-white text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
           >
             <option value="">{t("common.none")}</option>
             {iconNames.map((name) => (
@@ -349,7 +349,7 @@ function ServiceEditor({
               name="sortOrder"
               dir="ltr"
               defaultValue={service?.sortOrder ?? 0}
-              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
+              className="border-bone/16 bg-white text-bone focus:border-gold w-20 border px-2 py-1 text-start text-xs tabular-nums outline-none"
             />
           </label>
         </div>
@@ -368,7 +368,7 @@ function ServiceEditor({
                 type="submit"
                 formAction={toggleServicePublished}
                 formNoValidate
-                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 {service.published ? t("common.hide") : t("common.show")}
               </button>
@@ -378,7 +378,7 @@ function ServiceEditor({
                   type="submit"
                   formAction={clearServiceImage}
                   formNoValidate
-                  className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                  className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep cursor-pointer border px-4 py-2 text-xs transition-colors"
                 >
                   {t("services.removePhoto")}
                 </button>
@@ -456,7 +456,7 @@ function GalleryEditor({ service }: { service: ConsoleService }) {
                 <input type="hidden" name="imageId" value={image.id} />
                 <button
                   type="submit"
-                  className="bg-ink/80 text-bone/80 hover:bg-status-critical hover:text-ink cursor-pointer px-2 py-1 text-[11px] backdrop-blur transition-colors"
+                  className="bg-white/95 text-bone/80 hover:bg-status-critical hover:text-ink cursor-pointer px-2 py-1 text-[11px] backdrop-blur transition-colors"
                 >
                   {t("galleryRemove")}
                 </button>
@@ -468,7 +468,7 @@ function GalleryEditor({ service }: { service: ConsoleService }) {
 
       <label
         className={cn(
-          "border-gold/50 text-gold hover:bg-gold hover:text-ink inline-flex min-h-11 cursor-pointer items-center border px-4 text-xs transition-colors",
+          "border-gold/50 text-gold-deep hover:bg-gold hover:text-ink inline-flex min-h-11 cursor-pointer items-center border px-4 text-xs transition-colors",
           progress && "pointer-events-none opacity-60",
         )}
       >
@@ -498,7 +498,7 @@ function GalleryEditor({ service }: { service: ConsoleService }) {
 }
 
 const inputClass =
-  "border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
+  "border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
 
 /**
  * One language's fields for a service.
@@ -527,7 +527,7 @@ function LocaleBlock({
   return (
     <fieldset className="border-bone/12 space-y-2 border-s-2 ps-3">
       <legend className="sr-only">{locale}</legend>
-      <p className="text-gold/70 text-xs">
+      <p className="text-gold-deep/70 text-xs">
         {locale}
         {!required && (
           <span className="text-bone/52 ms-2 normal-case">

@@ -160,7 +160,7 @@ function MediaCard({ item, readOnly }: { item: ConsoleMediaItem; readOnly: boole
             // eslint-disable-next-line @next/next/no-img-element -- a live preview of whatever was just uploaded; optimisation would only delay it
             <img key={current.url} src={current.url} alt="" className="h-full w-full object-cover" />
           )}
-          <span className="bg-ink/75 text-bone/80 absolute start-0 bottom-0 px-2 py-1 text-xs backdrop-blur">
+          <span className="bg-white/95 text-bone/80 absolute start-0 bottom-0 px-2 py-1 text-xs backdrop-blur">
             {current.upload ? t("uploaded") : t("original")}
           </span>
         </div>
@@ -205,7 +205,7 @@ function MediaCard({ item, readOnly }: { item: ConsoleMediaItem; readOnly: boole
             type="button"
             disabled={busy || readOnly}
             onClick={() => input.current?.click()}
-            className="border-gold/50 text-gold hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-4 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+            className="border-gold/50 text-gold-deep hover:bg-gold hover:text-ink flex min-h-11 cursor-pointer items-center border px-4 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40"
           >
             {t("upload")}
           </button>

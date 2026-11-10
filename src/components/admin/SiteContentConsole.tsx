@@ -113,7 +113,7 @@ const SECTIONS: Section[] = [
 ];
 
 const inputClass =
-  "border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
+  "border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors";
 
 /**
  * The whole site's editable page copy, one section per public page. Saves as
@@ -221,7 +221,7 @@ export default function SiteContentConsole({
                  * own interface language is.
                  */}
                 <label className="block">
-                  <span className="text-gold/70 mb-1 block text-[11px] tracking-[0.14em] uppercase">
+                  <span className="text-gold-deep/70 mb-1 block text-[11px] tracking-[0.14em] uppercase">
                     {t("common.english")}
                   </span>
                   {multiline ? (

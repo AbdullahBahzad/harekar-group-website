@@ -167,6 +167,18 @@
 }
 
 /*
+ * The admin console and client portal, on the public site's light palette
+ * (`tone-light`). The status colours above are tuned for #0b0b0b and are too
+ * pale as text on white — amber reaches only 2:1 — so these scopes use
+ * deeper steps of the same three hues, each at least 4.5:1 on white.
+ */
+.tone-console {
+  --color-status-clear: #2e7d57;
+  --color-status-elevated: #a36a00;
+  --color-status-critical: #c0392b;
+}
+
+/*
  * Body copy at 17px with relaxed spacing, per the brand brief. Scoped to the
  * public site so the dense admin tables keep their own scale.
  */

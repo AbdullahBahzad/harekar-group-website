@@ -246,7 +246,7 @@ export default function IntelConsole({
                   setCoordError(false);
                 }}
                 placeholder="35.4700"
-                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-32 border px-3 py-2 text-sm outline-none transition-colors"
+                className="border-bone/16 bg-white text-bone focus:border-gold w-32 border px-3 py-2 text-sm outline-none transition-colors"
               />
             </Field>
             <Field label={t("intelligence.longitude")}>
@@ -261,12 +261,12 @@ export default function IntelConsole({
                   setCoordError(false);
                 }}
                 placeholder="44.3900"
-                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-32 border px-3 py-2 text-sm outline-none transition-colors"
+                className="border-bone/16 bg-white text-bone focus:border-gold w-32 border px-3 py-2 text-sm outline-none transition-colors"
               />
             </Field>
             <button
               type="submit"
-              className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer border px-4 py-2 text-xs transition-colors"
+              className="border-gold/50 text-gold-deep hover:bg-gold hover:text-ink cursor-pointer border px-4 py-2 text-xs transition-colors"
             >
               {t("intelligence.goToCoordinates")}
             </button>
@@ -318,7 +318,7 @@ export default function IntelConsole({
                     <form action={seedFromStaticMarkers} className="mt-6">
                       <button
                         type="submit"
-                        className="border-gold/50 text-gold hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-xs transition-colors"
+                        className="border-gold/50 text-gold-deep hover:bg-gold hover:text-ink cursor-pointer rounded-full border px-5 py-2 text-xs transition-colors"
                       >
                         {t("intelligence.importOriginal")}
                       </button>
@@ -370,7 +370,7 @@ export default function IntelConsole({
                     {marker.latitude.toFixed(2)}, {marker.longitude.toFixed(2)}
                   </span>
                   {marker.access === "LOCKED" && (
-                    <span className="text-gold/78 text-xs">
+                    <span className="text-gold-deep/78 text-xs">
                       {t("intelligence.proTag")}
                     </span>
                   )}
@@ -478,7 +478,7 @@ function MarkerEditor({
                 const next = e.target.valueAsNumber;
                 if (!Number.isNaN(next)) onDraftMove?.({ latitude: next });
               }}
-              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+              className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
             />
           </Field>
           <Field label={t("intelligence.longitude")}>
@@ -494,7 +494,7 @@ function MarkerEditor({
                 const next = e.target.valueAsNumber;
                 if (!Number.isNaN(next)) onDraftMove?.({ longitude: next });
               }}
-              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+              className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
             />
           </Field>
         </div>
@@ -505,7 +505,7 @@ function MarkerEditor({
             defaultValue={marker?.label ?? ""}
             required
             autoComplete="off"
-            className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+            className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
           />
         </Field>
 
@@ -514,7 +514,7 @@ function MarkerEditor({
             <select
               name="severity"
               defaultValue={marker?.severity ?? "CLEAR"}
-              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+              className="border-bone/16 bg-white text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
             >
               <option value="CLEAR">{t("severity.CLEAR")}</option>
               <option value="ELEVATED">{t("severity.ELEVATED")}</option>
@@ -526,7 +526,7 @@ function MarkerEditor({
             <select
               name="access"
               defaultValue={marker?.access ?? "OPEN"}
-              className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+              className="border-bone/16 bg-white text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
             >
               <option value="OPEN">{t("intelligence.accessOpen")}</option>
               <option value="LOCKED">{t("intelligence.accessLocked")}</option>
@@ -539,7 +539,7 @@ function MarkerEditor({
             name="headline"
             defaultValue={marker?.headline ?? ""}
             autoComplete="off"
-            className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+            className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
           />
         </Field>
 
@@ -548,7 +548,7 @@ function MarkerEditor({
             name="body"
             defaultValue={marker?.body ?? ""}
             rows={6}
-            className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
+            className="border-bone/16 bg-white text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
           />
         </Field>
 
@@ -569,7 +569,7 @@ function MarkerEditor({
                   name="category"
                   defaultValue={marker?.category ?? ""}
                   autoComplete="off"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </Field>
               <Field label={t("intelligence.incidentType")}>
@@ -577,7 +577,7 @@ function MarkerEditor({
                   name="incidentType"
                   defaultValue={marker?.incidentType ?? ""}
                   autoComplete="off"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </Field>
             </div>
@@ -588,7 +588,7 @@ function MarkerEditor({
                 name="occurredAt"
                 defaultValue={toLocalInput(marker?.occurredAt ?? null)}
                 dir="ltr"
-                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
               />
             </Field>
 
@@ -597,7 +597,7 @@ function MarkerEditor({
                 name="keyPoints"
                 defaultValue={marker?.keyPoints ?? ""}
                 rows={3}
-                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
+                className="border-bone/16 bg-white text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
               />
             </Field>
 
@@ -606,7 +606,7 @@ function MarkerEditor({
                 name="method"
                 defaultValue={marker?.method ?? ""}
                 autoComplete="off"
-                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
               />
             </Field>
 
@@ -616,7 +616,7 @@ function MarkerEditor({
                   name="actor"
                   defaultValue={marker?.actor ?? ""}
                   autoComplete="off"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </Field>
               <Field label={t("intelligence.actorDetail")}>
@@ -624,7 +624,7 @@ function MarkerEditor({
                   name="actorDetail"
                   defaultValue={marker?.actorDetail ?? ""}
                   autoComplete="off"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </Field>
             </div>
@@ -635,7 +635,7 @@ function MarkerEditor({
                   name="target"
                   defaultValue={marker?.target ?? ""}
                   autoComplete="off"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </Field>
               <Field label={t("intelligence.targetDetail")}>
@@ -643,7 +643,7 @@ function MarkerEditor({
                   name="targetDetail"
                   defaultValue={marker?.targetDetail ?? ""}
                   autoComplete="off"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </Field>
             </div>
@@ -653,7 +653,7 @@ function MarkerEditor({
                 <select
                   name="sourceReliability"
                   defaultValue={marker?.sourceReliability ?? ""}
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
                 >
                   <option value="">{t("intelligence.notAssessed")}</option>
                   <option value="A">{t("intelligence.reliabilityA")}</option>
@@ -668,7 +668,7 @@ function MarkerEditor({
                 <select
                   name="infoCredibility"
                   defaultValue={marker?.infoCredibility ?? ""}
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full cursor-pointer border px-3 py-2 text-xs outline-none"
                 >
                   <option value="">{t("intelligence.notAssessed")}</option>
                   <option value="1">{t("intelligence.credibility1")}</option>
@@ -687,7 +687,7 @@ function MarkerEditor({
                   name="facility"
                   defaultValue={marker?.facility ?? ""}
                   autoComplete="off"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </Field>
               <Field label={t("intelligence.city")}>
@@ -695,7 +695,7 @@ function MarkerEditor({
                   name="city"
                   defaultValue={marker?.city ?? ""}
                   autoComplete="off"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </Field>
             </div>
@@ -705,7 +705,7 @@ function MarkerEditor({
                 name="streetAddress"
                 defaultValue={marker?.streetAddress ?? ""}
                 autoComplete="off"
-                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
               />
             </Field>
 
@@ -715,7 +715,7 @@ function MarkerEditor({
                   name="district"
                   defaultValue={marker?.district ?? ""}
                   autoComplete="off"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </Field>
               <Field label={t("intelligence.province")}>
@@ -723,7 +723,7 @@ function MarkerEditor({
                   name="province"
                   defaultValue={marker?.province ?? ""}
                   autoComplete="off"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </Field>
             </div>
@@ -734,7 +734,7 @@ function MarkerEditor({
                   name="sourceName"
                   defaultValue={marker?.sourceName ?? ""}
                   autoComplete="off"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </Field>
               <Field label={t("intelligence.sourcePublishedAt")}>
@@ -743,7 +743,7 @@ function MarkerEditor({
                   name="sourcePublishedAt"
                   defaultValue={toLocalInput(marker?.sourcePublishedAt ?? null)}
                   dir="ltr"
-                  className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                  className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
                 />
               </Field>
             </div>
@@ -755,7 +755,7 @@ function MarkerEditor({
                 defaultValue={marker?.sourceUrl ?? ""}
                 dir="ltr"
                 autoComplete="off"
-                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
+                className="border-bone/16 bg-white text-bone focus:border-gold w-full border px-3 py-2 text-sm outline-none transition-colors"
               />
             </Field>
 
@@ -764,7 +764,7 @@ function MarkerEditor({
                 name="sourceText"
                 defaultValue={marker?.sourceText ?? ""}
                 rows={3}
-                className="border-bone/16 bg-ink/60 text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
+                className="border-bone/16 bg-white text-bone focus:border-gold w-full resize-y border px-3 py-2 text-sm leading-relaxed outline-none transition-colors"
               />
             </Field>
           </div>
@@ -830,7 +830,7 @@ function MarkerEditor({
               <button
                 type="submit"
                 formAction={toggleMarkerPublished}
-                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 {marker.published ? t("common.withdraw") : t("common.publish")}
               </button>
@@ -838,7 +838,7 @@ function MarkerEditor({
               <button
                 type="submit"
                 formAction={toggleMarkerResolved}
-                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold cursor-pointer border px-4 py-2 text-xs transition-colors"
+                className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep cursor-pointer border px-4 py-2 text-xs transition-colors"
               >
                 {marker.resolved
                   ? t("intelligence.reopen")

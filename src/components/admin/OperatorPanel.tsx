@@ -57,7 +57,7 @@ export default function OperatorPanel({
             placeholder={t("operators.emailPlaceholder")}
             aria-label={t("operators.emailLabel")}
             autoComplete="off"
-            className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
+            className="border-bone/16 bg-white text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
           />
           <input
             type="password"
@@ -68,13 +68,13 @@ export default function OperatorPanel({
             placeholder={t("operators.passwordPlaceholder")}
             aria-label={t("operators.passwordLabel")}
             autoComplete="new-password"
-            className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
+            className="border-bone/16 bg-white text-bone focus:border-gold min-w-0 flex-1 border px-3 py-2 text-start text-xs outline-none transition-colors"
           />
           <select
             name="role"
             defaultValue={state.role ?? "admin"}
             aria-label={t("operators.roleLabel")}
-            className="border-bone/16 bg-ink/60 text-bone focus:border-gold min-h-11 cursor-pointer border px-3 py-2 text-xs outline-none"
+            className="border-bone/16 bg-white text-bone focus:border-gold min-h-11 cursor-pointer border px-3 py-2 text-xs outline-none"
           >
             {OPERATOR_ROLES.map((role) => (
               <option key={role} value={role}>
@@ -128,7 +128,7 @@ export default function OperatorPanel({
                   <span className="text-bone/90 block truncate text-sm">
                     {operator.name ?? "—"}
                     {isSelf && (
-                      <span className="text-gold/70 ms-2 text-xs">
+                      <span className="text-gold-deep/70 ms-2 text-xs">
                         {t("common.you")}
                       </span>
                     )}
@@ -158,7 +158,7 @@ export default function OperatorPanel({
                       <input type="hidden" name="id" value={operator.id} />
                       <button
                         type="submit"
-                        className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
+                        className="border-bone/20 text-bone/70 hover:border-gold hover:text-gold-deep flex min-h-11 cursor-pointer items-center border px-3 text-xs transition-colors"
                       >
                         {operator.role === "admin"
                           ? t("operators.makeReportsOnly")
