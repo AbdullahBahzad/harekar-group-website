@@ -3,6 +3,7 @@ import { requireReportsAccess } from "@/lib/admin";
 import ReportConsole from "@/components/admin/ReportConsole";
 import { getRecentReports } from "@/lib/dashboard-reports";
 import { listCombinedSources } from "@/lib/report-sources-db";
+import { prisma } from "@/lib/prisma";
 
 export default async function SourcesStation({
   params,
@@ -17,6 +18,16 @@ export default async function SourcesStation({
 
   const { data: reports, preview } = await getRecentReports(30);
   const sources = await listCombinedSources();
+  // The shared keyword-fetching setup; none saved yet reads as empty.
+  const saved = await prisma.newsWatchlist
+    .findUnique({ where: { id: "default" } })
+    .catch(() => null);
+  const watchlist = {
+    includeKeywords: saved?.includeKeywords ?? [],
+    excludeKeywords: saved?.excludeKeywords ?? [],
+    sourceUrls: saved?.sourceUrls ?? [],
+    searchArticles: saved?.searchArticles ?? false,
+  };
 
   return (
     <>
@@ -33,6 +44,7 @@ export default async function SourcesStation({
         reports={reports}
         canGenerate={!preview}
         sources={sources}
+        watchlist={watchlist}
       />
     </>
   );

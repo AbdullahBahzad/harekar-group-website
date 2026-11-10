@@ -17,6 +17,10 @@ import {
   deleteReportSource,
   type SourceHeadlines,
   type CombinedSource,
+  fetchKeywordHeadlines,
+  saveNewsWatchlist,
+  type NewsWatchlistSettings,
+  type KeywordFetchResult,
   type SendReportEmailState,
 } from "@/app/[locale]/admin/sources/actions";
 /*
@@ -77,9 +81,12 @@ export default function ReportConsole({
   reports,
   canGenerate,
   sources: reportSources,
+  watchlist,
 }: {
   reports: ConsoleReport[];
   canGenerate: boolean;
+  /** The shared keyword-fetching setup — see `NewsWatchlist`. */
+  watchlist: NewsWatchlistSettings;
   /** The built-in eleven plus whatever an operator has added — see `report-sources-db.ts`. */
   sources: CombinedSource[];
 }) {
@@ -115,8 +122,21 @@ export default function ReportConsole({
   // Starts with everything selected, matching the old always-fetch-all
   // behaviour by default.
   const [selectedSourceUrls, setSelectedSourceUrls] = useState<Set<string>>(
-    () => new Set(reportSources.map((source) => source.url)),
+    () =>
+      new Set(
+        watchlist.sourceUrls.length > 0
+          ? watchlist.sourceUrls
+          : reportSources.map((source) => source.url),
+      ),
   );
+
+  // Keyword fetching: the shared saved setup, editable here before saving.
+  const [includeKeywords, setIncludeKeywords] = useState<string[]>(watchlist.includeKeywords);
+  const [excludeKeywords, setExcludeKeywords] = useState<string[]>(watchlist.excludeKeywords);
+  const [searchArticles, setSearchArticles] = useState(watchlist.searchArticles);
+  const [keywordStats, setKeywordStats] = useState<Omit<KeywordFetchResult, "groups"> | null>(null);
+  const [watchlistSaved, setWatchlistSaved] = useState(false);
+  const [isSavingWatchlist, startSaveWatchlist] = useTransition();
   // Client-side only — narrows what the fetched checklist *shows*, not what
   // gets fetched. Nothing here is sent back to the server.
   const [minSeverity, setMinSeverity] = useState<ThreatLevel>("LOW");
@@ -186,9 +206,53 @@ export default function ReportConsole({
    * the picker below — every source by default, matching the old
    * always-fetch-all behaviour, or just the ones left selected.
    */
+  /** Fetches only the headlines matching the keywords on screen. */
+  function handleKeywordFetch() {
+    if (selectedSourceUrls.size === 0) return;
+    setErrorKey(null);
+    startHeadlinesTransition(async () => {
+      try {
+        const result = await fetchKeywordHeadlines({
+          includeKeywords,
+          excludeKeywords,
+          sourceUrls: Array.from(selectedSourceUrls),
+          searchArticles,
+        });
+        setHeadlineGroups(result.groups);
+        setKeywordStats({
+          scanned: result.scanned,
+          articlesSearched: result.articlesSearched,
+          articleCapReached: result.articleCapReached,
+        });
+        setCheckedHeadlines(new Map());
+      } catch {
+        setErrorKey("reports.headlinesFailed");
+      }
+    });
+  }
+
+  /** Saves keywords, sources and deep search as the shared setup. */
+  function handleSaveWatchlist() {
+    const formData = new FormData();
+    for (const keyword of includeKeywords) formData.append("include", keyword);
+    for (const keyword of excludeKeywords) formData.append("exclude", keyword);
+    for (const url of selectedSourceUrls) formData.append("source", url);
+    if (searchArticles) formData.set("searchArticles", "1");
+    startSaveWatchlist(async () => {
+      try {
+        await saveNewsWatchlist(formData);
+        setWatchlistSaved(true);
+        setTimeout(() => setWatchlistSaved(false), 3000);
+      } catch {
+        setErrorKey("common.saveFailed");
+      }
+    });
+  }
+
   function handleFetchHeadlines() {
     if (selectedSourceUrls.size === 0) return;
     setErrorKey(null);
+    setKeywordStats(null);
     startHeadlinesTransition(async () => {
       try {
         const groups = await fetchAllSourceHeadlines(
@@ -615,7 +679,74 @@ export default function ReportConsole({
 
             {/* ---- fetch today's headlines ------------------------------- */}
             <div className="border-bone/10 space-y-3 border p-3">
-              <div className="flex flex-wrap items-center gap-2">
+              {/* Keyword fetching: only the news that matches these words. */}
+              <div className="space-y-3">
+                <p className="text-bone text-xs font-semibold">{t("reports.keywords.title")}</p>
+                <p className="text-bone/55 text-[11px] leading-relaxed">{t("reports.keywords.help")}</p>
+                <KeywordInput
+                  label={t("reports.keywords.include")}
+                  placeholder={t("reports.keywords.includePlaceholder")}
+                  values={includeKeywords}
+                  onChange={setIncludeKeywords}
+                  removeLabel={t("common.remove")}
+                />
+                <KeywordInput
+                  label={t("reports.keywords.exclude")}
+                  placeholder={t("reports.keywords.excludePlaceholder")}
+                  values={excludeKeywords}
+                  onChange={setExcludeKeywords}
+                  tone="exclude"
+                  removeLabel={t("common.remove")}
+                />
+                <label className="flex cursor-pointer items-start gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={searchArticles}
+                    onChange={(e) => setSearchArticles(e.target.checked)}
+                    className="mt-0.5 min-h-4 min-w-4 cursor-pointer"
+                  />
+                  <span>
+                    <span className="text-bone/85">{t("reports.keywords.searchArticles")}</span>
+                    <span className="text-bone/50 block text-[11px]">{t("reports.keywords.searchArticlesHint")}</span>
+                  </span>
+                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleKeywordFetch}
+                    disabled={isFetchingHeadlines || selectedSourceUrls.size === 0}
+                    className="bg-gold text-ink hover:bg-gold-bright cursor-pointer px-4 py-2 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {isFetchingHeadlines ? t("reports.fetchingHeadlines") : t("reports.keywords.fetch")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveWatchlist}
+                    disabled={isSavingWatchlist}
+                    className="border-bone/26 text-bone/70 hover:border-gold hover:text-gold-deep cursor-pointer border px-4 py-2 text-xs transition-colors disabled:opacity-40"
+                  >
+                    {isSavingWatchlist ? t("common.saving") : t("reports.keywords.save")}
+                  </button>
+                  {watchlistSaved && (
+                    <span role="status" className="text-status-clear text-xs">
+                      {t("reports.keywords.saved")}
+                    </span>
+                  )}
+                </div>
+                {keywordStats && headlineGroups && (
+                  <p role="status" className="text-bone/60 text-[11px]">
+                    {t("reports.keywords.stats", {
+                      matched: headlineGroups.reduce((sum, group) => sum + group.headlines.length, 0),
+                      scanned: keywordStats.scanned,
+                    })}
+                    {keywordStats.articlesSearched > 0 &&
+                      ` · ${t("reports.keywords.articlesSearched", { count: keywordStats.articlesSearched })}`}
+                    {keywordStats.articleCapReached && ` · ${t("reports.keywords.capReached")}`}
+                  </p>
+                )}
+              </div>
+
+              <div className="border-bone/10 flex flex-wrap items-center gap-2 border-t pt-3">
                 <button
                   type="button"
                   onClick={handleFetchHeadlines}
@@ -624,7 +755,7 @@ export default function ReportConsole({
                 >
                   {isFetchingHeadlines
                     ? t("reports.fetchingHeadlines")
-                    : t("reports.fetchHeadlines")}
+                    : t("reports.keywords.fetchAll")}
                 </button>
                 {headlineGroups && (
                   <button
@@ -732,6 +863,23 @@ export default function ReportConsole({
                                 />
                                 <span className="text-bone/70 flex-1 text-xs leading-snug">
                                   {headline.title}
+                                  {headline.matched && headline.matched.length > 0 && (
+                                    <span className="ms-1.5 inline-flex flex-wrap gap-1 align-middle">
+                                      {headline.matched.map((keyword) => (
+                                        <span
+                                          key={keyword}
+                                          className="border-gold/40 text-gold-deep rounded-sm border px-1 text-[10px]"
+                                        >
+                                          {keyword}
+                                        </span>
+                                      ))}
+                                      {headline.matchedIn === "article" && (
+                                        <span className="text-bone/45 text-[10px]">
+                                          {t("reports.keywords.inArticle")}
+                                        </span>
+                                      )}
+                                    </span>
+                                  )}
                                 </span>
                                 {checked && (
                                   <select
@@ -1343,6 +1491,83 @@ function EmailSendButton() {
     >
       {pending ? t("emailSending") : t("emailSend")}
     </button>
+  );
+}
+
+/**
+ * A keyword list as removable chips plus a box to add more. Enter or a comma
+ * adds what is typed; pasting a list separated by commas or new lines adds
+ * them all at once.
+ */
+function KeywordInput({
+  label,
+  placeholder,
+  values,
+  onChange,
+  tone = "include",
+  removeLabel,
+}: {
+  label: string;
+  placeholder: string;
+  values: string[];
+  onChange: (next: string[]) => void;
+  tone?: "include" | "exclude";
+  removeLabel: string;
+}) {
+  const [draft, setDraft] = useState("");
+  const add = (raw: string) => {
+    const parts = raw.split(/[,\n،]+/).map((part) => part.trim()).filter(Boolean);
+    if (parts.length === 0) return;
+    const seen = new Set(values.map((value) => value.toLowerCase()));
+    onChange([...values, ...parts.filter((part) => !seen.has(part.toLowerCase()))]);
+    setDraft("");
+  };
+  const chip =
+    tone === "exclude"
+      ? "border-status-critical/40 text-status-critical"
+      : "border-gold/50 text-gold-deep";
+
+  return (
+    <div>
+      <span className="text-bone/60 mb-1 block text-[11px]">{label}</span>
+      <div className="border-bone/16 focus-within:border-gold flex min-h-11 flex-wrap items-center gap-1.5 border bg-white px-2 py-1.5">
+        {values.map((value) => (
+          <span key={value} className={`flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-xs ${chip}`}>
+            {value}
+            <button
+              type="button"
+              onClick={() => onChange(values.filter((v) => v !== value))}
+              aria-label={`${removeLabel}: ${value}`}
+              className="cursor-pointer opacity-60 hover:opacity-100"
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === ",") {
+              e.preventDefault();
+              add(draft);
+            } else if (e.key === "Backspace" && !draft && values.length > 0) {
+              onChange(values.slice(0, -1));
+            }
+          }}
+          onBlur={() => add(draft)}
+          onPaste={(e) => {
+            const text = e.clipboardData.getData("text");
+            if (/[,\n،]/.test(text)) {
+              e.preventDefault();
+              add(text);
+            }
+          }}
+          placeholder={values.length === 0 ? placeholder : ""}
+          className="text-bone min-w-[8rem] flex-1 bg-transparent py-1 text-xs outline-none"
+        />
+      </div>
+    </div>
   );
 }
 

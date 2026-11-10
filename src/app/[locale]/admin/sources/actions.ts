@@ -25,6 +25,7 @@ import {
   type ReportCategory,
 } from "@/lib/report-shape";
 import { inIraq } from "@/lib/report-geo";
+import { cleanKeywords, matchKeywords } from "@/lib/keyword-match";
 import { fetchHeadlines, type Headline } from "@/lib/headlines";
 import {
   listCombinedSources,
@@ -650,4 +651,131 @@ export async function sendReportEmail(
   }
 
   return { status: "success", messageKey: "emailSent", email };
+}
+
+/* ---- keyword fetching ------------------------------------------------------ */
+
+export type NewsWatchlistSettings = {
+  includeKeywords: string[];
+  excludeKeywords: string[];
+  /** Empty means every source. */
+  sourceUrls: string[];
+  searchArticles: boolean;
+};
+
+export type KeywordFetchResult = {
+  groups: SourceHeadlines[];
+  /** Headlines looked at across all sources, before keyword filtering. */
+  scanned: number;
+  /** Articles opened to search their text (only with `searchArticles`). */
+  articlesSearched: number;
+  /** True when more articles qualified than the per-fetch cap allows. */
+  articleCapReached: boolean;
+};
+
+/** Articles opened per fetch at most: a "search inside" fetch must still finish. */
+const ARTICLE_SEARCH_CAP = 120;
+const ARTICLE_SEARCH_PARALLEL = 8;
+
+function cleanList(values: FormDataEntryValue[]): string[] {
+  return cleanKeywords(values.map(String)).slice(0, 200);
+}
+
+/** Saves the shared keyword-fetching setup (keywords, sources, deep search). */
+export async function saveNewsWatchlist(formData: FormData): Promise<NewsWatchlistSettings> {
+  const operatorId = await assertReportsAccess();
+  const all = await listCombinedSources();
+  const known = new Set(all.map((source) => source.url));
+
+  const settings: NewsWatchlistSettings = {
+    includeKeywords: cleanList(formData.getAll("include")),
+    excludeKeywords: cleanList(formData.getAll("exclude")),
+    sourceUrls: formData
+      .getAll("source")
+      .map(String)
+      .filter((url) => known.has(url)),
+    searchArticles: formData.get("searchArticles") === "1",
+  };
+  // Every source selected is stored as "all", so a source added later is
+  // fetched too instead of being silently left out of a saved full list.
+  const stored = settings.sourceUrls.length === all.length ? [] : settings.sourceUrls;
+
+  await prisma.newsWatchlist.upsert({
+    where: { id: "default" },
+    create: { id: "default", ...settings, sourceUrls: stored, updatedById: operatorId },
+    update: { ...settings, sourceUrls: stored, updatedById: operatorId },
+  });
+  revalidatePath("/[locale]/admin/sources", "page");
+  return settings;
+}
+
+/**
+ * Fetches headlines from the chosen sources and keeps only the ones that
+ * match the keywords — the Sources station's "keyword fetching".
+ *
+ * A headline is kept when its title contains an include keyword and no
+ * exclude keyword. With `searchArticles`, a headline whose title does not
+ * match has its article opened and searched as well (capped per fetch, a
+ * few at a time, so a fetch still finishes). With no include keywords, every
+ * headline is kept apart from the excluded ones.
+ *
+ * Takes the settings on screen rather than the saved ones, so an operator
+ * can try a keyword before saving it for everyone.
+ */
+export async function fetchKeywordHeadlines(
+  settings: NewsWatchlistSettings,
+): Promise<KeywordFetchResult> {
+  await assertReportsAccess();
+  const include = cleanKeywords(settings.includeKeywords);
+  const exclude = cleanKeywords(settings.excludeKeywords);
+
+  const all = await listCombinedSources();
+  const wanted =
+    settings.sourceUrls.length > 0 ? all.filter((source) => settings.sourceUrls.includes(source.url)) : all;
+
+  const fetched = await Promise.allSettled(wanted.map((source) => fetchHeadlines(source.url)));
+
+  let scanned = 0;
+  // Headlines whose title did not match, waiting for an article search.
+  const pending: { group: number; headline: Headline }[] = [];
+  const groups: SourceHeadlines[] = wanted.map((source, i) => {
+    const result = fetched[i];
+    const headlines = result.status === "fulfilled" ? result.value : [];
+    scanned += headlines.length;
+    const kept: Headline[] = [];
+    for (const headline of headlines) {
+      const { matched, excluded } = matchKeywords(headline.title, include, exclude);
+      if (excluded) continue;
+      if (include.length === 0 || matched.length > 0) {
+        kept.push({ ...headline, matched, matchedIn: "title" });
+      } else if (settings.searchArticles) {
+        pending.push({ group: i, headline });
+      }
+    }
+    return {
+      name: source.name,
+      defaultRegion: source.defaultRegion,
+      headlines: kept,
+      failed: result.status === "rejected" || headlines.length === 0,
+    };
+  });
+
+  const toSearch = pending.slice(0, ARTICLE_SEARCH_CAP);
+  for (let start = 0; start < toSearch.length; start += ARTICLE_SEARCH_PARALLEL) {
+    const batch = toSearch.slice(start, start + ARTICLE_SEARCH_PARALLEL);
+    const texts = await Promise.all(batch.map(({ headline }) => fetchArticleText(headline.url)));
+    batch.forEach(({ group, headline }, j) => {
+      const { matched, excluded } = matchKeywords(`${headline.title}\n${texts[j]}`, include, exclude);
+      if (!excluded && matched.length > 0) {
+        groups[group].headlines.push({ ...headline, matched, matchedIn: "article" });
+      }
+    });
+  }
+
+  return {
+    groups,
+    scanned,
+    articlesSearched: toSearch.length,
+    articleCapReached: pending.length > ARTICLE_SEARCH_CAP,
+  };
 }

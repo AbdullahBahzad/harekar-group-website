@@ -5,7 +5,14 @@ import { detectHeadlineDate } from "@/lib/headline-date";
 
 /** `date` is `YYYY-MM-DD`, best-effort — `null` when no source in
  * `headline-date.ts` found one on the homepage. */
-export type Headline = { title: string; url: string; date: string | null };
+export type Headline = {
+  title: string;
+  url: string;
+  date: string | null;
+  /** Keyword fetching only: the keywords this headline matched, and where. */
+  matched?: string[];
+  matchedIn?: "title" | "article";
+};
 
 /**
  * Path segments that mark a link as a section index or taxonomy page rather

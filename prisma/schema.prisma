@@ -521,6 +521,21 @@ model ReportRecipient {
  * `report-shape.ts`), never a database enum, so a source's default region is
  * stored as the same plain string and validated the same way on the way in.
  */
+/// The Sources station's keyword fetching setup, shared by every admin and
+/// reports operator: one row (`id = "default"`). Fetching keeps only the
+/// headlines that match `includeKeywords` and none of `excludeKeywords`.
+model NewsWatchlist {
+  id              String   @id @default("default")
+  includeKeywords String[] @default([])
+  excludeKeywords String[] @default([])
+  /// Source URLs to fetch from; empty means every source.
+  sourceUrls      String[] @default([])
+  /// Also search inside each article, not only its headline. Slower.
+  searchArticles  Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+  updatedById     String?
+}
+
 model ReportSource {
   id            String   @id @default(cuid())
   name          String

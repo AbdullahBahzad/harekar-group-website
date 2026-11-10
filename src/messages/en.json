@@ -1379,7 +1379,25 @@
       "emailVersion": "Report version",
       "versionWithSources": "With sources",
       "versionWithoutSources": "Without sources",
-      "pinOutsideIraq": "Each map pin needs both latitude and longitude, inside Iraq. Fix or clear the pin, then save."
+      "pinOutsideIraq": "Each map pin needs both latitude and longitude, inside Iraq. Fix or clear the pin, then save.",
+      "keywords": {
+        "title": "Keyword fetching",
+        "help": "Fetch only the news you want: headlines are kept when they contain one of your keywords and none of the excluded words. English, Arabic and Kurdish spellings all match. Save to share the setup with every admin.",
+        "include": "Keywords to find",
+        "includePlaceholder": "e.g. drone, Kirkuk, PMF, oil — press Enter after each",
+        "exclude": "Words to exclude",
+        "excludePlaceholder": "e.g. football, festival, concert",
+        "searchArticles": "Also search inside the articles",
+        "searchArticlesHint": "Finds stories whose headline does not mention the keyword. Slower: opens up to 120 articles per fetch.",
+        "fetch": "Fetch matching news",
+        "fetchAll": "Fetch all headlines (no keywords)",
+        "save": "Save for all admins",
+        "saved": "Saved — every admin now uses this setup.",
+        "stats": "{matched} of {scanned} headlines matched",
+        "articlesSearched": "{count, plural, one {# article searched} other {# articles searched}}",
+        "capReached": "search limit reached — narrow the sources for a deeper search",
+        "inArticle": "(in article)"
+      }
     },
     "emailing": {
       "title": "Client emailing",
