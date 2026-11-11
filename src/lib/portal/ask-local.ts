@@ -1,9 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { governorateAt } from "@/lib/governorates";
-import { GOVERNORATES, type GovernorateKey, type ThreatLevel } from "@/lib/report-shape";
-import ar from "@/messages/ar.json";
-import ckb from "@/messages/ckb.json";
+import type { GovernorateKey, ThreatLevel } from "@/lib/report-shape";
+import { KURDISTAN_GOVERNORATES, findPlaces } from "@/lib/places";
 
 /**
  * Ask Harekar without an AI service: the question is read for places, a time
@@ -35,44 +34,9 @@ export type LocalAnswer = { answer: string; citations: AskCitation[] };
 
 /* ---- reading the question ------------------------------------------------- */
 
-/** Spellings, towns and transliterations that point at each governorate. */
-const PLACE_ALIASES: Record<GovernorateKey, string[]> = {
-  BAGHDAD: ["baghdad", "green zone", "karkh", "rusafa", "sadr city", "abu ghraib"],
-  WASIT: ["wasit", "kut"],
-  SALAH_AL_DIN: ["salah al-din", "salahuddin", "salah ad din", "saladin", "tikrit", "samarra", "baiji", "tuz khurmatu", "tuz"],
-  DIYALA: ["diyala", "baqubah", "baquba", "khanaqin", "muqdadiyah"],
-  ANBAR: ["anbar", "ramadi", "fallujah", "falluja", "haditha", "qaim", "rutba"],
-  BABIL: ["babil", "babylon", "hillah", "hilla", "jurf al-sakhar"],
-  KARBALA: ["karbala", "kerbala"],
-  NAJAF: ["najaf", "kufa"],
-  QADISIYAH: ["qadisiyah", "qadisiyyah", "diwaniyah", "diwaniya"],
-  MUTHANNA: ["muthanna", "samawah", "samawa"],
-  DHI_QAR: ["dhi qar", "thi qar", "nasiriyah", "nasiriya"],
-  MAYSAN: ["maysan", "missan", "amarah", "amara"],
-  BASRA: ["basra", "basrah", "zubair", "umm qasr", "rumaila", "abu al-khaseeb"],
-  NINAWA: ["ninawa", "nineveh", "ninewa", "mosul", "sinjar", "tal afar", "tel afar", "hamdaniya", "qaraqosh"],
-  KIRKUK: ["kirkuk", "hawija", "dibis", "daquq"],
-  ERBIL: ["erbil", "arbil", "irbil", "hawler", "koya", "koysinjaq", "soran", "shaqlawa", "makhmour", "khabat"],
-  SULAYMANIYAH: ["sulaymaniyah", "sulaimani", "sulaimaniyah", "slemani", "suli", "chamchamal", "ranya", "penjwen", "kalar", "darbandikhan", "garmian"],
-  DUHOK: ["duhok", "dohuk", "dahuk", "zakho", "amadiya", "akre", "aqrah", "semel"],
-  HALABJA: ["halabja"],
-};
-
-/** The four governorates of the Kurdistan Region, for "Kurdistan"/"KRI". */
-const KURDISTAN: GovernorateKey[] = ["ERBIL", "SULAYMANIYAH", "DUHOK", "HALABJA"];
+/** The Kurdistan Region as a whole — "Kurdistan", "KRI" and so on. */
+const KURDISTAN = KURDISTAN_GOVERNORATES;
 const KURDISTAN_WORDS = ["kurdistan", "kri", "krg", "كردستان", "کوردستان", "هەرێم", "اقليم"];
-
-/** Arabic and Kurdish governorate names, straight from the translation files. */
-function localNames(): Record<GovernorateKey, string[]> {
-  const pick = (messages: unknown) =>
-    (messages as { reportVocab?: { governorates?: Record<string, string> } }).reportVocab
-      ?.governorates ?? {};
-  const a = pick(ar);
-  const k = pick(ckb);
-  return Object.fromEntries(
-    GOVERNORATES.map(({ key }) => [key, [a[key], k[key]].filter(Boolean).map((n) => n.toLowerCase())]),
-  ) as Record<GovernorateKey, string[]>;
-}
 
 /** Topic words, grouped so one word finds its synonyms (all languages). */
 const TOPICS: string[][] = [
@@ -124,15 +88,9 @@ function parse(question: string, now: number): Parsed {
   const q = ` ${question.toLowerCase().replace(/[?!.,؟،]/g, " ")} `;
   const has = (word: string) => q.includes(word);
 
-  // Places.
-  const names = localNames();
-  const governorates = new Set<GovernorateKey>();
-  for (const { key } of GOVERNORATES) {
-    const words = [...PLACE_ALIASES[key], ...names[key]];
-    if (words.some((word) => (/^[a-z]/.test(word) ? new RegExp(`\\b${word}`).test(q) : has(word)))) {
-      governorates.add(key);
-    }
-  }
+  // Places: every governorate named, directly or through one of its towns,
+  // in English, Arabic or Kurdish — the same table report auto-filing uses.
+  const governorates = new Set<GovernorateKey>(findPlaces(question).map((hit) => hit.governorate));
   if (KURDISTAN_WORDS.some(has)) KURDISTAN.forEach((key) => governorates.add(key));
 
   // Period. The default is the last 30 days: long enough to answer "recently",

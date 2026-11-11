@@ -42,6 +42,7 @@ import {
 } from "@/lib/report-shape";
 import { meetsMinimumSeverity } from "@/lib/headline-relevance";
 import { inIraq } from "@/lib/report-geo";
+import { autoFile } from "@/lib/auto-file";
 import type {
   ConsoleReport,
   Region,
@@ -60,6 +61,13 @@ import type { Headline } from "@/lib/headlines";
 export type { ConsoleReport };
 
 type SourceRow = { key: string; url: string; notes: string; region: Region };
+
+const EMPTY_WATCHLIST: NewsWatchlistSettings = {
+  includeKeywords: [],
+  excludeKeywords: [],
+  sourceUrls: [],
+  searchArticles: false,
+};
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -81,12 +89,14 @@ export default function ReportConsole({
   reports,
   canGenerate,
   sources: reportSources,
-  watchlist,
+  // A page loaded before the deploy that added keyword fetching renders this
+  // component without the prop; an empty setup keeps it working until reload.
+  watchlist = EMPTY_WATCHLIST,
 }: {
   reports: ConsoleReport[];
   canGenerate: boolean;
   /** The shared keyword-fetching setup — see `NewsWatchlist`. */
-  watchlist: NewsWatchlistSettings;
+  watchlist?: NewsWatchlistSettings;
   /** The built-in eleven plus whatever an operator has added — see `report-sources-db.ts`. */
   sources: CombinedSource[];
 }) {
@@ -1601,6 +1611,19 @@ function EventFilingFields({
 
   return (
     <div className="border-bone/10 space-y-2 border-t pt-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-bone/50 text-[11px]">{t("filing.autoFillHint")}</span>
+        <button
+          type="button"
+          onClick={() => {
+            const { region, ...filing } = autoFile(item.title, item.body);
+            onChange({ ...filing, ...(region ? { region } : {}) });
+          }}
+          className="border-gold/40 text-gold-deep hover:bg-gold hover:text-ink min-h-9 shrink-0 cursor-pointer border px-3 text-[11px] transition-colors"
+        >
+          {t("filing.autoFill")}
+        </button>
+      </div>
       <div className="grid gap-2 sm:grid-cols-3">
         <label className="block">
           <span className="text-bone/60 mb-1 block text-[11px]">

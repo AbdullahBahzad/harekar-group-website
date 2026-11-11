@@ -14,19 +14,30 @@ import type { GovernorateRiskEntry, ThreatLevel } from "@/lib/report-shape";
  */
 Font.registerHyphenationCallback((word) => [word]);
 
+/*
+ * Caladea: an open-licence (OFL) font drawn to Cambria's metrics, standing in
+ * for the Cambria of Harekar's Word template, which is not licensed for
+ * embedding. Same widths, so lines break where the template's do.
+ */
+const FONT_DIR = path.join(process.cwd(), "public", "pdf", "fonts");
+Font.register({
+  family: "Caladea",
+  fonts: [
+    { src: path.join(FONT_DIR, "Caladea-Regular.ttf") },
+    { src: path.join(FONT_DIR, "Caladea-Bold.ttf"), fontWeight: "bold" },
+    { src: path.join(FONT_DIR, "Caladea-Italic.ttf"), fontStyle: "italic" },
+  ],
+});
+
 /**
  * The cover assets, read once per render rather than embedded in the
  * component tree — `@react-pdf/renderer`'s `<Image>` wants raw bytes, and
  * reading a public asset from disk is the one thing a document component
  * (shared with nothing server-only in mind) should not do itself.
  */
-const LOGO_PATH = path.join(process.cwd(), "public", "harekar-logo.png");
-/*
- * A PNG copy of `public/services/cit.webp`, generated once with ffmpeg.
- * `@react-pdf/renderer`'s image decoder only understands JPEG and PNG, not
- * WebP, so the source asset is re-encoded rather than read directly.
- */
-const COVER_PHOTO_PATH = path.join(process.cwd(), "public", "pdf-cover.png");
+const LOGO_PATH = path.join(process.cwd(), "public", "pdf", "harekar-guarding-logo.png");
+/** The Erbil Citadel photograph from the template's cover. */
+const COVER_PHOTO_PATH = path.join(process.cwd(), "public", "pdf", "erbil-citadel.jpg");
 
 export type RenderReportPdfInput = {
   date: Date;
@@ -62,6 +73,7 @@ export async function renderReportPdf(
 
   return renderToBuffer(
     ReportDocument({
+      date: report.date,
       dateLabel: formatCoverDate(report.date),
       kurdistanThreat: report.kurdistanThreat,
       iraqThreat: report.iraqThreat,

@@ -1,12 +1,5 @@
-import {
-  Document,
-  Page,
-  View,
-  Text,
-  Image,
-  Link,
-  StyleSheet,
-} from "@react-pdf/renderer";
+import type { ReactNode } from "react";
+import { Document, Image, Link, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import { ACRONYM_COLUMNS } from "./acronyms";
 import { EventMap } from "./event-map";
 import { orderReportEvents } from "@/lib/report-order";
@@ -16,7 +9,6 @@ import {
   GOVERNORATE_LABEL,
   SEVERITY_LABEL,
   UNCATEGORISED_HEADING,
-  categoryColor,
   locationLine,
 } from "./report-labels";
 import {
@@ -30,33 +22,56 @@ import {
 } from "@/lib/report-shape";
 
 /**
- * The Daily Security Report, laid out as the branded PDF that used to be
- * assembled by hand in a document editor — see `reports.ts` for how the
- * content itself gets drafted and reviewed before it ever reaches here.
- * This module only lays out already-approved text; it makes no editorial
- * decisions of its own.
+ * The Daily Security Report PDF, laid out to match Harekar's own Word
+ * template (the sample reports the client sent): the cover with the logo
+ * card, posture block, Erbil Citadel photo, acronym grid and emergency
+ * numbers; then the body as one bordered table — a lavender heading row, a
+ * grey "Date:"/"Title:" column and green content cells — ending in the
+ * contact block.
+ *
+ * The parts the client's written spec adds (the five sections, "Short
+ * Summaries of Major Events in Kurdistan", the event map, the governorate
+ * matrix) are set in the same table style, as further lavender heading rows.
+ *
+ * Colours are the template's own, read from the sample PDFs. The font is
+ * Caladea, which is metric-compatible with the template's Cambria (Cambria
+ * itself is not licensed for embedding here) — see `render-report-pdf.ts`.
+ *
+ * This module only lays out approved text; it makes no editorial decisions.
  */
 
 export type ReportPdfItem = ReportNewsItem;
 
 export type ReportPdfProps = {
+  /** The report day (UTC midnight). */
+  date: Date;
+  /** `2 November 2026`, for the map page. */
   dateLabel: string;
   kurdistanThreat: ThreatLevel;
   iraqThreat: ThreatLevel;
   politicalKurdistan: string | null;
   politicalIraq: string | null;
   weather: string | null;
-  /** The analyst's overview — printed ahead of the itemised write-ups. */
+  /** The analyst's overview, printed ahead of the events when written. */
   executiveSummary: string | null;
   items: ReportPdfItem[];
   governorates: GovernorateRiskEntry[];
-  /** The "with sources" version prints each event's source link; the other
-   * version is identical apart from leaving them out. */
+  /** The "with sources" version prints each event's source link. */
   withSources: boolean;
   /** Raw image bytes, read from disk by the caller — see `render-report-pdf.ts`. */
   logo: Buffer;
   coverPhoto: Buffer;
 };
+
+/* ---- the template's palette (from the sample PDFs) ------------------------ */
+const GREEN = "#eaf1dd";
+const LAVENDER = "#e5dfec";
+const GREY = "#f2f2f2";
+const LINK = "#1f5080";
+const INK = "#000000";
+const SHADOW = "#cfcfcf";
+
+const FONT = "Caladea";
 
 const THREAT_LABEL: Record<ThreatLevel, string> = {
   LOW: "LOW",
@@ -74,192 +89,129 @@ const REGION_GROUP_LABEL: Record<RegionGroup, string> = {
   KURDISTAN_REGION: "Kurdistan Region of Iraq",
 };
 
-const TREND_LABEL: Record<RiskTrend, string> = {
-  RISING: "Rising",
-  STABLE: "Stable",
-  EASING: "Easing",
-};
-/** Same direction sense as the escalation trigger ladder: red rises, green eases. */
-const TREND_COLOR: Record<RiskTrend, string> = {
-  RISING: "#b23b34",
-  STABLE: "#8a7a52",
-  EASING: "#4d7a52",
-};
+const TREND_LABEL: Record<RiskTrend, string> = { RISING: "Rising", STABLE: "Stable", EASING: "Easing" };
 
-const gold = "#a88a4a";
-const ink = "#1a1712";
-
-/** Distinct from the brand palette — these read as a risk scale, not gold accents. */
-const RISK_COLOR: Record<ThreatLevel, string> = {
-  LOW: "#3f7d55",
-  MODERATE: "#b58a2e",
-  HIGH: "#c06a2c",
-  CRITICAL: "#b23b34",
-};
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const pad = (n: number) => String(n).padStart(2, "0");
+/** "November 02.2026." — the template's reporting-period style. */
+const periodLabel = (d: Date) => `${MONTHS[d.getUTCMonth()]} ${pad(d.getUTCDate())}.${d.getUTCFullYear()}.`;
+/** "02/11/2026." — the template's Date: cell. */
+const dayLabel = (d: Date) => `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}.`;
 
 const styles = StyleSheet.create({
-  page: {
-    paddingTop: 28,
-    paddingBottom: 40,
-    paddingHorizontal: 32,
-    fontSize: 9,
-    fontFamily: "Helvetica",
-    color: ink,
+  /* cover */
+  cover: { fontFamily: FONT, color: INK, position: "relative" },
+  logoShadow: { position: "absolute", left: 192, top: 10, width: 200, height: 78, backgroundColor: SHADOW },
+  logoCard: {
+    position: "absolute",
+    left: 188,
+    top: 6,
+    width: 200,
+    height: 78,
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  logo: { width: 130, marginBottom: 14 },
-  coverRow: { flexDirection: "row", gap: 16, marginBottom: 16 },
-  coverText: { flex: 1 },
-  coverPhoto: { width: 210, height: 150, objectFit: "cover" },
-  h1: { fontSize: 15, fontFamily: "Helvetica-Bold", marginBottom: 2 },
-  h2: { fontSize: 10, marginBottom: 2 },
-  sectionLabel: {
-    fontSize: 10,
-    fontFamily: "Helvetica-Bold",
-    textDecoration: "underline",
-    marginTop: 10,
-    marginBottom: 4,
+  logoImage: { width: 176, height: 68, objectFit: "contain" },
+  titleBlock: { position: "absolute", left: 37, top: 92, width: 270 },
+  coverTitle: { fontSize: 13, lineHeight: 1.3 },
+  postureBlock: { position: "absolute", left: 28, top: 158, width: 280 },
+  postureHeading: { fontSize: 10, fontWeight: "bold", textDecoration: "underline", marginTop: 13, marginBottom: 8 },
+  postureLine: { fontSize: 10, marginBottom: 12 },
+  bold: { fontWeight: "bold" },
+  photoShadow: { position: "absolute", left: 319, top: 99, width: 252, height: 239, backgroundColor: SHADOW },
+  photo: { position: "absolute", left: 315, top: 95, width: 252, height: 239, objectFit: "cover" },
+  rule: { position: "absolute", left: 34, top: 344, width: 529, borderBottomWidth: 1.3, borderBottomColor: INK },
+  acronymTitle: { position: "absolute", left: 32, top: 361, fontSize: 10, fontWeight: "bold" },
+  acronymTable: {
+    position: "absolute",
+    left: 30,
+    top: 380,
+    width: 554,
+    flexDirection: "row",
+    borderWidth: 0.75,
+    borderColor: INK,
   },
-  statLine: { fontSize: 10, marginBottom: 2 },
-  statValue: { fontFamily: "Helvetica-Bold" },
-  divider: {
-    borderBottomWidth: 1,
-    borderBottomColor: ink,
-    marginTop: 12,
-    marginBottom: 10,
-  },
-  acronymsTitle: {
-    fontSize: 10,
-    fontFamily: "Helvetica-Bold",
-    marginBottom: 6,
-  },
-  acronymGrid: { flexDirection: "row", gap: 10, borderWidth: 1, borderColor: "#999" },
-  acronymCol: { flex: 1, borderRightWidth: 1, borderRightColor: "#999" },
+  acronymCol: { borderRightWidth: 0.75, borderRightColor: INK },
   acronymRow: {
     flexDirection: "row",
     borderBottomWidth: 0.5,
-    borderBottomColor: "#ccc",
-    paddingVertical: 2,
-    paddingHorizontal: 4,
+    borderBottomColor: INK,
+    paddingVertical: 1.4,
+    paddingHorizontal: 3,
   },
-  acronymTerm: { fontFamily: "Helvetica-Bold", fontSize: 7, width: 42 },
-  acronymDef: { fontSize: 7, flex: 1 },
-  footer: {
-    marginTop: 16,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: ink,
-  },
-  footerLine: { fontSize: 9, marginBottom: 2 },
-  footerEmail: { fontSize: 9, color: gold },
+  acronymTerm: { fontSize: 7.2, fontWeight: "bold" },
+  acronymDef: { fontSize: 7.2, color: "#404040" },
+  emergency: { position: "absolute", left: 424, top: 690, fontFamily: "Times-Roman" },
+  emergencyLine: { fontSize: 10.5, lineHeight: 1.25 },
+  emergencyEmail: { fontSize: 10.5, color: LINK },
 
-  regionHeading: {
-    fontSize: 12,
-    fontFamily: "Helvetica-Bold",
-    backgroundColor: "#e9e2d3",
-    padding: 6,
-    marginTop: 14,
-    marginBottom: 8,
-  },
-  dateRow: { fontSize: 9, marginBottom: 8 },
-  dateLabel: { fontFamily: "Helvetica-Bold" },
-  item: {
-    marginBottom: 10,
-    paddingBottom: 8,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#ccc",
-  },
-  itemTitleRow: { flexDirection: "row", alignItems: "flex-start", gap: 5, marginBottom: 2 },
-  itemNumber: {
-    fontSize: 7,
-    fontFamily: "Helvetica-Bold",
-    color: "#fff",
-    paddingVertical: 1.5,
-    paddingHorizontal: 4,
-    borderRadius: 2,
-    marginTop: 1,
-  },
-  itemTitle: { fontSize: 10, fontFamily: "Helvetica-Bold", flex: 1 },
-  itemMeta: { fontSize: 7.5, color: "#6b6559", marginBottom: 3 },
-  shortSummaryHeading: {
-    fontSize: 12,
-    fontFamily: "Helvetica-Bold",
-    backgroundColor: "#e9e2d3",
-    padding: 6,
-    marginTop: 14,
-    marginBottom: 8,
-  },
-  shortSummaryRow: { flexDirection: "row", gap: 5, marginBottom: 5 },
-  shortSummaryBullet: { fontSize: 9, width: 8 },
-  shortSummaryText: { fontSize: 9, lineHeight: 1.4, flex: 1 },
-  categoryHeading: {
-    fontSize: 12,
-    fontFamily: "Helvetica-Bold",
-    color: "#fff",
-    padding: 6,
-    marginTop: 14,
-    marginBottom: 8,
-  },
-  mapTitle: { fontSize: 14, fontFamily: "Helvetica-Bold", marginBottom: 4 },
-  mapSubtitle: { fontSize: 9, color: "#555", marginBottom: 10 },
-  itemBody: { fontSize: 9, lineHeight: 1.4, marginBottom: 3 },
-  itemUrl: { fontSize: 8, color: gold },
-
-  summaryHeading: {
-    fontSize: 12,
-    fontFamily: "Helvetica-Bold",
-    backgroundColor: "#e9e2d3",
-    padding: 6,
-    marginBottom: 8,
-  },
-  summaryBody: { fontSize: 9.5, lineHeight: 1.45, marginBottom: 4 },
-
-  contactBlock: { marginTop: 20 },
-  contactLine: { fontSize: 9, marginBottom: 2 },
-  contactBold: { fontFamily: "Helvetica-Bold" },
-
-  matrixTitle: { fontSize: 14, fontFamily: "Helvetica-Bold", marginBottom: 10 },
-  matrixGroupLabel: {
-    fontSize: 9,
-    fontFamily: "Helvetica-Bold",
-    backgroundColor: "#e9e2d3",
-    padding: 4,
-    marginTop: 10,
-    marginBottom: 4,
-  },
-  matrixHeaderRow: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: ink,
-    paddingBottom: 3,
-    marginBottom: 2,
-  },
-  matrixHeaderCell: {
-    fontSize: 7,
-    fontFamily: "Helvetica-Bold",
-    color: "#555",
-    textTransform: "uppercase",
-  },
-  matrixRow: {
-    flexDirection: "row",
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#ddd",
+  /* body table */
+  body: { fontFamily: FONT, color: INK, paddingTop: 14, paddingBottom: 18, paddingHorizontal: 14 },
+  table: { borderTopWidth: 0.75, borderLeftWidth: 0.75, borderRightWidth: 0.75, borderColor: INK },
+  headRow: {
+    backgroundColor: LAVENDER,
+    borderBottomWidth: 0.75,
+    borderBottomColor: INK,
     paddingVertical: 3,
   },
-  matrixColGovernorate: { width: "20%", fontSize: 8, fontFamily: "Helvetica-Bold" },
-  matrixColRisk: { width: "14%" },
-  matrixColTrend: { width: "14%" },
-  matrixColDriver: { width: "52%", fontSize: 7.5, lineHeight: 1.35 },
-  matrixBadge: {
-    fontSize: 7,
-    fontFamily: "Helvetica-Bold",
-    color: "#fff",
-    paddingVertical: 1.5,
-    paddingHorizontal: 5,
-    borderRadius: 2,
-    alignSelf: "flex-start",
+  headText: { fontSize: 11.5, fontWeight: "bold", textAlign: "center" },
+  row: { flexDirection: "row", borderBottomWidth: 0.75, borderBottomColor: INK },
+  labelCell: {
+    width: 38,
+    backgroundColor: GREY,
+    borderRightWidth: 0.75,
+    borderRightColor: INK,
+    paddingTop: 4,
+    paddingLeft: 3,
   },
-  matrixTrendText: { fontSize: 7.5, fontFamily: "Helvetica-Bold" },
+  labelText: { fontSize: 8.5, fontWeight: "bold" },
+  contentCell: { flex: 1, backgroundColor: GREEN, paddingTop: 4, paddingBottom: 6, paddingHorizontal: 6 },
+  dateText: { fontSize: 10, fontWeight: "bold" },
+  item: { marginBottom: 9 },
+  itemTitle: { fontSize: 9.6, fontWeight: "bold", marginBottom: 1 },
+  itemMeta: { fontSize: 7.8, fontStyle: "italic", color: "#4a442a", marginBottom: 1.5 },
+  itemBody: { fontSize: 8.4, lineHeight: 1.22, textAlign: "justify" },
+  itemUrl: { fontSize: 8, color: LINK, marginTop: 1 },
+  bulletRow: { flexDirection: "row", marginBottom: 4 },
+  bullet: { fontSize: 8.4, width: 10 },
+  bulletText: { fontSize: 8.4, lineHeight: 1.22, flex: 1, textAlign: "justify" },
+  summaryText: { fontSize: 8.6, lineHeight: 1.25, textAlign: "justify", marginBottom: 4 },
+  contact: { marginTop: 16 },
+  contactLine: { fontSize: 11, fontWeight: "bold", lineHeight: 1.25 },
+  contactEmail: { fontSize: 11, fontWeight: "bold", color: LINK },
+
+  /* matrix */
+  matrixGroup: { fontSize: 8.5, fontWeight: "bold", marginTop: 6, marginBottom: 2 },
+  matrixHead: { flexDirection: "row", borderBottomWidth: 0.75, borderBottomColor: INK, paddingBottom: 2 },
+  matrixHeadCell: { fontSize: 7.4, fontWeight: "bold" },
+  matrixRow: { flexDirection: "row", borderBottomWidth: 0.4, borderBottomColor: "#9a9a9a", paddingVertical: 2 },
+  colGov: { width: "20%", fontSize: 8, fontWeight: "bold" },
+  colRisk: { width: "14%", fontSize: 8, fontWeight: "bold" },
+  colTrend: { width: "13%", fontSize: 8 },
+  colDriver: { width: "53%", fontSize: 7.8, lineHeight: 1.2 },
 });
+
+/* ---- table building blocks ---------------------------------------------------- */
+
+function HeadRow({ children }: { children: string }) {
+  return (
+    <View style={styles.headRow} wrap={false}>
+      <Text style={styles.headText}>{children}</Text>
+    </View>
+  );
+}
+
+function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <View style={styles.row}>
+      <View style={styles.labelCell}>
+        <Text style={styles.labelText}>{label}</Text>
+      </View>
+      <View style={styles.contentCell}>{children}</View>
+    </View>
+  );
+}
 
 /**
  * An event's line in "Short Summaries of Major Events in Kurdistan": the
@@ -273,7 +225,23 @@ function shortSummaryOf(item: ReportNewsItem): string {
   return sentences ? sentences.slice(0, 2).join("").trim() : item.body.trim();
 }
 
+function Contact() {
+  return (
+    <View style={styles.contact} wrap={false}>
+      <Text style={styles.contactLine}>Harekar For Private Guarding</Text>
+      <Text style={styles.contactLine}>Contact Information</Text>
+      <Text style={styles.contactLine}>Dream City 100m road</Text>
+      <Text style={styles.contactLine}>Erbil, Kurdistan Region of Iraq</Text>
+      <Text style={styles.contactLine}>Phone Iraq +964 750 445 7862 - +964 750 4580092</Text>
+      <Text style={styles.contactLine}>
+        Email: <Text style={styles.contactEmail}>operationsmanager@harekargroup.com</Text>
+      </Text>
+    </View>
+  );
+}
+
 export function ReportDocument({
+  date,
   dateLabel,
   kurdistanThreat,
   iraqThreat,
@@ -288,13 +256,10 @@ export function ReportDocument({
   coverPhoto,
 }: ReportPdfProps) {
   // Sections, printed order and numbering are shared with the portal and the
-  // event map — see `orderReportEvents`. Events filed before categories
-  // existed print last, under "General"; an empty section is skipped.
+  // event map — see `orderReportEvents`.
   const { sections, numbered } = orderReportEvents(items);
-
-  const kurdistanSummaries = numbered
-    .filter(({ item }) => item.region === "KURDISTAN")
-    .map(({ item, number }) => ({ number, text: shortSummaryOf(item) }));
+  const kurdistanSummaries = numbered.filter(({ item }) => item.region === "KURDISTAN");
+  const hasMap = numbered.some(({ item }) => item.governorate || item.latitude != null);
 
   const governorateByGroup = REGION_GROUPS.map((group) => ({
     group,
@@ -306,254 +271,205 @@ export function ReportDocument({
   return (
     <Document
       title={`Daily Security Report — ${dateLabel}`}
-      author="Harekar for Private Security & Guarding"
+      author="Harekar For Private Guarding"
     >
-      {/* ---- cover page --------------------------------------------------- */}
-      <Page size="A4" style={styles.page}>
-        {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's <Image>, not an <img>; it has no alt prop */}
-        <Image src={logo} style={styles.logo} />
-
-        <View style={styles.coverRow}>
-          <View style={styles.coverText}>
-            <Text style={styles.h1}>
-              Daily Security Report Update - Kurdistan
-            </Text>
-            <Text style={styles.h2}>
-              Harekar For Private Security & Guarding
-            </Text>
-            <Text style={styles.h2}>Reporting Period: {dateLabel}</Text>
-
-            <Text style={styles.sectionLabel}>SECURITY HIGHLIGHTED</Text>
-            <Text style={styles.statLine}>
-              KURDISTAN THREAT LEVEL:{" "}
-              <Text style={styles.statValue}>
-                {THREAT_LABEL[kurdistanThreat]}
-              </Text>
-            </Text>
-            <Text style={styles.statLine}>
-              IRAQ WIDE THREAT LEVEL:{" "}
-              <Text style={styles.statValue}>{THREAT_LABEL[iraqThreat]}</Text>
-            </Text>
-
-            <Text style={styles.sectionLabel}>POLITICAL HIGHLIGHTED</Text>
-            <Text style={styles.statLine}>
-              POLITICAL SITUATION KURDISTAN:{" "}
-              <Text style={styles.statValue}>
-                {(politicalKurdistan || "—").toUpperCase()}
-              </Text>
-            </Text>
-            <Text style={styles.statLine}>
-              POLITICAL SITUATION IRAQ WIDE:{" "}
-              <Text style={styles.statValue}>
-                {(politicalIraq || "—").toUpperCase()}
-              </Text>
-            </Text>
-
-            <Text style={styles.sectionLabel}>WEATHER CONDITIONS</Text>
-            <Text style={styles.statLine}>{weather || "—"}</Text>
-          </View>
-
+      {/* ---- cover ------------------------------------------------------- */}
+      <Page size="A4" style={styles.cover}>
+        <View style={styles.logoShadow} />
+        <View style={styles.logoCard}>
           {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's <Image>, not an <img>; it has no alt prop */}
-          <Image src={coverPhoto} style={styles.coverPhoto} />
+          <Image src={logo} style={styles.logoImage} />
         </View>
 
-        <View style={styles.divider} />
+        <View style={styles.titleBlock}>
+          <Text style={styles.coverTitle}>Daily Security Report Update - Kurdistan</Text>
+          <Text style={styles.coverTitle}>Harekar For Private Guarding</Text>
+          <Text style={styles.coverTitle}>Reporting Period: {periodLabel(date)}</Text>
+        </View>
 
-        <Text style={styles.acronymsTitle}>ACRONYMS</Text>
-        <View style={styles.acronymGrid}>
+        <View style={styles.postureBlock}>
+          <Text style={styles.postureHeading}>SECURITY HIGHLIGHTED</Text>
+          <Text style={styles.postureLine}>
+            KURDISTAN THREAT LEVEL: <Text style={styles.bold}>{THREAT_LABEL[kurdistanThreat]}</Text>
+          </Text>
+          <Text style={styles.postureLine}>
+            IRAQ WIDE THREAT LEVEL: <Text style={styles.bold}>{THREAT_LABEL[iraqThreat]}</Text>
+          </Text>
+          <Text style={styles.postureHeading}>POLITICAL HIGHLIGHTED:</Text>
+          <Text style={styles.postureLine}>
+            POLITICAL SITUATION KURDISTAN:{" "}
+            <Text style={styles.bold}>{(politicalKurdistan || "—").toUpperCase()}</Text>
+          </Text>
+          <Text style={styles.postureLine}>
+            POLITICAL SITUATION IRAQ WIDE:{" "}
+            <Text style={styles.bold}>{(politicalIraq || "—").toUpperCase()}</Text>
+          </Text>
+          <Text style={styles.postureHeading}>
+            WEATHER CONDITIONS: {weather ? <Text style={{ textDecoration: "none", fontWeight: "normal" }}>{weather}</Text> : null}
+          </Text>
+        </View>
+
+        <View style={styles.photoShadow} />
+        {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's <Image>, not an <img>; it has no alt prop */}
+        <Image src={coverPhoto} style={styles.photo} />
+
+        <View style={styles.rule} />
+        <Text style={styles.acronymTitle}>ACRONYMS</Text>
+        <View style={styles.acronymTable}>
           {ACRONYM_COLUMNS.map((column, i) => (
             <View
               key={i}
               style={[
                 styles.acronymCol,
-                i === ACRONYM_COLUMNS.length - 1
-                  ? { borderRightWidth: 0 }
-                  : {},
+                { width: ["32.5%", "30.2%", "37.3%"][i] },
+                i === ACRONYM_COLUMNS.length - 1 ? { borderRightWidth: 0 } : {},
               ]}
             >
-              {column.map((entry) => (
-                <View key={entry.term} style={styles.acronymRow}>
+              {column.map((entry, j) => (
+                <View
+                  key={entry.term + j}
+                  style={[styles.acronymRow, j === column.length - 1 ? { borderBottomWidth: 0 } : {}]}
+                >
                   <Text style={styles.acronymTerm}>{entry.term}</Text>
-                  <Text style={styles.acronymDef}>{entry.definition}</Text>
+                  <Text style={styles.acronymDef}> - {entry.definition}</Text>
                 </View>
               ))}
             </View>
           ))}
         </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerLine}>
-            SECURITY EMERGENCY # 07504457862 – 07504580092
-          </Text>
-          <Text style={styles.footerEmail}>operations@harekargroup.com</Text>
+        <View style={styles.emergency}>
+          <Text style={styles.emergencyLine}>SECURITY EMERGENCY #</Text>
+          <Text style={styles.emergencyLine}>07504457862 – 07504580092</Text>
+          <Text style={styles.emergencyEmail}>operations@harekargroup.com</Text>
         </View>
       </Page>
 
-      {/* ---- governorate risk matrix ---------------------------------------- */}
-      {governorateByGroup.length > 0 && (
-        <Page size="A4" style={styles.page}>
-          <Text style={styles.matrixTitle}>Governorate Risk Matrix</Text>
+      {/* ---- the report table ----------------------------------------------- */}
+      <Page size="A4" style={styles.body}>
+        <View style={styles.table}>
+          <HeadRow>Kurdistan Region of Iraq</HeadRow>
+          <Row label="Date:">
+            <Text style={styles.dateText}>{dayLabel(date)}</Text>
+          </Row>
 
-          {governorateByGroup.map(({ group, rows }) => (
-            <View key={group} wrap={false}>
-              <Text style={styles.matrixGroupLabel}>
-                {REGION_GROUP_LABEL[group]}
-              </Text>
-
-              <View style={styles.matrixHeaderRow}>
-                <Text style={[styles.matrixHeaderCell, styles.matrixColGovernorate]}>
-                  Governorate
-                </Text>
-                <Text style={[styles.matrixHeaderCell, styles.matrixColRisk]}>
-                  Risk
-                </Text>
-                <Text style={[styles.matrixHeaderCell, styles.matrixColTrend]}>
-                  Trend
-                </Text>
-                <Text style={[styles.matrixHeaderCell, styles.matrixColDriver]}>
-                  Driver
-                </Text>
-              </View>
-
-              {rows.map((row) => (
-                <View key={row.governorate} style={styles.matrixRow} wrap={false}>
-                  <Text style={styles.matrixColGovernorate}>
-                    {GOVERNORATE_LABEL[row.governorate]}
-                  </Text>
-                  <View style={styles.matrixColRisk}>
-                    <Text
-                      style={[
-                        styles.matrixBadge,
-                        { backgroundColor: RISK_COLOR[row.risk] },
-                      ]}
-                    >
-                      {THREAT_LABEL[row.risk]}
+          {executiveSummary?.trim() && (
+            <>
+              <HeadRow>Executive Summary</HeadRow>
+              <Row label="">
+                {executiveSummary
+                  .trim()
+                  .split(/\n\s*\n/)
+                  .map((paragraph, i) => (
+                    <Text key={i} style={styles.summaryText}>
+                      {paragraph.trim()}
                     </Text>
+                  ))}
+              </Row>
+            </>
+          )}
+
+          {kurdistanSummaries.length > 0 && (
+            <>
+              <HeadRow>Short Summaries of Major Events in Kurdistan</HeadRow>
+              <Row label="Title:">
+                {kurdistanSummaries.map(({ item, number }) => (
+                  <View key={number} style={styles.bulletRow} wrap={false}>
+                    <Text style={styles.bullet}>•</Text>
+                    <Text style={styles.bulletText}>{shortSummaryOf(item)}</Text>
                   </View>
-                  <Text
-                    style={[
-                      styles.matrixColTrend,
-                      styles.matrixTrendText,
-                      { color: TREND_COLOR[row.trend] },
-                    ]}
-                  >
-                    {TREND_LABEL[row.trend]}
-                  </Text>
-                  <Text style={styles.matrixColDriver}>
-                    {row.driver || "—"}
-                  </Text>
-                </View>
-              ))}
+                ))}
+              </Row>
+            </>
+          )}
+
+          {sections.map(({ category, events }) => (
+            <View key={category ?? "general"}>
+              <HeadRow>{category ? CATEGORY_HEADING[category] : UNCATEGORISED_HEADING}</HeadRow>
+              <Row label="Title:">
+                {events.map(({ item, number }) => {
+                  const place = locationLine(item);
+                  const kind = [
+                    item.severity ? `${SEVERITY_LABEL[item.severity]} severity` : null,
+                    item.classification ? CLASSIFICATION_LABEL[item.classification] : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ");
+                  return (
+                    <View key={number} style={styles.item} wrap={false}>
+                      <Text style={styles.itemTitle}>
+                        {number}. {item.title}
+                      </Text>
+                      {(place || kind) && (
+                        <Text style={styles.itemMeta}>{[place, kind].filter(Boolean).join("  ·  ")}</Text>
+                      )}
+                      <Text style={styles.itemBody}>{item.body}</Text>
+                      {withSources && item.url && (
+                        <Link src={item.url} style={styles.itemUrl}>
+                          {item.url}
+                        </Link>
+                      )}
+                    </View>
+                  );
+                })}
+              </Row>
             </View>
           ))}
+
+          <Row label="">
+            <Contact />
+          </Row>
+        </View>
+      </Page>
+
+      {/* ---- daily event map -------------------------------------------------- */}
+      {hasMap && (
+        <Page size="A4" style={styles.body}>
+          <View style={styles.table}>
+            <HeadRow>Daily Event Map</HeadRow>
+            <Row label="Date:">
+              <Text style={styles.dateText}>{dayLabel(date)}</Text>
+            </Row>
+            <Row label="">
+              <View style={{ backgroundColor: "#ffffff", padding: 4 }}>
+                {/* Sized to the table's content cell, not the full page width. */}
+                <EventMap events={numbered} width={494} />
+              </View>
+            </Row>
+          </View>
         </Page>
       )}
 
-      {/* ---- report body ---------------------------------------------------- */}
-      <Page size="A4" style={styles.page}>
-        <Text style={styles.dateRow}>
-          <Text style={styles.dateLabel}>Date: </Text>
-          {dateLabel}
-        </Text>
-
-        {executiveSummary?.trim() && (
-          <View>
-            <Text style={styles.summaryHeading}>Executive Summary</Text>
-            {/* One <Text> per paragraph, so blank lines in the console read as breaks here too. */}
-            {executiveSummary
-              .trim()
-              .split(/\n\s*\n/)
-              .map((paragraph, i) => (
-                <Text key={i} style={styles.summaryBody}>
-                  {paragraph.trim()}
-                </Text>
-              ))}
-          </View>
-        )}
-
-        {kurdistanSummaries.length > 0 && (
-          <View minPresenceAhead={60}>
-            <Text style={styles.shortSummaryHeading}>
-              Short Summaries of Major Events in Kurdistan
-            </Text>
-            {kurdistanSummaries.map(({ number, text }) => (
-              <View key={number} style={styles.shortSummaryRow} wrap={false}>
-                <Text style={styles.shortSummaryBullet}>•</Text>
-                <Text style={styles.shortSummaryText}>{text}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {sections.map(({ category, events }) => (
-          <View key={category ?? "general"} minPresenceAhead={60}>
-            <Text
-              style={[styles.categoryHeading, { backgroundColor: categoryColor(category) }]}
-            >
-              {category ? CATEGORY_HEADING[category] : UNCATEGORISED_HEADING}
-            </Text>
-
-            {events.map(({ item, number }) => {
-              const place = locationLine(item);
-              const kind = [
-                item.severity ? `${SEVERITY_LABEL[item.severity]} severity` : null,
-                item.classification ? CLASSIFICATION_LABEL[item.classification] : null,
-              ]
-                .filter(Boolean)
-                .join("  ·  ");
-              return (
-                <View key={number} style={styles.item} wrap={false}>
-                  <View style={styles.itemTitleRow}>
-                    <Text
-                      style={[styles.itemNumber, { backgroundColor: categoryColor(item.category) }]}
-                    >
-                      {number}
-                    </Text>
-                    <Text style={styles.itemTitle}>{item.title}</Text>
+      {/* ---- governorate risk matrix -------------------------------------------- */}
+      {governorateByGroup.length > 0 && (
+        <Page size="A4" style={styles.body}>
+          <View style={styles.table}>
+            <HeadRow>Governorate Risk Matrix</HeadRow>
+            <Row label="Date:">
+              <Text style={styles.dateText}>{dayLabel(date)}</Text>
+            </Row>
+            <Row label="">
+              {governorateByGroup.map(({ group, rows }) => (
+                <View key={group} wrap={false}>
+                  <Text style={styles.matrixGroup}>{REGION_GROUP_LABEL[group]}</Text>
+                  <View style={styles.matrixHead}>
+                    <Text style={[styles.matrixHeadCell, { width: "20%" }]}>Governorate</Text>
+                    <Text style={[styles.matrixHeadCell, { width: "14%" }]}>Risk</Text>
+                    <Text style={[styles.matrixHeadCell, { width: "13%" }]}>Trend</Text>
+                    <Text style={[styles.matrixHeadCell, { width: "53%" }]}>Driver</Text>
                   </View>
-                  {(place || kind) && (
-                    <Text style={styles.itemMeta}>
-                      {[place, kind].filter(Boolean).join("  ·  ")}
-                    </Text>
-                  )}
-                  <Text style={styles.itemBody}>{item.body}</Text>
-                  {withSources && item.url && (
-                    <Link src={item.url} style={styles.itemUrl}>
-                      {item.url}
-                    </Link>
-                  )}
+                  {rows.map((row) => (
+                    <View key={row.governorate} style={styles.matrixRow} wrap={false}>
+                      <Text style={styles.colGov}>{GOVERNORATE_LABEL[row.governorate]}</Text>
+                      <Text style={styles.colRisk}>{THREAT_LABEL[row.risk]}</Text>
+                      <Text style={styles.colTrend}>{TREND_LABEL[row.trend]}</Text>
+                      <Text style={styles.colDriver}>{row.driver || "—"}</Text>
+                    </View>
+                  ))}
                 </View>
-              );
-            })}
+              ))}
+            </Row>
           </View>
-        ))}
-
-        <View style={styles.contactBlock} wrap={false}>
-          <Text style={[styles.contactLine, styles.contactBold]}>
-            Harekar For Private Security & Guarding
-          </Text>
-          <Text style={styles.contactLine}>Contact Information</Text>
-          <Text style={styles.contactLine}>Dream City 100m road</Text>
-          <Text style={styles.contactLine}>
-            Erbil, Kurdistan Region of Iraq
-          </Text>
-          <Text style={styles.contactLine}>
-            Phone Iraq +964 750 445 7862 - +964 750 4580092
-          </Text>
-          <Text style={[styles.contactLine, { color: gold }]}>
-            Email: operationsmanager@harekargroup.com
-          </Text>
-        </View>
-      </Page>
-
-      {/* ---- daily event map ------------------------------------------------ */}
-      {numbered.some(({ item }) => item.governorate || item.latitude != null) && (
-        <Page size="A4" style={styles.page}>
-          <Text style={styles.mapTitle}>Daily Event Map</Text>
-          <Text style={styles.mapSubtitle}>
-            Events recorded on {dateLabel}. Numbers match the report above.
-          </Text>
-          <EventMap events={numbered} />
         </Page>
       )}
     </Document>

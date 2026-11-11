@@ -53,7 +53,11 @@ export function cleanKeywords(keywords: string[]): string[] {
   return out;
 }
 
-function hits(normalisedText: string, keyword: string): boolean {
+/**
+ * Whether already-normalised text contains a keyword: Latin keywords from the
+ * start of a word, Arabic-script ones anywhere (see the module note).
+ */
+export function hits(normalisedText: string, keyword: string): boolean {
   const key = normalise(keyword);
   if (!key) return false;
   if (LATIN.test(key)) {

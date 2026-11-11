@@ -1372,7 +1372,9 @@
         "pinHint": "Optional exact map pin. Without one, the event is placed at the centre of its governorate.",
         "shortSummary": "Short summary (Kurdistan)",
         "shortSummaryHint": "One or two sentences for \"Short Summaries of Major Events in Kurdistan\". Left blank, the first two sentences are used.",
-        "severity": "Severity"
+        "severity": "Severity",
+        "autoFill": "Auto-fill from text",
+        "autoFillHint": "Filled automatically from the story — check before saving."
       },
       "downloadWithSources": "PDF with sources",
       "downloadWithoutSources": "PDF without sources",

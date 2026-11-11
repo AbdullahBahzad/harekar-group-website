@@ -26,6 +26,7 @@ import {
 } from "@/lib/report-shape";
 import { inIraq } from "@/lib/report-geo";
 import { cleanKeywords, matchKeywords } from "@/lib/keyword-match";
+import { autoFile } from "@/lib/auto-file";
 import { fetchHeadlines, type Headline } from "@/lib/headlines";
 import {
   listCombinedSources,
@@ -227,13 +228,19 @@ export async function pullHeadlineItems(
   return Promise.all(
     selections.map(async (selection) => {
       const text = await fetchArticleText(selection.url);
+      const body = text
+        ? toParagraph(text)
+        : "(Could not retrieve the article text — write a summary here.)";
+      // Suggested filing read from the words themselves (no AI): section,
+      // event type, severity, place and short summary. A place found in the
+      // story decides the region; otherwise the source's default stands.
+      const { region, ...filing } = autoFile(selection.title, text ? body : "");
       return {
         title: selection.title,
-        body: text
-          ? toParagraph(text)
-          : "(Could not retrieve the article text — write a summary here.)",
+        body,
         url: selection.url,
-        region: selection.region,
+        region: region ?? selection.region,
+        ...filing,
       };
     }),
   );
